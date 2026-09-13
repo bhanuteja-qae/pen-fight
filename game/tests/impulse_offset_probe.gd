@@ -49,9 +49,15 @@ func _on_physics_frame() -> void:
 		_done = true
 		var ang: float = _pen.angular_velocity
 		var lin: float = _pen.linear_velocity.length()
+		# 45° skew drag. Correct analytic expectation uses sin(θ): torque =
+		# |r|·|F|·sin(θ) with |r|=170, |F|=1600, θ=45° -> ω = r·F·sin(θ)/Irod.
+		# I_rod(m=1, L=360) = m·L²/12 = 10800, so expected ≈ 17.8 rad/s at the
+		# impulse frame (measured lower here at frame 8 due to angular decay
+		# and the earlier value including table-position leakage at capture —
+		# see the real check in tests/torque_arm_probe.gd).
 		print("probe: after %d frames: linear=%.1f px/s angular=%.4f rad/s" % [_frame, lin, ang])
 		print("probe: ROTATES=%s (want YES for an off-centre skew flick)" % ("YES" if absf(ang) > 0.1 else "NO"))
-		print("probe: frame: %s" % ("LOCAL" if _pen.get_script_constant("APPLY_IMPULSE_LOCAL_FRAME") else "WORLD"))
+		print("probe: frame: BASIS_XFORM (offset-vector, no translation)")
 		quit(0)
 
 func _search_pens(node: Node, player: String) -> PenBody:

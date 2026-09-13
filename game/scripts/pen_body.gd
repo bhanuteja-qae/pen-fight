@@ -140,16 +140,25 @@ func get_radius() -> float:
 
 
 ## Ground-truth flag for PhysicsDirectBodyState2D.apply_impulse's position
-## frame. SETTLED EMPIRICALLY by tests/impulse_offset_probe.gd: the position
-## is a WORLD-space point. LOCAL-frame readings (10.5 rad/s) missed the
-## analytic rod model (28.2 = 1600*170/(m*L^2/12)) by 1.9x; WORLD-frame readings
-## (27.9) match it within 1%. Do not flip without re-running the probe.
-const APPLY_IMPULSE_LOCAL_FRAME: bool = false
+## frame. CONFIRMED by the two-position torque probe (tests/torque_arm_probe.gd):
+## the position is an OFFSET FROM THE BODY ORIGIN IN GLOBAL ORIENTATION —
+## a vector, not a world point (Godot docs class_physicsdirectbodystate2d:
+## "position is the offset from the body origin in global coordinates").
+## The pre-fix _to_world() used get_global_transform() * local_pos, which adds
+## global_position (translation) to the arm — measured 8.6x spin difference
+## between two table positions. basis_xform applies rotation only.
+## Do not change without re-running the probe.
+const APPLY_IMPULSE_WORLD_TRANSLATION: bool = false
 
 
-## Local -> world point via the body's world transform.
+## Local -> global-orientation offset (rotation applied, translation dropped).
+## apply_impulse(impulse, position) wants the offset from the body origin in
+## global coordinates — a vector. get_global_transform() * v would include
+## the body's world position (the bug); basis_xform() is rotation only.
 func _to_world(local_pos: Vector2) -> Vector2:
-	return get_global_transform() * local_pos
+	if APPLY_IMPULSE_WORLD_TRANSLATION:
+		return get_global_transform() * local_pos
+	return get_global_transform().basis_xform(local_pos)
 
 
 # --- Physics ----------------------------------------------------------------------
@@ -159,18 +168,13 @@ func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
 		_try_resolve_table()
 
 	if _pending_impulse != Vector2.ZERO:
-		if _pending_impulse_local_pos == Vector2.ZERO:
-			state.apply_central_impulse(_pending_impulse)
-		else:
-			# Off-centre flick: apply at the grab point so an axis-skew drag
-			# produces torque (pen slides AND spins — real pen-fight). The
-			# position argument's frame (local vs world) is settled empirically
-			# by tests/impulse_offset_probe.gd; APPLY_IMPULSE_LOCAL_FRAME
-			# selects the interpretation (_integrate_forces has both below).
-			if APPLY_IMPULSE_LOCAL_FRAME:
-				state.apply_impulse(_pending_impulse, _pending_impulse_local_pos)
-			else:
-				state.apply_impulse(_pending_impulse, _to_world(_pending_impulse_local_pos))
+		# Off-centre flick: apply the impulse at the grab offset (rotation-only
+		# transform) so an axis-skew drag produces torque — pen slides AND
+		# spins, real pen-fight. Always use apply_impulse: with a ZERO offset
+		# it is algebraically identical to apply_central_impulse, and skipping
+		# the exact-float `== Vector2.ZERO` branch avoids a computed-vector
+		# equality hazard (review of main at 76aad79).
+		state.apply_impulse(_pending_impulse, _to_world(_pending_impulse_local_pos))
 		_pending_impulse = Vector2.ZERO
 		_pending_impulse_local_pos = Vector2.ZERO
 
