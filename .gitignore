@@ -9,3 +9,5 @@ export_presets.cfg
 # Logs / OS noise
 *.log
 .DS_Store
+# Asset tooling virtualenv (Pillow for generate_assets_*.py)
+.asset-venv/

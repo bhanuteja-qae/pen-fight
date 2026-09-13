@@ -55,6 +55,49 @@ const FORFEIT_TIMEOUT: float = 4.0
 ## World-space table rect; must match the Table node geometry in main.tscn.
 const TABLE_RECT: Rect2 = Rect2(-512.0, -256.0, 1024.0, 512.0)
 
+## Pen skin selection (Phase 1c): each player picks a pen DESIGN to play with.
+## Only two pens are ever on the table — the third sprite is a preference
+## option, not a third player. Skins map pen_id -> asset path; the scene,
+## physics, and TurnState still use exactly two pens.
+const PEN_SKINS: Dictionary = {
+	"red": "res://assets/pen_red_v4.png",
+	"blue": "res://assets/pen_blue_v4.png",
+	"green": "res://assets/pen_green_v4.png",
+}
+var _player_skins: Dictionary = {"red": "red", "blue": "blue"}
+
+
+## Pick the pen design for a player (e.g. set_pen_skin("blue", "green")).
+## Applies immediately to that player's Sprite2D. Returns false if the player
+## or skin is unknown.
+func set_pen_skin(player: String, skin: String) -> bool:
+	if not _player_skins.has(player) or not PEN_SKINS.has(skin):
+		return false
+	_player_skins[player] = skin
+	var sprite := _pen_sprite_node(player)
+	if sprite != null:
+		sprite.texture = load(PEN_SKINS[skin]) as Texture2D
+	return true
+
+
+## Apply any PENFIGHT_SKIN_<PLAYER> env overrides (debug/autoplay convenience).
+func _apply_default_skins() -> void:
+	for player: String in _player_skins.keys():
+		var env_key := "PENFIGHT_SKIN_" + player.to_upper()
+		var env_skin := OS.get_environment(env_key)
+		if env_skin != "" and PEN_SKINS.has(env_skin):
+			set_pen_skin(player, env_skin)
+
+
+func _pen_sprite_node(player: String) -> Sprite2D:
+	match player:
+		"red":
+			return $PenRed/Sprite2D
+		"blue":
+			return $PenBlue/Sprite2D
+		_:
+			return null
+
 
 func _ready() -> void:
 	turn_state = TurnState.new([pen_red.pen_id, pen_blue.pen_id], FORFEIT_TIMEOUT, TABLE_RECT)
@@ -104,6 +147,9 @@ func _ready() -> void:
 		_auto_flick.arm(1.2)
 
 	turn_state.begin_turn()
+	# Skin selection: apply env overrides AFTER the sprites exist but before
+	# the first frame renders, so PENFIGHT_SKIN_<PLAYER>=green shows from t=0.
+	_apply_default_skins()
 	# The very first turn is the game opening, not a settle handoff — the gate
 	# would be noise here, and the no-input forfeit acceptance path needs the
 	# first AIM turn to tick its timer (a gated first turn would pause forfeit
