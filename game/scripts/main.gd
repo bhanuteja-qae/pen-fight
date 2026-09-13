@@ -52,8 +52,11 @@ var _game_over_printed: bool = false
 var _ceremony_fired: bool = false
 
 const FORFEIT_TIMEOUT: float = 4.0
-## World-space table rect; must match the Table node geometry in main.tscn.
-const TABLE_RECT: Rect2 = Rect2(-512.0, -256.0, 1024.0, 512.0)
+## World-space table rect; must match the TableBounds node geometry in main.tscn.
+## Spec coordinate contract (docs/ART_AND_FEEL_SPEC.md §1): playfield
+## Rect2(80,60,1120,600) in viewport coords = centered at (0,0): x -560..560,
+## y -300..300.
+const TABLE_RECT: Rect2 = Rect2(-560.0, -300.0, 1120.0, 600.0)
 
 ## Pen skin selection (Phase 1c): each player picks a pen DESIGN to play with.
 ## Only two pens are ever on the table — the third sprite is a preference

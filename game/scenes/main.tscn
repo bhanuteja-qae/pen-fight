@@ -2,24 +2,25 @@
 
 [ext_resource type="Script" uid="uid://a2b3c4d5e6f7" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="Script" uid="uid://b3c4d5e6f7a8" path="res://scripts/pen_body.gd" id="2_pen"]
-[ext_resource type="Texture2D" path="res://assets/table_v2.png" id="3_table"]
-[ext_resource type="Texture2D" path="res://assets/pen_red_v4.png" id="4_red"]
-[ext_resource type="Texture2D" path="res://assets/pen_blue_v4.png" id="5_blue"]
-[ext_resource type="Texture2D" path="res://assets/pen_shadow_v4.png" id="6_shadow"]
-[ext_resource type="Texture2D" path="res://assets/background_v2.png" id="7_bg"]
+[ext_resource type="Texture2D" path="res://assets/table.png" id="3_table"]
+[ext_resource type="Texture2D" path="res://assets/pen_amber.png" id="4_red"]
+[ext_resource type="Texture2D" path="res://assets/pen_cobalt.png" id="5_blue"]
+[ext_resource type="Texture2D" path="res://assets/pen_amber_shadow.png" id="6_shadow_red"]
+[ext_resource type="Texture2D" path="res://assets/pen_cobalt_shadow.png" id="7_shadow_blue"]
+[ext_resource type="Texture2D" path="res://assets/background_v2.png" id="8_bg"]
 
 [sub_resource type="CapsuleShape2D" id="pen_shape"]
 radius = 10.0
-height = 76.0
+height = 360.0
 
 [sub_resource type="RectangleShape2D" id="table_bounds"]
-size = Vector2(1024, 512)
+size = Vector2(1120, 600)
 
 [node name="Main" type="Node2D" unique_id=10001]
 script = ExtResource("1_main")
 
 [node name="Background" type="Sprite2D" parent="." unique_id=10017]
-texture = ExtResource("7_bg")
+texture = ExtResource("8_bg")
 z_index = -10
 
 [node name="CanvasModulate" type="CanvasModulate" parent="." unique_id=10018]
@@ -35,37 +36,46 @@ texture = ExtResource("3_table")
 shape = SubResource("table_bounds")
 
 [node name="PenRed" type="RigidBody2D" parent="." unique_id=10008]
-position = Vector2(-150, 0)
+position = Vector2(-280, 0)
+rotation = 3.14159
+mass = 1.0
+linear_damp = 2.0
+angular_damp = 4.0
 contact_monitor = true
 max_contacts_reported = 4
 script = ExtResource("2_pen")
 pen_id = "red"
 
+[node name="Shadow" type="Sprite2D" parent="PenRed" unique_id=10019]
+texture = ExtResource("6_shadow_red")
+position = Vector2(9, 14)
+z_index = -1
+modulate = Color(0, 0, 0, 0.44)
+
 [node name="Sprite2D" type="Sprite2D" parent="PenRed" unique_id=10009]
 texture = ExtResource("4_red")
-
-[node name="Shadow" type="Sprite2D" parent="PenRed" unique_id=10019]
-texture = ExtResource("6_shadow")
-position = Vector2(6, 10)
-z_index = -1
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="PenRed" unique_id=10010]
 shape = SubResource("pen_shape")
 
 [node name="PenBlue" type="RigidBody2D" parent="." unique_id=10011]
-position = Vector2(150, 0)
+position = Vector2(280, 0)
+mass = 1.0
+linear_damp = 2.0
+angular_damp = 4.0
 contact_monitor = true
 max_contacts_reported = 4
 script = ExtResource("2_pen")
 pen_id = "blue"
 
+[node name="Shadow" type="Sprite2D" parent="PenBlue" unique_id=10020]
+texture = ExtResource("7_shadow_blue")
+position = Vector2(9, 14)
+z_index = -1
+modulate = Color(0, 0, 0, 0.44)
+
 [node name="Sprite2D" type="Sprite2D" parent="PenBlue" unique_id=10012]
 texture = ExtResource("5_blue")
-
-[node name="Shadow" type="Sprite2D" parent="PenBlue" unique_id=10020]
-texture = ExtResource("6_shadow")
-position = Vector2(6, 10)
-z_index = -1
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="PenBlue" unique_id=10013]
 shape = SubResource("pen_shape")

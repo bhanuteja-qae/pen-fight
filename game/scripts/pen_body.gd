@@ -24,11 +24,18 @@ const SETTLE_LINEAR_VEL := 6.0       # px/s
 const SETTLE_ANGULAR_VEL := 0.4      # rad/s
 const SETTLE_DEBOUNCE := 0.25        # s
 
+## Converts a 0..1 flick power fraction into a real fireable impulse.
+## Derived per docs/ART_AND_FEEL_SPEC.md §8: with mass 1.0 and effective linear
+## damp ~2.1, distance ≈ impulse/(mass×damp) → full power ≈ 1600 travels ~70%
+## of the 1120px table. Tune damp FIRST, then this (spec §8.3).
+const MAX_IMPULSE := 1600.0
+
 ## Conservative fallback extents if the pen has no CollisionShape2D to read.
-## Matches the 96x20 v2 sprite geometry: CapsuleShape2D radius 10, height 76
-## (central segment 76 - 2*10 = 56 -> half-len 28).
+## Matches the ART_AND_FEEL_SPEC geometry: CapsuleShape2D radius 10, height 360
+## (central segment 360 - 2*10 = 340 -> half-len 170). The scene normally
+## supplies the shape; these only keep OOB geometry defined before resolution.
 const DEFAULT_PEN_RADIUS := 10.0
-const DEFAULT_PEN_HALF_LEN := 28.0
+const DEFAULT_PEN_HALF_LEN := 170.0
 
 ## Give the table-resolution retry a ~2 s window at 60 Hz, then safely disable
 ## OOB detection (a missing table should never false-trigger an instant loss).
@@ -72,12 +79,17 @@ func _ready() -> void:
 ## The impulse is queued and applied through the physics state on the next
 ## _integrate_forces call — never a position teleport (contract: set velocity
 ## via physics state).
+##
+## Power arrives as a 0..1 drag fraction (human slingshot AND AutoFlick both
+## emit this shape). MAX_IMPULSE converts that fraction into a real fireable
+## impulse: power 1.0 travels ~70% of a 1120px table with mass 1.0 / damp ~2.1
+## (docs/ART_AND_FEEL_SPEC.md §8: impulse ≈ distance × mass × damp).
 func apply_flick(impulse_dir: Vector2, power: float) -> void:
 	_in_flight = true
 	_settled_emitted = false
 	_oob_emitted = false
 	_quiet_time = 0.0
-	_pending_impulse = impulse_dir * power
+	_pending_impulse = impulse_dir * power * MAX_IMPULSE
 	flicked.emit(pen_id, _pending_impulse)
 
 
