@@ -57,6 +57,7 @@ texture = ExtResource("4_red")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="PenRed" unique_id=10010]
 shape = SubResource("pen_shape")
+rotation = 1.5707963
 
 [node name="PenBlue" type="RigidBody2D" parent="." unique_id=10011]
 position = Vector2(280, 0)
@@ -79,6 +80,7 @@ texture = ExtResource("5_blue")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="PenBlue" unique_id=10013]
 shape = SubResource("pen_shape")
+rotation = 1.5707963
 
 [node name="ExitZone" type="Area2D" parent="." unique_id=10014]
 
