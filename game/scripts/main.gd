@@ -30,6 +30,11 @@ var aim_input: AimInput = null
 var feel: Feel = null
 var overlay: DebugOverlay = null
 
+## Phase 1d: aim overlay (grab ring, launch cone, spin arc) and audio manager
+## (bus-based SFX). Created in _ready from the NEW scripts; driven from here.
+var aim_overlay: AimOverlay = null
+var audio_mgr: AudioManager = null
+
 ## Hard turn-transition gate overlay (docs §3.5 #1): created in _ready and
 ## driven from here. Self-contained CanvasLayer — no TurnState/PenBody refs.
 var turn_gate: TurnGate = null
@@ -134,6 +139,18 @@ func _ready() -> void:
 	add_child(overlay)
 	overlay.set_pens([pen_red, pen_blue])
 
+	# Phase 1d: aim overlay + audio. The overlay is a plain Node2D that draws
+	# the aim UI (grab ring, launch cone, spin arc) anchored on the active pen;
+	# Main feeds it per-frame drag info via show_drag(). AudioManager owns the
+	# SFX buses and synthesized impact/flick sounds; Main routes pen impacts
+	# and flicks into it. Both tolerate headless/no-device boxes gracefully.
+	aim_overlay = AimOverlay.new()
+	add_child(aim_overlay)
+	audio_mgr = AudioManager.new()
+	add_child(audio_mgr)
+	for pen: PenBody in [pen_red, pen_blue]:
+		pen.impact.connect(_on_pen_impact)
+
 	# Hard turn-transition gate (docs §3.5 #1): a CanvasLayer drawn above the
 	# world but below the debug overlay. Mouse taps are handled by the gate
 	# itself; Main reacts to `tapped`.
@@ -193,6 +210,7 @@ func _process(delta: float) -> void:
 		_update_gate(st, phase)
 	if phase == TurnState.PHASE_AIM:
 		_sync_aim_zone()
+		_feed_aim_overlay()
 	_check_game_over()
 	# Autoplay driver: keep rounds coming without a human.
 	# 1) Auto-tap ANY showing gate — a decided round's ROUND_OVER gate AND a
@@ -252,6 +270,12 @@ func _on_flick_ready(direction: Vector2, power: float, contact_offset: float) ->
 	var pen := _active_pen()
 	if pen != null:
 		pen.apply_flick(direction, power, contact_offset)
+	# Whoosh tick on release (SFX). The sound layer never gates the game.
+	if audio_mgr != null:
+		audio_mgr.play_flick(power)
+	# The flick left AIM: clear the aim overlay so no stale UI lingers.
+	if aim_overlay != null:
+		aim_overlay.clear()
 
 
 func _active_pen() -> PenBody:
@@ -290,6 +314,28 @@ func _sync_aim_zone() -> void:
 	var pen := _active_pen()
 	if pen != null:
 		aim_input.set_active_pen(pen)
+
+
+## Phase 1d: feed the aim overlay per-frame. The overlay draws the grab ring,
+## pull band, launch cone + power fill + MAX tick, and spin arc from the
+## CURRENT drag gesture (touch or mouse); idle when nothing is being dragged.
+func _feed_aim_overlay() -> void:
+	if aim_overlay == null:
+		return
+	var pen := _active_pen()
+	if pen == null:
+		aim_overlay.clear()
+		return
+	aim_overlay.set_pen(pen)
+	aim_overlay.show_drag(aim_input.get_drag_info())
+
+
+## PenBody.impact -> a layered thud on the SFX bus (per pen-pen / pen-table
+## contact). The sound layer is presentation over the already-settled physics;
+## a dead audio device degrades to a logged warning inside AudioManager.
+func _on_pen_impact(_pen_uid: String, impact_speed: float) -> void:
+	if audio_mgr != null:
+		audio_mgr.play_impact(impact_speed)
 
 
 ## Fired by PenBody.out_of_bounds AFTER TurnState.on_out_of_bounds has already

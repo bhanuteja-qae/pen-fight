@@ -10,11 +10,11 @@
 [ext_resource type="Texture2D" path="res://assets/background_v2.png" id="8_bg"]
 
 [sub_resource type="CapsuleShape2D" id="pen_shape"]
-radius = 10.0
-height = 360.0
+radius = 5.0
+height = 180.0
 
 [sub_resource type="RectangleShape2D" id="table_bounds"]
-size = Vector2(1120, 600)
+size = Vector2(1180, 640)
 
 [node name="Main" type="Node2D" unique_id=10001]
 script = ExtResource("1_main")
@@ -40,7 +40,7 @@ position = Vector2(-160, -80)
 rotation = 0.0
 mass = 1.0
 linear_damp = 2.0
-angular_damp = 4.0
+angular_damp = 1.5
 contact_monitor = true
 max_contacts_reported = 4
 script = ExtResource("2_pen")
@@ -48,12 +48,14 @@ pen_id = "red"
 
 [node name="Shadow" type="Sprite2D" parent="PenRed" unique_id=10019]
 texture = ExtResource("6_shadow_red")
-position = Vector2(9, 14)
+position = Vector2(4, 6)
+scale = Vector2(0.408, 0.408)
 z_index = -1
 modulate = Color(0, 0, 0, 0.44)
 
 [node name="Sprite2D" type="Sprite2D" parent="PenRed" unique_id=10009]
 texture = ExtResource("4_red")
+scale = Vector2(0.408, 0.408)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="PenRed" unique_id=10010]
 shape = SubResource("pen_shape")
@@ -64,7 +66,7 @@ position = Vector2(160, 80)
 rotation = 0.0
 mass = 1.0
 linear_damp = 2.0
-angular_damp = 4.0
+angular_damp = 1.5
 contact_monitor = true
 max_contacts_reported = 4
 script = ExtResource("2_pen")
@@ -72,12 +74,14 @@ pen_id = "blue"
 
 [node name="Shadow" type="Sprite2D" parent="PenBlue" unique_id=10020]
 texture = ExtResource("7_shadow_blue")
-position = Vector2(9, 14)
+position = Vector2(4, 6)
+scale = Vector2(0.408, 0.408)
 z_index = -1
 modulate = Color(0, 0, 0, 0.44)
 
 [node name="Sprite2D" type="Sprite2D" parent="PenBlue" unique_id=10012]
 texture = ExtResource("5_blue")
+scale = Vector2(0.408, 0.408)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="PenBlue" unique_id=10013]
 shape = SubResource("pen_shape")

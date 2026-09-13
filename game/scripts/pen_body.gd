@@ -11,6 +11,10 @@ signal settled(pen_uid: String)
 signal flicked(pen_uid: String, impulse: Vector2)
 signal out_of_bounds(pen_uid: String)
 signal moved(pen_uid: String)
+## Contact impact for the audio agent (consumer wired by the orchestrator):
+## emitted throttled while the body reports a contact AND linear speed exceeds
+## IMPACT_MIN_SPEED. impact_speed is the current linear velocity magnitude.
+signal impact(pen_uid: String, impact_speed: float)
 
 ## "red" or "blue" — set per instance in main.tscn ({{PENS}}).
 @export var pen_id: String = "red"
@@ -38,11 +42,22 @@ const MOVED_LINEAR_VEL := 25.0       # px/s
 const MAX_IMPULSE := 1600.0
 
 ## Conservative fallback extents if the pen has no CollisionShape2D to read.
-## Matches the ART_AND_FEEL_SPEC geometry: CapsuleShape2D radius 10, height 360
-## (central segment 360 - 2*10 = 340 -> half-len 170). The scene normally
+## Matches the ART_AND_FEEL_SPEC geometry: CapsuleShape2D radius 5, height 180
+## (central segment 180 - 2*5 = 170 -> half-len 85). The scene normally
 ## supplies the shape; these only keep OOB geometry defined before resolution.
-const DEFAULT_PEN_RADIUS := 10.0
-const DEFAULT_PEN_HALF_LEN := 170.0
+const DEFAULT_PEN_RADIUS := 5.0
+const DEFAULT_PEN_HALF_LEN := 85.0
+
+## A few px of extra slack beyond the radius inset in the geometric OOB test:
+## absorb solver jitter at the boundary (endpoints may sit up to
+## radius+tolerance past the rect before out_of_bounds fires). [TUNE]
+const OOB_TOLERANCE_PX := 8.0
+
+## Impact signal thresholds: a hit is reportable when the body reports a
+## contact AND its linear speed exceeds IMPACT_MIN_SPEED; emit at most once
+## per IMPACT_TICK_INTERVAL physics ticks. [TUNE]
+const IMPACT_MIN_SPEED := 60.0
+const IMPACT_TICK_INTERVAL := 3
 
 ## Give the table-resolution retry a ~2 s window at 60 Hz, then safely disable
 ## OOB detection (a missing table should never false-trigger an instant loss).
@@ -59,6 +74,10 @@ var _pending_impulse := Vector2.ZERO
 ## = centre hit (pure slide, no spin). Populated by apply_flick from the grab
 ## contact offset; consumed in _integrate_forces.
 var _pending_impulse_local_pos := Vector2.ZERO
+## Throttle counter for the `impact` signal: count down/wrap every
+## IMPACT_TICK_INTERVAL physics ticks of sustained hard contact. Cleared in
+## apply_flick / reset / _ready so no stale throttle carries between flights.
+var _impact_throttle_ticks := 0
 
 # Table bounds, resolved lazily (robust to the exact node names in main.tscn).
 var _table_rect := Rect2()
@@ -83,6 +102,8 @@ func _ready() -> void:
 
 	_read_pen_shape()
 	_try_resolve_table()
+
+	_impact_throttle_ticks = 0
 
 
 # --- Public API ------------------------------------------------------------------
@@ -109,6 +130,7 @@ func apply_flick(impulse_dir: Vector2, power: float, contact_offset: float = 0.0
 	_quiet_time = 0.0
 	_pending_impulse = impulse_dir * power * MAX_IMPULSE
 	_pending_impulse_local_pos = Vector2.RIGHT * clampf(contact_offset, -1.0, 1.0) * _pen_half_len
+	_impact_throttle_ticks = 0
 	flicked.emit(pen_id, _pending_impulse)
 
 
@@ -120,6 +142,7 @@ func reset() -> void:
 	_moved_emitted = false
 	_quiet_time = 0.0
 	_pending_impulse = Vector2.ZERO
+	_impact_throttle_ticks = 0
 	global_position = start_position
 	rotation = 0.0
 	linear_velocity = Vector2.ZERO
@@ -190,6 +213,7 @@ func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
 
 	_update_settle(state)
 	_update_oob(state)
+	_update_impact(state)
 
 
 ## Settle detector: velocity magnitude + angular speed below threshold for
@@ -225,15 +249,36 @@ func _update_oob(state: PhysicsDirectBodyState2D) -> void:
 		out_of_bounds.emit(pen_id)
 
 
+## Impact detector (audio agent): emit `impact` throttled to ~1 per
+## IMPACT_TICK_INTERVAL physics ticks while the body reports a live contact
+## AND its linear speed clears IMPACT_MIN_SPEED. Runs every tick regardless of
+## who was flicked, so a defender rammed by the flicker's pen also reports.
+func _update_impact(state: PhysicsDirectBodyState2D) -> void:
+	if state.get_contact_count() <= 0:
+		return
+	var lin_speed: float = state.get_linear_velocity().length()
+	if lin_speed <= IMPACT_MIN_SPEED:
+		return
+	_impact_throttle_ticks += 1
+	if _impact_throttle_ticks < IMPACT_TICK_INTERVAL:
+		return
+	_impact_throttle_ticks = 0
+	impact.emit(pen_id, lin_speed)
+
+
 ## Geometric "any part off" test (contract §3.2): a capsule is fully on the
 ## table iff both world-space endpoints of its central segment lie inside the
-## table rect shrunk by the capsule radius. Out of bounds = that stops holding.
+## table rect shrunk by the capsule radius. Out of bounds = that stops
+## holding. The radius inset is relaxed by OOB_TOLERANCE_PX, so solver jitter
+## at the edge does not false-trigger: endpoints may sit up to
+## radius+tolerance past the rect before out_of_bounds fires. The verdict
+## stays geometric capsule-extent — never centre-of-mass.
 func _any_part_outside(state: PhysicsDirectBodyState2D) -> bool:
 	var body_t: Transform2D = state.get_transform()
 	var shape_t: Transform2D = body_t * _shape_local_t
 	var p1: Vector2 = shape_t * Vector2(0.0, _pen_half_len)
 	var p2: Vector2 = shape_t * Vector2(0.0, -_pen_half_len)
-	var inner: Rect2 = _table_rect.grow(-_pen_radius)
+	var inner: Rect2 = _table_rect.grow(-(_pen_radius + OOB_TOLERANCE_PX))
 	return not (inner.has_point(p1) and inner.has_point(p2))
 
 

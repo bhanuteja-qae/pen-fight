@@ -55,14 +55,28 @@ func dismiss() -> void:
 	visible = false
 
 
-## Any mouse-button press dismisses the gate and reports it. The press is
+## Any press (mouse or touch) dismisses the gate and reports it. The press is
 ## marked handled so it can't also start a flick drag while the gate is up.
+## Touch-first (Phase 1d): the roll is played on a phone, so a finger tap must
+## dismiss it just like a mouse click. Emulation guards keep one physical
+## gesture from firing twice (Android synthesizes mouse events from touch by
+## default; the desktop does the reverse).
 func _unhandled_input(event: InputEvent) -> void:
 	if not visible:
 		return
 	if event is InputEventMouseButton:
+		if Input.is_emulating_mouse_from_touch():
+			return  # this is the synthesized copy of a real finger tap
 		var mb: InputEventMouseButton = event
 		if mb.pressed:
+			get_viewport().set_input_as_handled()
+			dismiss()
+			tapped.emit()
+	elif event is InputEventScreenTouch:
+		if Input.is_emulating_touch_from_mouse():
+			return  # this is the synthesized copy of a real mouse click
+		var st: InputEventScreenTouch = event
+		if st.pressed:
 			get_viewport().set_input_as_handled()
 			dismiss()
 			tapped.emit()
