@@ -13,14 +13,18 @@ extends RefCounted
 ## the table only advances the turn to the next player (`on_settled` ->
 ## `begin_turn`).
 ##
-## Contract phases: AIM, IN_FLIGHT, SETTLED, FORFEIT, GAME_OVER.
+## Contract phases: AIM, IN_FLIGHT, SETTLED, FORFEIT, GAME_OVER, ROUND_OVER.
+## Decided rounds (OOB winner or forfeit) PARK in PHASE_ROUND_OVER — nothing
+## auto-advances; Main shows the tap-to-continue gate and calls
+## continue_to_next_round() to start the next round (winner first).
 
-# Phase constants (contract: phase in {AIM, IN_FLIGHT, SETTLED, FORFEIT, GAME_OVER}).
+# Phase constants (contract: phase in {AIM, IN_FLIGHT, SETTLED, FORFEIT, GAME_OVER, ROUND_OVER}).
 const PHASE_AIM: String = "AIM"
 const PHASE_IN_FLIGHT: String = "IN_FLIGHT"
 const PHASE_SETTLED: String = "SETTLED"
 const PHASE_FORFEIT: String = "FORFEIT"
 const PHASE_GAME_OVER: String = "GAME_OVER"
+const PHASE_ROUND_OVER: String = "ROUND_OVER"
 
 var _pens: Array[String] = []
 var _forfeit_timeout: float = 5.0
@@ -69,6 +73,16 @@ func begin_turn() -> void:
 	_loser_uid = ""
 	_round_over = false
 
+## Round-over gate (docs §3.5 #1): the ONLY way out of PHASE_ROUND_OVER.
+## Caller (Main's tap-to-continue) invokes this after a decided round. The
+## winner starts the next round: begin_turn() cycles to the next player (the
+## round winner when the starter lost, which is the hot-seat convention) and
+## clears the round-over bookkeeping. Any other phase is a no-op.
+func continue_to_next_round() -> void:
+	if _phase != PHASE_ROUND_OVER:
+		return
+	begin_turn()
+
 ## The active player flicked. Valid only during AIM -> transitions to
 ## IN_FLIGHT. Records the impulse and marks the flicked pen (the active
 ## player's pen). The non-flicked pen is at rest and stays on the table, so it
@@ -107,7 +121,10 @@ func on_settled(pen_uid: String) -> void:
 func on_out_of_bounds(pen_uid: String) -> void:
 	if _phase != PHASE_IN_FLIGHT:
 		return
-	_phase = PHASE_GAME_OVER
+	# Decide the round geometrically HERE (docs §3.2), then PARK in ROUND_OVER:
+	# the ceremony and the tap-to-continue gate are pure presentation over an
+	# already-settled result. on_flick / forfeit_tick are no-ops from here on.
+	_phase = PHASE_ROUND_OVER
 	_round_over = true
 	if pen_uid == _flicked_pen:
 		_loser_uid = pen_uid
@@ -118,13 +135,14 @@ func on_out_of_bounds(pen_uid: String) -> void:
 
 ## Hard forfeit timeout (docs: 4-6 s). Called by Main each frame; accumulates
 ## delta only while a turn is in AIM. Once the active player has not flicked
-## within forfeit_timeout, phase -> FORFEIT and the OTHER player wins the round.
+## within forfeit_timeout, the OTHER player wins the round and the state parks
+## in PHASE_ROUND_OVER (no auto-advance; Main's gate resumes on tap).
 func forfeit_tick(delta: float) -> void:
 	if _phase != PHASE_AIM:
 		return
 	_forfeit_elapsed += maxf(delta, 0.0)
 	if _forfeit_elapsed >= _forfeit_timeout:
-		_phase = PHASE_FORFEIT
+		_phase = PHASE_ROUND_OVER
 		_round_over = true
 		_loser_uid = current_player()
 		_winner_uid = _other_player(current_player())
@@ -168,6 +186,7 @@ func state() -> Dictionary:
 		"settled_pens": _settled_pen_uids,
 		"winner": _winner_uid,
 		"loser": _loser_uid,
+		"round_winner": _winner_uid,
 		"round_over": _round_over,
 		"table_rect": _table_rect,
 	}

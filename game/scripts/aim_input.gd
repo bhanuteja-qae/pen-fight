@@ -20,6 +20,12 @@ extends Node2D
 
 signal flick_ready(direction: Vector2, power: float)
 
+## Hard turn-transition gate (docs §3.5 #1): when true, the pointer is fully
+## ignored — no drag start, no release handling, no flick_ready emission. Main
+## holds this true while the phase is anything but AIM, so a player can never
+## flick on the wrong turn or during the round-over handoff.
+var input_locked: bool = false
+
 ## Minimum drag distance (px). Releasing inside this radius cancels the gesture
 ## (emits nothing).
 @export var min_drag_pixels: float = 15.0
@@ -35,6 +41,8 @@ var _zone_center_override: Vector2 = Vector2.ZERO
 var _has_zone_override: bool = false
 
 func _unhandled_input(event: InputEvent) -> void:
+	if input_locked:
+		return  # turn-transition gate: no input outside the AIM phase
 	if event is InputEventMouseButton:
 		var mb: InputEventMouseButton = event
 		if mb.button_index != MOUSE_BUTTON_LEFT:

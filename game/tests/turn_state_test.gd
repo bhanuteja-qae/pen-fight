@@ -1,10 +1,10 @@
 extends SceneTree
 class_name TurnStateTest
-## Deterministic headless unit tests for TurnState (pure logic, Phase 0.5).
+## Deterministic headless unit tests for TurnState (pure logic, Phase 1b).
 ## No randomness. Covers: begin_turn advancement, on_flick AIM->IN_FLIGHT,
-## on_out_of_bounds winner resolution, on_settled next-turn advancement,
-## forfeit_tick timeout, stale/duplicate-event guards, and the table-rect
-## geometric helper.
+## on_out_of_bounds winner resolution parking in ROUND_OVER, on_settled
+## next-turn advancement, forfeit_tick timeout, continue_to_next_round (winner
+## starts), stale/duplicate-event guards, and the table-rect geometric helper.
 ##
 ## Run headless (project root is game/):
 ##   godot --headless --path game --script res://tests/turn_state_test.gd
@@ -35,6 +35,9 @@ static func run_tests() -> bool:
 	_test_forfeit_timeout(failures)
 	_test_forfeit_boundary(failures)
 	_test_stale_and_duplicate_events_ignored(failures)
+	_test_continue_to_next_round_winner_starts(failures)
+	_test_continue_cycles_red_blue(failures)
+	_test_continue_requires_round_over(failures)
 	_test_table_rect_helper(failures)
 	if failures.is_empty():
 		print("turn_state_test: ALL PASS")
@@ -90,8 +93,9 @@ static func _test_out_of_bounds_declares_other_winner(failures: Array[String]) -
 	ts.on_flick(Vector2(1, 0))
 	ts.on_out_of_bounds("red")
 	var s: Dictionary = ts.state()
-	_check(failures, s["phase"] == TurnStateScript.PHASE_GAME_OVER, "flicked-pen OOB -> GAME_OVER")
+	_check(failures, s["phase"] == TurnStateScript.PHASE_ROUND_OVER, "flicked-pen OOB -> ROUND_OVER (gate)")
 	_check(failures, s["winner"] == "blue", "other player wins when the flicked pen goes OOB")
+	_check(failures, s["round_winner"] == "blue", "round_winner mirrors winner")
 	_check(failures, s["loser"] == "red", "flicked pen is the loser")
 	_check(failures, s["round_over"] == true, "round flagged over")
 
@@ -101,7 +105,9 @@ static func _test_out_of_bounds_for_non_flicked_pen(failures: Array[String]) -> 
 	ts.on_flick(Vector2(1, 0))
 	ts.on_out_of_bounds("blue")
 	var s: Dictionary = ts.state()
+	_check(failures, s["phase"] == TurnStateScript.PHASE_ROUND_OVER, "defensive OOB also parks in ROUND_OVER")
 	_check(failures, s["winner"] == "red", "defensive: flicking player wins if the other pen goes OOB")
+	_check(failures, s["round_winner"] == "red", "defensive round_winner mirrors winner")
 
 static func _test_settled_advances_to_next_turn(failures: Array[String]) -> void:
 	var ts = _new_ts()
@@ -121,8 +127,9 @@ static func _test_forfeit_timeout(failures: Array[String]) -> void:
 	ts.forfeit_tick(2.0)
 	ts.forfeit_tick(1.0)  # total elapsed == 5.0 -> forfeit
 	var s: Dictionary = ts.state()
-	_check(failures, s["phase"] == TurnStateScript.PHASE_FORFEIT, "timeout -> FORFEIT")
+	_check(failures, s["phase"] == TurnStateScript.PHASE_ROUND_OVER, "timeout parks in ROUND_OVER (gate)")
 	_check(failures, s["winner"] == "blue", "other player wins on forfeit")
+	_check(failures, s["round_winner"] == "blue", "round_winner mirrors winner on forfeit")
 	_check(failures, s["loser"] == "red", "active player loses on forfeit")
 	_check(failures, s["round_over"] == true, "round flagged over on forfeit")
 	# Once forfeited, further ticks change nothing.
@@ -136,7 +143,7 @@ static func _test_forfeit_boundary(failures: Array[String]) -> void:
 	ts.forfeit_tick(4.999)
 	_check(failures, ts.state()["phase"] == TurnStateScript.PHASE_AIM, "just under timeout still AIM")
 	ts.forfeit_tick(0.001)
-	_check(failures, ts.state()["phase"] == TurnStateScript.PHASE_FORFEIT, "reaching the timeout forfeits")
+	_check(failures, ts.state()["phase"] == TurnStateScript.PHASE_ROUND_OVER, "reaching the timeout parks in ROUND_OVER")
 
 static func _test_stale_and_duplicate_events_ignored(failures: Array[String]) -> void:
 	# A flick outside AIM is ignored.
@@ -149,7 +156,12 @@ static func _test_stale_and_duplicate_events_ignored(failures: Array[String]) ->
 	ts.on_out_of_bounds("red")
 	var winner_before: String = ts.state()["winner"]
 	ts.on_out_of_bounds("blue")
-	_check(failures, ts.state()["winner"] == winner_before, "OOB after GAME_OVER is ignored")
+	_check(failures, ts.state()["winner"] == winner_before, "OOB after ROUND_OVER is ignored")
+	# on_flick / forfeit_tick are no-ops while the round is over (input locked).
+	ts.on_flick(Vector2(0, 1))
+	_check(failures, ts.state()["phase"] == TurnStateScript.PHASE_ROUND_OVER, "on_flick ignored while ROUND_OVER")
+	ts.forfeit_tick(10.0)
+	_check(failures, ts.state()["phase"] == TurnStateScript.PHASE_ROUND_OVER, "forfeit_tick ignored while ROUND_OVER")
 	# A stale settle after the round advanced is ignored.
 	var ts2 = _new_ts()
 	ts2.begin_turn()
@@ -157,6 +169,42 @@ static func _test_stale_and_duplicate_events_ignored(failures: Array[String]) ->
 	ts2.on_settled("red")  # advances to blue, phase back to AIM
 	ts2.on_settled("red")
 	_check(failures, ts2.state()["current_player"] == "blue", "stale settle does not double-advance")
+
+static func _test_continue_to_next_round_winner_starts(failures: Array[String]) -> void:
+	var ts = _new_ts()
+	ts.begin_turn()                    # round 1: red starts
+	ts.on_flick(Vector2(1, 0))
+	ts.on_out_of_bounds("red")         # red flicked & lost -> blue wins the round
+	_check(failures, ts.state()["phase"] == TurnStateScript.PHASE_ROUND_OVER, "round parks in ROUND_OVER")
+	_check(failures, ts.state()["winner"] == "blue", "blue is the round winner")
+	ts.continue_to_next_round()
+	var s: Dictionary = ts.state()
+	_check(failures, s["phase"] == TurnStateScript.PHASE_AIM, "continue -> AIM")
+	_check(failures, s["current_player"] == "blue", "round winner starts the next round")
+	_check(failures, s["round_over"] == false, "round_over cleared after continue")
+	_check(failures, s["winner"] == "", "winner cleared after continue")
+	_check(failures, s["loser"] == "", "loser cleared after continue")
+
+static func _test_continue_cycles_red_blue(failures: Array[String]) -> void:
+	var ts = _new_ts()
+	ts.begin_turn()                    # round 1: red
+	ts.on_flick(Vector2(1, 0))
+	ts.on_out_of_bounds("red")         # blue wins round 1
+	ts.continue_to_next_round()        # round 2: blue starts
+	_check(failures, ts.state()["current_player"] == "blue", "continue #1 -> blue starts round 2")
+	ts.on_flick(Vector2(1, 0))
+	ts.on_out_of_bounds("blue")        # red wins round 2
+	ts.continue_to_next_round()        # round 3: red starts
+	_check(failures, ts.state()["current_player"] == "red", "continue #2 cycles back to red")
+	_check(failures, ts.state()["phase"] == TurnStateScript.PHASE_AIM, "round 3 back in AIM")
+
+static func _test_continue_requires_round_over(failures: Array[String]) -> void:
+	# continue_to_next_round only works from ROUND_OVER; mid-AIM it is a no-op.
+	var ts = _new_ts()
+	ts.begin_turn()
+	ts.continue_to_next_round()
+	_check(failures, ts.state()["phase"] == TurnStateScript.PHASE_AIM, "continue from AIM is a no-op")
+	_check(failures, ts.state()["current_player"] == "red", "no player advance from AIM")
 
 static func _test_table_rect_helper(failures: Array[String]) -> void:
 	var rect: Rect2 = Rect2(0, 0, 100, 80)
