@@ -244,28 +244,23 @@ func _fire(player: AudioStreamPlayer, frames: PackedVector2Array, pitch: float, 
 	if player == null:
 		_log_no_playback()
 		return
+	# One-shot retrigger per the ENGINE SOURCE (scene/audio/audio_stream_player_
+	# internal.cpp play_basic): play() calls stream->instantiate_playback(), so
+	# every play() hands back a FRESH EMPTY buffer — no clear_buffer() needed,
+	# and clear_buffer() is in fact illegal on an active generator
+	# (ERR_FAIL_COND(active), effects/audio_stream_generator.cpp). The stream
+	# is monophonic, so a re-play auto-stops the previous playback first.
+	player.pitch_scale = pitch
+	player.volume_linear = gain
+	player.play(0.0)
 	var pb := player.get_stream_playback() as AudioStreamGeneratorPlayback
 	if pb == null:
 		_log_no_playback()
 		return
-	# One-shot retrigger sequence, per the engine source
-	# (servers/audio/effects/audio_stream_generator.cpp): clear_buffer() has
-	# ERR_FAIL_COND(active), so the generator must be INACTIVE before clearing.
-	# AudioStreamPlayer.stop() -> playback.active = false -> clear is legal.
-	# Then push, then play to restart. Never reset an active generator (that
-	# was the pre-fix bug: every impact on a ringing pool player raised a
-	# hard engine ERROR on the dummy driver).
-	if player.is_playing():
-		player.stop()
-	pb.clear_buffer()
 	if frames.size() > 0 and pb.can_push_buffer(frames.size()):
 		pb.push_buffer(frames)
 	else:
 		push_warning("AudioManager: SFX generator buffer busy (%d frames free) — hit dropped" % pb.get_frames_available())
-		return
-	player.pitch_scale = pitch
-	player.volume_linear = gain
-	player.play(0.0)
 
 
 func _log_no_playback() -> void:
