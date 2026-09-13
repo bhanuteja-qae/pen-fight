@@ -3,8 +3,10 @@
 
 # Android export artifacts (docs/RESEARCH.md §3.3: export_presets.cfg holds plaintext keystore passwords)
 android/build/
+game/android/
 export_presets.cfg
 *.keystore
+build/
 
 # Logs / OS noise
 *.log
