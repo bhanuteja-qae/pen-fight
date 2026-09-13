@@ -120,6 +120,7 @@ func _ready() -> void:
 
 	for pen: PenBody in [pen_red, pen_blue]:
 		pen.settled.connect(turn_state.on_settled)
+		pen.moved.connect(turn_state.on_pen_moved)
 		pen.out_of_bounds.connect(turn_state.on_out_of_bounds)
 		# Connected AFTER the TurnState resolver above so this handler always
 		# runs once the win outcome is already decided (docs §3.2) — the

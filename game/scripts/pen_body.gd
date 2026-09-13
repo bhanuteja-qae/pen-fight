@@ -10,6 +10,7 @@ extends RigidBody2D
 signal settled(pen_uid: String)
 signal flicked(pen_uid: String, impulse: Vector2)
 signal out_of_bounds(pen_uid: String)
+signal moved(pen_uid: String)
 
 ## "red" or "blue" — set per instance in main.tscn ({{PENS}}).
 @export var pen_id: String = "red"
@@ -23,6 +24,12 @@ signal out_of_bounds(pen_uid: String)
 const SETTLE_LINEAR_VEL := 6.0       # px/s
 const SETTLE_ANGULAR_VEL := 0.4      # rad/s
 const SETTLE_DEBOUNCE := 0.25        # s
+
+## A pen counts as having "actually moved" this turn above this speed
+## (docs/ART_AND_FEEL_SPEC.md §7): a settled turn where NO pen ever exceeded it
+## is a stalemate -> the flicking player forfeits (prevents tickle-flick
+## stalling forever, since the timeout-forfeit only guards no-input slow play).
+const MOVED_LINEAR_VEL := 25.0       # px/s
 
 ## Converts a 0..1 flick power fraction into a real fireable impulse.
 ## Derived per docs/ART_AND_FEEL_SPEC.md §8: with mass 1.0 and effective linear
@@ -46,6 +53,7 @@ var _in_flight := false
 var _settled_emitted := false
 var _oob_emitted := false
 var _quiet_time := 0.0
+var _moved_emitted := false
 var _pending_impulse := Vector2.ZERO
 ## Local-space point where the pending impulse lands (torque arm). Vector2.ZERO
 ## = centre hit (pure slide, no spin). Populated by apply_flick from the grab
@@ -97,6 +105,7 @@ func apply_flick(impulse_dir: Vector2, power: float, contact_offset: float = 0.0
 	_in_flight = true
 	_settled_emitted = false
 	_oob_emitted = false
+	_moved_emitted = false
 	_quiet_time = 0.0
 	_pending_impulse = impulse_dir * power * MAX_IMPULSE
 	_pending_impulse_local_pos = Vector2.RIGHT * clampf(contact_offset, -1.0, 1.0) * _pen_half_len
@@ -108,6 +117,7 @@ func reset() -> void:
 	_in_flight = false
 	_settled_emitted = false
 	_oob_emitted = false
+	_moved_emitted = false
 	_quiet_time = 0.0
 	_pending_impulse = Vector2.ZERO
 	global_position = start_position
@@ -183,11 +193,18 @@ func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
 
 
 ## Settle detector: velocity magnitude + angular speed below threshold for
-## ~0.25 s of continuous quiet -> emit `settled` once per flight.
+## ~0.25 s of continuous quiet -> emit `settled` once per flight. Also emits
+## `moved` once per flight the first time linear speed exceeds MOVED_LINEAR_VEL
+## (docs/ART_AND_FEEL_SPEC.md §7 stalemate rule — TurnState uses it to
+## distinguish a real exchange from a tickle-flick).
 func _update_settle(state: PhysicsDirectBodyState2D) -> void:
 	if not _in_flight or _settled_emitted or _oob_emitted:
 		return
-	var lin_sq := state.get_linear_velocity().length_squared()
+	var lin_v: Vector2 = state.get_linear_velocity()
+	if not _moved_emitted and lin_v.length() >= MOVED_LINEAR_VEL:
+		_moved_emitted = true
+		moved.emit(pen_id)
+	var lin_sq := lin_v.length_squared()
 	var ang := absf(state.get_angular_velocity())
 	if lin_sq < SETTLE_LINEAR_VEL * SETTLE_LINEAR_VEL and ang < SETTLE_ANGULAR_VEL:
 		_quiet_time += state.get_step()

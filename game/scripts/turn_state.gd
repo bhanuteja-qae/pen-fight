@@ -36,6 +36,10 @@ var _forfeit_elapsed: float = 0.0
 var _flicked_pen: String = ""
 var _last_impulse: Vector2 = Vector2.ZERO
 var _settled_pen_uids: Array[String] = []
+## Pens that exceeded MOVED_LINEAR_VEL during the current flight (PenBody.moved).
+## Emptied each turn; used by the stalemate rule (docs/ART_AND_FEEL_SPEC.md §7):
+## a settled turn where NO pen moved is a forfeit, not a clean hand-over.
+var _moved_pen_uids: Array[String] = []
 var _winner_uid: String = ""
 var _loser_uid: String = ""
 var _round_over: bool = false
@@ -69,6 +73,7 @@ func begin_turn() -> void:
 	_flicked_pen = ""
 	_last_impulse = Vector2.ZERO
 	_settled_pen_uids = []
+	_moved_pen_uids = []
 	_winner_uid = ""
 	_loser_uid = ""
 	_round_over = false
@@ -99,10 +104,22 @@ func on_flick(impulse: Vector2) -> void:
 		if pen != _flicked_pen:
 			_settled_pen_uids.append(pen)
 
+## A pen exceeded MOVED_LINEAR_VEL during this flight (PenBody.moved). Records
+## it so the all-settled verdict can distinguish a real exchange from a
+## stalemate. No-op outside IN_FLIGHT and for duplicate / unknown pens.
+func on_pen_moved(pen_uid: String) -> void:
+	if _phase != PHASE_IN_FLIGHT:
+		return
+	if _moved_pen_uids.has(pen_uid):
+		return
+	_moved_pen_uids.append(pen_uid)
+
 ## A pen came to rest on the table (PenBody.settled). Once BOTH pens are
-## settled the round resolves as "still on the table" -> SETTLED -> next
-## player's turn (begin_turn). Duplicate / stale events and events outside
-## IN_FLIGHT are ignored.
+## settled the round resolves as "still on the table": a REAL exchange (any
+## pen moved) advances to the next player's turn; a STALEMATE (no pen moved)
+## forfeits the round to the other player (docs/ART_AND_FEEL_SPEC.md §7) —
+## otherwise a player could tickle-flick every timeout period and stall the
+## game forever. Duplicate / stale events and events outside IN_FLIGHT ignored.
 func on_settled(pen_uid: String) -> void:
 	if _phase != PHASE_IN_FLIGHT:
 		return
@@ -111,7 +128,15 @@ func on_settled(pen_uid: String) -> void:
 	_settled_pen_uids.append(pen_uid)
 	if _all_pens_settled():
 		_phase = PHASE_SETTLED
-		begin_turn()
+		if _moved_pen_uids.is_empty():
+			# Stalemate: the flick moved nothing. The flicking player forfeits
+			# the round (same winner/loser shape as the timeout forfeit).
+			_phase = PHASE_ROUND_OVER
+			_round_over = true
+			_loser_uid = _flicked_pen
+			_winner_uid = _other_player(_flicked_pen)
+		else:
+			begin_turn()
 
 ## A pen left the table (PenBody.out_of_bounds). Winner is decided HERE,
 ## geometrically, BEFORE any ceremony (docs §3.2): the flicked pen leaving the
@@ -184,6 +209,7 @@ func state() -> Dictionary:
 		"flicked_pen": _flicked_pen,
 		"last_impulse": _last_impulse,
 		"settled_pens": _settled_pen_uids,
+		"moved_pens": _moved_pen_uids,
 		"winner": _winner_uid,
 		"loser": _loser_uid,
 		"round_winner": _winner_uid,

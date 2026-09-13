@@ -32,6 +32,7 @@ static func run_tests() -> bool:
 	_test_out_of_bounds_declares_other_winner(failures)
 	_test_out_of_bounds_for_non_flicked_pen(failures)
 	_test_settled_advances_to_next_turn(failures)
+	_test_settled_stalemate_forfeits(failures)
 	_test_forfeit_timeout(failures)
 	_test_forfeit_boundary(failures)
 	_test_stale_and_duplicate_events_ignored(failures)
@@ -75,6 +76,7 @@ static func _test_begin_turn_advances_player(failures: Array[String]) -> void:
 	_check(failures, s["phase"] == TurnStateScript.PHASE_AIM, "phase is AIM after begin_turn")
 	# A completed round advances to the next player.
 	ts.on_flick(Vector2(1, 0))
+	ts.on_pen_moved("red")  # real exchange (otherwise it is a stalemate forfeit)
 	ts.on_settled("red")
 	_check(failures, ts.state()["current_player"] == "blue", "completed round advances to blue")
 
@@ -113,11 +115,28 @@ static func _test_settled_advances_to_next_turn(failures: Array[String]) -> void
 	var ts = _new_ts()
 	ts.begin_turn()
 	ts.on_flick(Vector2(1, 0))
+	ts.on_pen_moved("red")   # a real exchange: the flicked pen actually moved
 	ts.on_settled("red")
 	var s: Dictionary = ts.state()
 	_check(failures, s["phase"] == TurnStateScript.PHASE_AIM, "both pens settled -> back to AIM")
 	_check(failures, s["current_player"] == "blue", "next player's turn after settle")
 	_check(failures, s["winner"] == "", "no winner when both pens stay on the table")
+
+static func _test_settled_stalemate_forfeits(failures: Array[String]) -> void:
+	# Stalemate rule (docs/ART_AND_FEEL_SPEC.md §7): a settled turn where NO pen
+	# ever exceeded MOVED_LINEAR_VEL is a forfeit — the flicking player loses,
+	# not a clean hand-over. This closes the tickle-flick stall (weak-flick every
+	# timeout period to avoid the no-input forfeit).
+	var ts = _new_ts()
+	ts.begin_turn()
+	ts.on_flick(Vector2(0.001, 0.0))  # so weak the pen barely moves
+	ts.on_settled("red")              # no on_pen_moved — nothing exceeded 25 px/s
+	var s: Dictionary = ts.state()
+	_check(failures, s["phase"] == TurnStateScript.PHASE_ROUND_OVER, "stalemate parks in ROUND_OVER (gate)")
+	_check(failures, s["winner"] == "blue", "other player wins the round on a stalemate")
+	_check(failures, s["round_winner"] == "blue", "round_winner mirrors winner on stalemate")
+	_check(failures, s["loser"] == "red", "flicking player loses the round on a stalemate")
+	_check(failures, s["round_over"] == true, "round flagged over on stalemate")
 
 static func _test_forfeit_timeout(failures: Array[String]) -> void:
 	var ts = _new_ts()
@@ -166,7 +185,8 @@ static func _test_stale_and_duplicate_events_ignored(failures: Array[String]) ->
 	var ts2 = _new_ts()
 	ts2.begin_turn()
 	ts2.on_flick(Vector2(1, 0))
-	ts2.on_settled("red")  # advances to blue, phase back to AIM
+	ts2.on_pen_moved("red")  # real exchange so the settle advances the turn
+	ts2.on_settled("red")    # advances to blue, phase back to AIM
 	ts2.on_settled("red")
 	_check(failures, ts2.state()["current_player"] == "blue", "stale settle does not double-advance")
 
