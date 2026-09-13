@@ -1,0 +1,11 @@
+# Godot engine cache (imported resources, editor state) — never commit
+.godot/
+
+# Android export artifacts (docs/RESEARCH.md §3.3: export_presets.cfg holds plaintext keystore passwords)
+android/build/
+export_presets.cfg
+*.keystore
+
+# Logs / OS noise
+*.log
+.DS_Store
