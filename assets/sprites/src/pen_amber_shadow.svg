@@ -1,0 +1,201 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="440" height="96" viewBox="0 0 440 96">
+<title>Pen Fight - P2 contact shadow</title>
+<defs>
+
+  <!-- ===================== materials ===================== -->
+
+  <!-- brass/steel tip cone: cylinder shading across the width -->
+  <linearGradient id="brass" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0"    stop-color="#6b5a36"/>
+    <stop offset="0.16" stop-color="#a58d52"/>
+    <stop offset="0.30" stop-color="#e8dca6"/>
+    <stop offset="0.40" stop-color="#c4ab68"/>
+    <stop offset="0.72" stop-color="#7d6a3f"/>
+    <stop offset="1"    stop-color="#4a3d24"/>
+  </linearGradient>
+
+  <linearGradient id="steel" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0"    stop-color="#5b616b"/>
+    <stop offset="0.18" stop-color="#9aa2ad"/>
+    <stop offset="0.32" stop-color="#e6ebf1"/>
+    <stop offset="0.44" stop-color="#aeb6c1"/>
+    <stop offset="0.75" stop-color="#6a707a"/>
+    <stop offset="1"    stop-color="#42474f"/>
+  </linearGradient>
+
+  <!-- P1: translucent cobalt barrel -->
+  <linearGradient id="barrelBlue" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0"    stop-color="#0a1531"/>
+    <stop offset="0.13" stop-color="#1b3a7d"/>
+    <stop offset="0.25" stop-color="#5b8ce0"/>
+    <stop offset="0.31" stop-color="#a8c8ff"/>
+    <stop offset="0.38" stop-color="#3f6cc4"/>
+    <stop offset="0.70" stop-color="#1a3570"/>
+    <stop offset="1"    stop-color="#070f24"/>
+  </linearGradient>
+  <linearGradient id="capBlue" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0"    stop-color="#0b1832"/>
+    <stop offset="0.16" stop-color="#1d3f85"/>
+    <stop offset="0.29" stop-color="#4a7ad4"/>
+    <stop offset="0.36" stop-color="#2b57ab"/>
+    <stop offset="0.72" stop-color="#152c5e"/>
+    <stop offset="1"    stop-color="#060d1e"/>
+  </linearGradient>
+  <linearGradient id="gripBlue" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0"    stop-color="#10182b"/>
+    <stop offset="0.22" stop-color="#2a3550"/>
+    <stop offset="0.32" stop-color="#3f4d70"/>
+    <stop offset="0.70" stop-color="#1c2439"/>
+    <stop offset="1"    stop-color="#0b0f1a"/>
+  </linearGradient>
+
+  <!-- P2: opaque amber barrel -->
+  <linearGradient id="barrelAmber" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0"    stop-color="#3a1d05"/>
+    <stop offset="0.13" stop-color="#a05c11"/>
+    <stop offset="0.25" stop-color="#f0a23c"/>
+    <stop offset="0.31" stop-color="#ffd694"/>
+    <stop offset="0.38" stop-color="#d9861f"/>
+    <stop offset="0.70" stop-color="#8f4f0d"/>
+    <stop offset="1"    stop-color="#2c1504"/>
+  </linearGradient>
+  <linearGradient id="gripAmber" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0"    stop-color="#14100c"/>
+    <stop offset="0.22" stop-color="#332a22"/>
+    <stop offset="0.32" stop-color="#473a2e"/>
+    <stop offset="0.70" stop-color="#221b15"/>
+    <stop offset="1"    stop-color="#0d0a07"/>
+  </linearGradient>
+
+  <!-- desk laminate -->
+  <linearGradient id="deskBase" x1="0" y1="0" x2="0.35" y2="1">
+    <stop offset="0"   stop-color="#b8925f"/>
+    <stop offset="0.5" stop-color="#a07a4d"/>
+    <stop offset="1"   stop-color="#8a6740"/>
+  </linearGradient>
+
+  <filter id="woodGrain" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.0045 0.24" numOctaves="4" seed="7" result="n"/>
+    <feColorMatrix in="n" type="saturate" values="0"/>
+    <feComponentTransfer>
+      <feFuncA type="linear" slope="0.30" intercept="0"/>
+    </feComponentTransfer>
+  </filter>
+
+  <filter id="paperNoise" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3"/>
+    <feColorMatrix type="saturate" values="0"/>
+    <feComponentTransfer><feFuncA type="linear" slope="0.055"/></feComponentTransfer>
+  </filter>
+
+  <filter id="penShadow" x="-40%" y="-40%" width="180%" height="200%">
+    <feGaussianBlur stdDeviation="5.5"/>
+  </filter>
+  <filter id="deskDrop" x="-20%" y="-20%" width="140%" height="160%">
+    <feGaussianBlur stdDeviation="16"/>
+  </filter>
+  <filter id="glowSoft" x="-60%" y="-60%" width="220%" height="220%">
+    <feGaussianBlur stdDeviation="9"/>
+  </filter>
+  <filter id="specBlur" x="-50%" y="-60%" width="200%" height="220%">
+    <feGaussianBlur stdDeviation="2.1"/>
+  </filter>
+
+  <linearGradient id="sheen" x1="0.08" y1="0" x2="0.62" y2="1">
+    <stop offset="0"    stop-color="#fff" stop-opacity="0.10"/>
+    <stop offset="0.42" stop-color="#fff" stop-opacity="0.03"/>
+    <stop offset="0.75" stop-color="#000" stop-opacity="0.05"/>
+    <stop offset="1"    stop-color="#000" stop-opacity="0.12"/>
+  </linearGradient>
+
+  <radialGradient id="vignette" cx="0.5" cy="0.46" r="0.78">
+    <stop offset="0.45" stop-color="#000" stop-opacity="0"/>
+    <stop offset="0.80" stop-color="#000" stop-opacity="0.24"/>
+    <stop offset="1"    stop-color="#000" stop-opacity="0.55"/>
+  </radialGradient>
+
+  <radialGradient id="p1Glow" cx="0" cy="0.5" r="1">
+    <stop offset="0" stop-color="#5b8ce0" stop-opacity="0.55"/>
+    <stop offset="1" stop-color="#5b8ce0" stop-opacity="0"/>
+  </radialGradient>
+
+  <!-- ===================== PEN 1 · capped ballpoint, cobalt ===================== -->
+  <g id="penBlue">
+    <!-- metal tip cone + writing ball -->
+    <path d="M-220,0 L-203,-7 L-191,-9.4 L-191,9.4 L-203,7 Z" fill="url(#brass)"/>
+    <circle cx="-218.5" cy="0" r="2.1" fill="#d7dce2"/>
+    <!-- grip taper -->
+    <path d="M-191,-9.4 L-153,-12 L-153,12 L-191,9.4 Z" fill="url(#gripBlue)"/>
+    <!-- ink tube, seen through the translucent barrel -->
+    <rect x="-153" y="-1.9" width="256" height="3.8" rx="1.9" fill="#0a1b4a"/>
+    <!-- barrel -->
+    <rect x="-153" y="-12" width="274" height="24" fill="url(#barrelBlue)" opacity="0.92"/>
+    <!-- lengthwise specular -->
+    <rect x="-146" y="-8.4" width="258" height="2.6" rx="1.3" fill="#eaf2ff" opacity="0.62" filter="url(#specBlur)"/>
+    <!-- printed band -->
+    <rect x="-70" y="-12" width="4" height="24" fill="#0a1531" opacity="0.5"/>
+    <text x="-52" y="3.4" class="mono" font-size="8.4" letter-spacing="1.4"
+          fill="#dce8ff" opacity="0.5">PEN FIGHT · 0.7 FINE</text>
+    <!-- collar ring -->
+    <rect x="121" y="-13" width="9" height="26" rx="2" fill="url(#steel)"/>
+    <!-- cap -->
+    <path d="M130,-13 L201,-13 Q221,-13 221,0 Q221,13 201,13 L130,13 Z" fill="url(#capBlue)"/>
+    <rect x="136" y="-9.2" width="76" height="2.4" rx="1.2" fill="#cfe0ff" opacity="0.45" filter="url(#specBlur)"/>
+    <!-- clip -->
+    <path d="M141,-11 L141,-19.5 Q141,-22 146,-22 L200,-22 Q206,-22 206,-17 L206,-12.5
+             Q206,-10.8 203,-11.4 L203,-17 Q203,-19 199,-19 L147,-19 Q144,-19 144,-16.4 L144,-11 Z"
+          fill="url(#steel)"/>
+    <rect x="146" y="-20.4" width="52" height="1.5" rx="0.7" fill="#f2f6fa" opacity="0.6"/>
+  </g>
+
+  <!-- ===================== PEN 2 · retractable click pen, amber ===================== -->
+  <g id="penAmber">
+    <path d="M-214,0 L-198,-6.6 L-187,-9 L-187,9 L-198,6.6 Z" fill="url(#brass)"/>
+    <circle cx="-212.5" cy="0" r="2" fill="#d7dce2"/>
+    <!-- rubberised grip with moulded dots -->
+    <path d="M-187,-9 L-141,-11.6 L-141,11.6 L-187,9 Z" fill="url(#gripAmber)"/>
+    <g fill="#6d5a46" opacity="0.75">
+      <circle cx="-178" cy="-5" r="1.25"/><circle cx="-168" cy="-5.6" r="1.25"/>
+      <circle cx="-158" cy="-6" r="1.25"/><circle cx="-148" cy="-6.3" r="1.25"/>
+      <circle cx="-178" cy="1.2" r="1.25"/><circle cx="-168" cy="0.9" r="1.25"/>
+      <circle cx="-158" cy="0.6" r="1.25"/><circle cx="-148" cy="0.4" r="1.25"/>
+      <circle cx="-173" cy="6.4" r="1.25"/><circle cx="-163" cy="6" r="1.25"/>
+      <circle cx="-153" cy="5.6" r="1.25"/>
+    </g>
+    <!-- barrel, opaque, hex-faceted -->
+    <rect x="-141" y="-11.6" width="300" height="23.2" fill="url(#barrelAmber)"/>
+    <line x1="-141" y1="-4.6" x2="159" y2="-4.6" stroke="#2a1404" stroke-opacity="0.30" stroke-width="0.9"/>
+    <line x1="-141" y1="5.2"  x2="159" y2="5.2"  stroke="#2a1404" stroke-opacity="0.30" stroke-width="0.9"/>
+    <rect x="-134" y="-8" width="286" height="2.4" rx="1.2" fill="#fff3dc" opacity="0.58" filter="url(#specBlur)"/>
+    <text x="-96" y="3.2" class="mono" font-size="8.4" letter-spacing="1.5"
+          fill="#3a1d05" opacity="0.62">RETRACT 1.0 M</text>
+    <!-- metal end collar + plunger (the shape tell vs. pen 1) -->
+    <rect x="159" y="-11.6" width="26" height="23.2" fill="url(#steel)"/>
+    <rect x="185" y="-6.4" width="17" height="12.8" rx="2" fill="url(#steel)"/>
+    <rect x="202" y="-8.6" width="11" height="17.2" rx="3.4" fill="url(#barrelAmber)"/>
+    <!-- clip -->
+    <path d="M150,-10 L150,-18.6 Q150,-21 155,-21 L188,-21 Q194,-21 194,-16.2 L194,-11.8
+             Q194,-10.2 191,-10.8 L191,-16 Q191,-18 187,-18 L156,-18 Q153,-18 153,-15.6 L153,-10 Z"
+          fill="url(#steel)"/>
+    <rect x="157" y="-19.4" width="30" height="1.5" rx="0.7" fill="#f2f6fa" opacity="0.6"/>
+  </g>
+
+  <!-- silhouettes used only to cast the fake shadows -->
+  <g id="silBlue">
+    <rect x="-206" y="-13" width="412" height="26" rx="13" fill="#000"/>
+    <rect x="141" y="-22" width="65" height="11" rx="5" fill="#000"/>
+  </g>
+  <g id="silAmber">
+    <rect x="-200" y="-12.6" width="400" height="25" rx="12" fill="#000"/>
+    <rect x="150" y="-21" width="44" height="11" rx="5" fill="#000"/>
+  </g>
+</defs>
+<filter id="sh" x="-30%" y="-60%" width="160%" height="220%">
+  <feGaussianBlur stdDeviation="4.5"/>
+</filter>
+<g filter="url(#sh)">
+  <g transform="translate(220.0,48.0) scale(0.81633)">
+    <use href="#silAmber"/>
+  </g>
+</g>
+</svg>
