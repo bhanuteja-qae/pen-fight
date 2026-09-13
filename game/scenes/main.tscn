@@ -1,20 +1,29 @@
-[gd_scene load_steps=8 format=3 uid="uid://f1e2d3c4b5a6"]
+[gd_scene load_steps=10 format=3 uid="uid://f1e2d3c4b5a6"]
 
 [ext_resource type="Script" uid="uid://a2b3c4d5e6f7" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="Script" uid="uid://b3c4d5e6f7a8" path="res://scripts/pen_body.gd" id="2_pen"]
-[ext_resource type="Texture2D" uid="uid://c4d5e6f7a8b9" path="res://assets/table.png" id="3_table"]
-[ext_resource type="Texture2D" uid="uid://d5e6f7a8b9c1" path="res://assets/pen_red.png" id="4_red"]
-[ext_resource type="Texture2D" uid="uid://e6f7a8b9c1d2" path="res://assets/pen_blue.png" id="5_blue"]
+[ext_resource type="Texture2D" path="res://assets/table_v2.png" id="3_table"]
+[ext_resource type="Texture2D" path="res://assets/pen_red_v2.png" id="4_red"]
+[ext_resource type="Texture2D" path="res://assets/pen_blue_v2.png" id="5_blue"]
+[ext_resource type="Texture2D" path="res://assets/pen_shadow_v2.png" id="6_shadow"]
+[ext_resource type="Texture2D" path="res://assets/background_v2.png" id="7_bg"]
 
 [sub_resource type="CapsuleShape2D" id="pen_shape"]
-radius = 4.0
-height = 32.0
+radius = 10.0
+height = 76.0
 
 [sub_resource type="RectangleShape2D" id="table_bounds"]
 size = Vector2(1024, 512)
 
 [node name="Main" type="Node2D" unique_id=10001]
 script = ExtResource("1_main")
+
+[node name="Background" type="Sprite2D" parent="." unique_id=10017]
+texture = ExtResource("7_bg")
+z_index = -10
+
+[node name="CanvasModulate" type="CanvasModulate" parent="." unique_id=10018]
+color = Color(0.75, 0.74, 0.92, 1)
 
 [node name="Table" type="Node2D" parent="." unique_id=10002]
 position = Vector2(0, 0)
@@ -35,6 +44,11 @@ pen_id = "red"
 [node name="Sprite2D" type="Sprite2D" parent="PenRed" unique_id=10009]
 texture = ExtResource("4_red")
 
+[node name="Shadow" type="Sprite2D" parent="PenRed" unique_id=10019]
+texture = ExtResource("6_shadow")
+position = Vector2(6, 10)
+z_index = -1
+
 [node name="CollisionShape2D" type="CollisionShape2D" parent="PenRed" unique_id=10010]
 shape = SubResource("pen_shape")
 
@@ -47,6 +61,11 @@ pen_id = "blue"
 
 [node name="Sprite2D" type="Sprite2D" parent="PenBlue" unique_id=10012]
 texture = ExtResource("5_blue")
+
+[node name="Shadow" type="Sprite2D" parent="PenBlue" unique_id=10020]
+texture = ExtResource("6_shadow")
+position = Vector2(6, 10)
+z_index = -1
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="PenBlue" unique_id=10013]
 shape = SubResource("pen_shape")

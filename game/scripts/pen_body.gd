@@ -25,8 +25,10 @@ const SETTLE_ANGULAR_VEL := 0.4      # rad/s
 const SETTLE_DEBOUNCE := 0.25        # s
 
 ## Conservative fallback extents if the pen has no CollisionShape2D to read.
-const DEFAULT_PEN_RADIUS := 20.0
-const DEFAULT_PEN_HALF_LEN := 30.0
+## Matches the 96x20 v2 sprite geometry: CapsuleShape2D radius 10, height 76
+## (central segment 76 - 2*10 = 56 -> half-len 28).
+const DEFAULT_PEN_RADIUS := 10.0
+const DEFAULT_PEN_HALF_LEN := 28.0
 
 ## Give the table-resolution retry a ~2 s window at 60 Hz, then safely disable
 ## OOB detection (a missing table should never false-trigger an instant loss).
