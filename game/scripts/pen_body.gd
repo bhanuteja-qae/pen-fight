@@ -47,6 +47,10 @@ var _settled_emitted := false
 var _oob_emitted := false
 var _quiet_time := 0.0
 var _pending_impulse := Vector2.ZERO
+## Local-space point where the pending impulse lands (torque arm). Vector2.ZERO
+## = centre hit (pure slide, no spin). Populated by apply_flick from the grab
+## contact offset; consumed in _integrate_forces.
+var _pending_impulse_local_pos := Vector2.ZERO
 
 # Table bounds, resolved lazily (robust to the exact node names in main.tscn).
 var _table_rect := Rect2()
@@ -84,12 +88,18 @@ func _ready() -> void:
 ## emit this shape). MAX_IMPULSE converts that fraction into a real fireable
 ## impulse: power 1.0 travels ~70% of a 1120px table with mass 1.0 / damp ~2.1
 ## (docs/ART_AND_FEEL_SPEC.md §8: impulse ≈ distance × mass × damp).
-func apply_flick(impulse_dir: Vector2, power: float) -> void:
+##
+## `contact_offset` is the grab point along the pen's barrel as a fraction of
+## half-length (-1 = tip, 0 = centre, 1 = cap end). real pen-fight physics: an
+## off-centre grab with a drag direction SKEW to the barrel spins the pen as it
+## slides (torque = r × F); a centred grab is a clean slide. 0.0 = centre hit.
+func apply_flick(impulse_dir: Vector2, power: float, contact_offset: float = 0.0) -> void:
 	_in_flight = true
 	_settled_emitted = false
 	_oob_emitted = false
 	_quiet_time = 0.0
 	_pending_impulse = impulse_dir * power * MAX_IMPULSE
+	_pending_impulse_local_pos = Vector2.RIGHT * clampf(contact_offset, -1.0, 1.0) * _pen_half_len
 	flicked.emit(pen_id, _pending_impulse)
 
 
@@ -119,6 +129,29 @@ func is_out_of_bounds_test() -> bool:
 	return _oob_emitted
 
 
+## Geometry accessors for AimInput's capsule grab test (barrel half-length and
+## radius as resolved from the scene's CollisionShape2D).
+func get_half_len() -> float:
+	return _pen_half_len
+
+
+func get_radius() -> float:
+	return _pen_radius
+
+
+## Ground-truth flag for PhysicsDirectBodyState2D.apply_impulse's position
+## frame. SETTLED EMPIRICALLY by tests/impulse_offset_probe.gd: the position
+## is a WORLD-space point. LOCAL-frame readings (10.5 rad/s) missed the
+## analytic rod model (28.2 = 1600*170/(m*L^2/12)) by 1.9x; WORLD-frame readings
+## (27.9) match it within 1%. Do not flip without re-running the probe.
+const APPLY_IMPULSE_LOCAL_FRAME: bool = false
+
+
+## Local -> world point via the body's world transform.
+func _to_world(local_pos: Vector2) -> Vector2:
+	return get_global_transform() * local_pos
+
+
 # --- Physics ----------------------------------------------------------------------
 
 func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
@@ -126,8 +159,20 @@ func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
 		_try_resolve_table()
 
 	if _pending_impulse != Vector2.ZERO:
-		state.apply_central_impulse(_pending_impulse)
+		if _pending_impulse_local_pos == Vector2.ZERO:
+			state.apply_central_impulse(_pending_impulse)
+		else:
+			# Off-centre flick: apply at the grab point so an axis-skew drag
+			# produces torque (pen slides AND spins — real pen-fight). The
+			# position argument's frame (local vs world) is settled empirically
+			# by tests/impulse_offset_probe.gd; APPLY_IMPULSE_LOCAL_FRAME
+			# selects the interpretation (_integrate_forces has both below).
+			if APPLY_IMPULSE_LOCAL_FRAME:
+				state.apply_impulse(_pending_impulse, _pending_impulse_local_pos)
+			else:
+				state.apply_impulse(_pending_impulse, _to_world(_pending_impulse_local_pos))
 		_pending_impulse = Vector2.ZERO
+		_pending_impulse_local_pos = Vector2.ZERO
 
 	_update_settle(state)
 	_update_oob(state)

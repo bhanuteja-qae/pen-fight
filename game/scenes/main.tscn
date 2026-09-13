@@ -36,8 +36,8 @@ texture = ExtResource("3_table")
 shape = SubResource("table_bounds")
 
 [node name="PenRed" type="RigidBody2D" parent="." unique_id=10008]
-position = Vector2(-280, 0)
-rotation = 3.14159
+position = Vector2(-160, -80)
+rotation = 0.0
 mass = 1.0
 linear_damp = 2.0
 angular_damp = 4.0
@@ -60,7 +60,8 @@ shape = SubResource("pen_shape")
 rotation = 1.5707963
 
 [node name="PenBlue" type="RigidBody2D" parent="." unique_id=10011]
-position = Vector2(280, 0)
+position = Vector2(160, 80)
+rotation = 0.0
 mass = 1.0
 linear_damp = 2.0
 angular_damp = 4.0

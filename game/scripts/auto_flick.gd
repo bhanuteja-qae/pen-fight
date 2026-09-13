@@ -19,7 +19,7 @@ extends Node
 ## driver. (The old polling multi-round driver from the Phase 1a draft was
 ## replaced by this signal-based scheduler per the Phase 1b contract.)
 
-signal auto_flick_requested(player: String, impulse: Vector2)
+signal auto_flick_requested(player: String, impulse: Vector2, contact_offset: float)
 
 ## Master switch. Normal runs leave this false and AutoFlick is inert.
 var enabled: bool = false
@@ -80,7 +80,7 @@ func schedule_flick(player: String, impulse: Vector2, delay_sec: float) -> void:
 ## in the scene tree (defensive: a missing pen logs a warning and no-ops), then
 ## emits `auto_flick_requested` so the connected consumer (Main, or a test)
 ## routes it through the human-flick path.
-func fire_now(player: String, impulse: Vector2) -> void:
+func fire_now(player: String, impulse: Vector2, contact_offset: float = 0.0) -> void:
 	if not enabled:
 		return
 	if get_tree() == null:
@@ -94,7 +94,7 @@ func fire_now(player: String, impulse: Vector2) -> void:
 			"AutoFlick.fire_now: auto_flick_requested has no connected consumer — "
 			+ "Main must connect it (handle it like _on_flick_ready minus drag math)"
 		)
-	auto_flick_requested.emit(player, impulse)
+	auto_flick_requested.emit(player, impulse, contact_offset)
 
 func _on_scheduled_flick(player: String, impulse: Vector2) -> void:
 	if enabled:
@@ -117,8 +117,20 @@ func _fire_for_current_player() -> void:
 		var toward: Vector2 = opponent.global_position - shooter.global_position
 		if toward.length_squared() > 1.0:
 			direction = toward.normalized()
+			# Human-imperfect aim: a perfect aim along the barrel produces ZERO
+			# torque (torque = r × F, parallel ⇒ no spin), but real players
+			# flick with a slight skew, so the pen rotates as it slides. Add a
+			# small perpendicular jitter so the autoplay soak exercises the same
+			# corner-flick physics the human slingshot gets.
+			var jitter := _rng.randf_range(-0.35, 0.35)
+			direction = (direction + Vector2(-direction.y, direction.x) * jitter).normalized()
 	var power := _rng.randf_range(_min_power, _max_power)
-	fire_now(player, direction * power)
+	# Random grab offset along the barrel (-1..1): corner grabs with a skew
+	# drag make the pen slide AND rotate (the real pen-fight physics the human
+	# slingshot gets from touching the pen at any point). Randomizing it here
+	# means the autoplay soak exercises the same rotation path.
+	var contact := _rng.randf_range(-1.0, 1.0)
+	fire_now(player, direction * power, contact)
 
 func _other(player: String) -> String:
 	if player == "red":

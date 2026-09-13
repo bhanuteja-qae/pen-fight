@@ -18,7 +18,7 @@ extends Node2D
 ## the node per turn or call `set_active_zone()` to override it without moving
 ## the node.
 
-signal flick_ready(direction: Vector2, power: float)
+signal flick_ready(direction: Vector2, power: float, contact_offset: float)
 
 ## Hard turn-transition gate (docs §3.5 #1): when true, the pointer is fully
 ## ignored — no drag start, no release handling, no flick_ready emission. Main
@@ -31,14 +31,15 @@ var input_locked: bool = false
 @export var min_drag_pixels: float = 15.0
 ## Drag distance (px) that produces full power (1.0). Power is capped there.
 @export var max_drag_pixels: float = 160.0
-## Radius (px) around the zone center a press must land inside to start a drag.
-## 0 disables the check entirely (a press anywhere starts a drag).
-@export var press_zone_radius: float = 100.0
+## The active pen body. The grab zone is this pen's capsule (barrel + tip/cap
+## caps with a finger margin), NOT a small circle — the drag starts from
+## touching the pen at any point along its length (real pen-fight grab).
+var active_pen: PenBody = null
+## Extra radius beyond the pen barrel a press may start inside (finger width).
+@export var grab_margin_px: float = 26.0
 
 var _dragging: bool = false
 var _press_pos: Vector2 = Vector2.ZERO
-var _zone_center_override: Vector2 = Vector2.ZERO
-var _has_zone_override: bool = false
 
 func _unhandled_input(event: InputEvent) -> void:
 	if input_locked:
@@ -60,21 +61,44 @@ func _unhandled_input(event: InputEvent) -> void:
 
 ## Override the grab-zone center (default: this node's global_position).
 ## Pass radius >= 0 to also override press_zone_radius.
-func set_active_zone(center: Vector2, radius: float = -1.0) -> void:
-	_zone_center_override = center
-	_has_zone_override = true
-	if radius >= 0.0:
-		press_zone_radius = radius
+func set_active_pen(pen: PenBody) -> void:
+	active_pen = pen
+
+## True when `pos` is on or near the active pen: within grab_margin_px of the
+## pen's capsule (barrel segment + rounded end caps). The barrel axis is the
+## pen's local +X rotated by its world rotation; the capsule radius is added
+## to the finger margin so pressing the pen anywhere along its length starts
+## the flick (not just near a small centre zone).
+func _press_on_pen(pos: Vector2) -> bool:
+	if active_pen == null:
+		return true  # no pen resolved: accept any press (defensive)
+	var axis: Vector2 = Vector2.RIGHT.rotated(active_pen.global_rotation)
+	var center: Vector2 = active_pen.global_position
+	var half: float = active_pen.get_half_len()
+	var d: Vector2 = pos - center
+	var along: float = d.dot(axis)
+	# Clamp to the barrel segment, then distance to that clamped point must be
+	# within the capsule radius + finger margin.
+	var clamped: float = clampf(along, -half, half)
+	var nearest: Vector2 = center + axis * clamped
+	var reach: float = active_pen.get_radius() + grab_margin_px
+	return pos.distance_to(nearest) <= reach
+
+## Signed grab offset along the barrel in [-1, 1]: -1 = tip, 0 = centre,
+## +1 = cap end. Passed to PenBody.apply_flick so an off-centre grab with a
+## drag direction skew to the barrel spins the pen (real pen-fight corner
+## flick). Clamped so presses past the end still report the end (grab at the
+## very tip/cap counts as corner contact).
+func _contact_offset(pos: Vector2) -> float:
+	if active_pen == null:
+		return 0.0
+	var axis: Vector2 = Vector2.RIGHT.rotated(active_pen.global_rotation)
+	var d: Vector2 = pos - active_pen.global_position
+	var along: float = d.dot(axis)
+	return clampf(along / active_pen.get_half_len(), -1.0, 1.0)
 
 func _press_in_zone(pos: Vector2) -> bool:
-	if press_zone_radius <= 0.0:
-		return true
-	return pos.distance_to(_zone_center()) <= press_zone_radius
-
-func _zone_center() -> Vector2:
-	if _has_zone_override:
-		return _zone_center_override
-	return global_position
+	return _press_on_pen(pos)
 
 func _release(release_pos: Vector2) -> void:
 	var drag: Vector2 = release_pos - _press_pos
@@ -83,4 +107,6 @@ func _release(release_pos: Vector2) -> void:
 		return  # short drag = cancel gesture, emit nothing
 	var direction: Vector2 = (-drag).normalized()  # pull back -> flick forward
 	var power: float = clampf(dist / max_drag_pixels, 0.0, 1.0)
-	flick_ready.emit(direction, power)
+	# Where the flick was actually grabbed on the pen (-1..1 along the barrel).
+	var contact_offset: float = _contact_offset(_press_pos)
+	flick_ready.emit(direction, power, contact_offset)

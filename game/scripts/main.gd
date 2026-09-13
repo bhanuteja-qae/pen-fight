@@ -233,7 +233,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			_on_gate_tapped()
 
 
-func _on_flick_ready(direction: Vector2, power: float) -> void:
+func _on_flick_ready(direction: Vector2, power: float, contact_offset: float) -> void:
 	# Gate: never apply a flick while the turn-transition gate is up, even if
 	# the phase is AIM (a settle handoff waits for the tap-to-continue).
 	if _input_locked:
@@ -244,12 +244,13 @@ func _on_flick_ready(direction: Vector2, power: float) -> void:
 	# no-ops while locked/ROUND_OVER and the pen must not get an impulse either.
 	if str(turn_state.state().get("phase", "")) != TurnState.PHASE_AIM:
 		return
-	# AimInput gives a slingshot pull vector (direction + power). TurnState
-	# records the impulse; the active pen receives direction+power for physics.
+	# AimInput gives a slingshot pull vector (direction + power) plus the grab
+	# offset along the barrel. TurnState records the impulse; the active pen
+	# receives direction+power+contact for physics (off-centre grabs spin).
 	turn_state.on_flick(direction * power)
 	var pen := _active_pen()
 	if pen != null:
-		pen.apply_flick(direction, power)
+		pen.apply_flick(direction, power, contact_offset)
 
 
 func _active_pen() -> PenBody:
@@ -267,7 +268,7 @@ func _active_pen() -> PenBody:
 ## Duplicate-routing guard: the same AIM/current-player checks as the human
 ## path, so even if another consumer also connected the signal, exactly one
 ## application can land.
-func _on_auto_flick_requested(player: String, impulse: Vector2) -> void:
+func _on_auto_flick_requested(player: String, impulse: Vector2, contact_offset: float = 0.0) -> void:
 	if _input_locked:
 		return
 	if turn_state == null:
@@ -280,14 +281,14 @@ func _on_auto_flick_requested(player: String, impulse: Vector2) -> void:
 	turn_state.on_flick(impulse)
 	var pen := _active_pen()
 	if pen != null:
-		pen.apply_flick(impulse.normalized(), impulse.length())
+		pen.apply_flick(impulse.normalized(), impulse.length(), contact_offset)
 
 
-## Keep AimInput's drag zone centered on the active pen each AIM frame.
+## Keep AimInput's grab zone on the active pen's capsule each AIM frame.
 func _sync_aim_zone() -> void:
 	var pen := _active_pen()
 	if pen != null:
-		aim_input.set_active_zone(pen.global_position, 110.0)
+		aim_input.set_active_pen(pen)
 
 
 ## Fired by PenBody.out_of_bounds AFTER TurnState.on_out_of_bounds has already

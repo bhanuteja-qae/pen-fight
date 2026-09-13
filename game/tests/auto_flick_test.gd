@@ -121,7 +121,7 @@ func _edge_impulse(pen: PenBody) -> Vector2:
 ## Mirror Main._on_flick_ready minus the slingshot drag math: record the
 ## impulse in TurnState and apply it to the pen. Guarded on AIM so a duplicate
 ## routing (if Main also connected the signal) can never double-fire.
-func _on_auto_flick_requested(player: String, impulse: Vector2) -> void:
+func _on_auto_flick_requested(player: String, impulse: Vector2, contact_offset: float = 0.0) -> void:
 	if _turn_state == null:
 		return
 	var snapshot: Dictionary = _turn_state.state()
@@ -133,7 +133,7 @@ func _on_auto_flick_requested(player: String, impulse: Vector2) -> void:
 	_turn_state.on_flick(impulse)
 	var pen := _find_pen(player)
 	if pen != null:
-		pen.apply_flick(impulse.normalized(), impulse.length())
+		pen.apply_flick(impulse.normalized(), impulse.length(), contact_offset)
 
 
 func _find_pen(player: String) -> PenBody:
