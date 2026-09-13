@@ -50,6 +50,16 @@ var _game_over_printed: bool = false
 ## Guards the ceremony (shake/hit-stop) so it fires exactly once per decided
 ## round, no matter which path decided it (OOB or forfeit).
 var _ceremony_fired: bool = false
+## Autoplay: the player a flick is currently armed for — re-arm only when the
+## AIM turn hands to a NEW player (a same-player re-arm would stack timers).
+var _autoplay_armed_player: String = ""
+## Autoplay soak-test: accumulated seconds spent OUTSIDE the AIM phase (see the
+## stall detector in _process). Zeroed whenever AIM is reached.
+var _autoplay_outside_aim: float = 0.0
+## Autoplay soak-test: after this many consecutive non-AIM seconds, log the
+## full machine state (the 100-round soak found stalls the 20-round gate
+## missed — a stall must be diagnosable, not silent).
+const AUTOPLAY_STALL_SECONDS: float = 5.0
 
 const FORFEIT_TIMEOUT: float = 4.0
 ## World-space table rect; must match the TableBounds node geometry in main.tscn.
@@ -137,11 +147,12 @@ func _ready() -> void:
 		_auto_flick = AutoFlick.new()
 		add_child(_auto_flick)
 		_auto_flick.setup(self)
-		# Knockout-scale impulses, not human power [0,1]: impulse 1 -> ~1 px/s
-		# (measured via tests/impulse_probe.gd), so human-scale flicks can never
-		# leave the table and autoplay rounds stall at the turn gate. 2e4..1.2e5
-		# gives 20k..120k px/s — reliably off-table in a few physics frames.
-		_auto_flick.set_random_power(20000.0, 120000.0, randi())
+		# Human-scale power 0.5..1.0: apply_flick multiplies by MAX_IMPULSE
+		# internally, so a fraction here = a real fireable impulse (~800..1600,
+		# travelling ~40-70 % of the table). Older absolute ranges (2e4..1.2e5)
+		# were pre-MAX_IMPULSE and double-scale today (3.2e7..1.9e8 -> instant
+		# off-table ejects every round).
+		_auto_flick.set_random_power(0.5, 1.0, randi())
 		# Contract wiring (phase1b-contract §Agent F): Main connects the signal
 		# and handles it exactly like _on_flick_ready minus the drag math. The
 		# harness only emits; without this connection autoplay flicks are inert
@@ -182,6 +193,30 @@ func _process(delta: float) -> void:
 	if phase == TurnState.PHASE_AIM:
 		_sync_aim_zone()
 	_check_game_over()
+	# Autoplay driver: keep rounds coming without a human.
+	# 1) Auto-tap ANY showing gate — a decided round's ROUND_OVER gate AND a
+	#    settle-handoff gate (both pens stayed on -> next player's turn). Random
+	#    flicks miss; without this the game parks forever at the settle gate.
+	# 2) On a fresh AIM turn (player changed), re-arm the next flick.
+	if _auto_flick != null and _auto_flick.enabled:
+		if _gate_showing:
+			_on_gate_tapped()
+		var cur: String = str(st.get("current_player", ""))
+		if phase == TurnState.PHASE_AIM and cur != "" and cur != _autoplay_armed_player:
+			_autoplay_armed_player = cur
+			_auto_flick.arm(1.0)
+		# Soak-test stall detector (autoplay only): a functioning loop cycles
+		# through AIM frequently. If we sit outside AIM for STALL_THRESHOLD
+		# seconds, print the full machine state instead of silently idling —
+		# that pinpoints soak-only bugs (settle edge, gate deadlock, missed
+		# handoff) that the 20-round gate never triggers.
+		_autoplay_outside_aim += delta if phase != TurnState.PHASE_AIM else -_autoplay_outside_aim
+		_autoplay_outside_aim = maxf(_autoplay_outside_aim, 0.0)
+		if _autoplay_outside_aim >= AUTOPLAY_STALL_SECONDS:
+			print("[AUTOPLAY STALL] phase=%s cur=%s armed=%s gate=%s pens red=(%s) blue=(%s)" % [
+				phase, cur, _autoplay_armed_player, _gate_showing,
+				_dbg_pen(pen_red), _dbg_pen(pen_blue)])
+			_autoplay_outside_aim = 0.0
 
 
 ## TurnGate input: a mouse tap anywhere dismisses the gate and resumes. The F
@@ -357,3 +392,10 @@ func _on_gate_tapped() -> void:
 ## Human-readable player name for the gate prompt ("red" -> "Red").
 func _display_name(pen_id: String) -> String:
 	return pen_id.capitalize()
+
+
+## Autoplay soak-test: compact pen state for the stall log.
+## "v=<px/s> oob=<bool> inflight=<bool>".
+func _dbg_pen(pen: PenBody) -> String:
+	var v: float = pen.linear_velocity.length()
+	return "v=%.1f oob=%s inflight=%s" % [v, pen.is_out_of_bounds_test(), pen.is_in_flight_test()]

@@ -110,6 +110,15 @@ func reset() -> void:
 	reset_physics_interpolation()
 
 
+## Debug/soak-test accessors (used by Main's autoplay stall detector).
+func is_in_flight_test() -> bool:
+	return _in_flight
+
+
+func is_out_of_bounds_test() -> bool:
+	return _oob_emitted
+
+
 # --- Physics ----------------------------------------------------------------------
 
 func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:

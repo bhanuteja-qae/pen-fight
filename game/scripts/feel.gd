@@ -20,6 +20,7 @@ extends Node
 ## it is missing the node is simply ignored — no crash, no shake.
 
 const MAX_OFFSET: float = 10.0        # px of camera offset at trauma = 1.0
+const MAX_ROLL_DEG: float = 3.0       # camera roll at trauma = 1.0 (docs §9 #2)
 const TRAUMA_DECAY: float = 2.0       # trauma per second (docs: 1.5-2.5/s)
 const HIT_STOP_TIME_SCALE: float = 0.02
 const HIT_STOP_MIN_FRAMES: int = 2
@@ -60,6 +61,7 @@ func reset() -> void:
 	Engine.time_scale = 1.0
 	if _camera != null:
 		_camera.offset = Vector2.ZERO
+		_camera.rotation = 0.0
 
 
 ## Per-frame driver, called by Main._process. Decays trauma (note: during a
@@ -90,5 +92,8 @@ func _tick_shake(delta: float) -> void:
 			_rng.randf_range(-1.0, 1.0),
 			_rng.randf_range(-1.0, 1.0)
 		) * MAX_OFFSET * strength
+		# Trauma² roll (docs §9 #2): pitch the camera up to 3° at max trauma.
+		_camera.rotation = deg_to_rad(MAX_ROLL_DEG) * strength * _rng.randf_range(-1.0, 1.0)
 	else:
 		_camera.offset = Vector2.ZERO
+		_camera.rotation = 0.0

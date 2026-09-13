@@ -107,9 +107,23 @@ func _fire_for_current_player() -> void:
 	if player == "":
 		push_warning("AutoFlick.arm: no active player at fire time — flick not scheduled")
 		return
-	var direction := Vector2.from_angle(_rng.randf_range(0.0, TAU))
+	# Aim at the OPPONENT pen (the way a human plays) — random directions mostly
+	# miss, leaving both pens settled and stalling the round at the handover
+	# gate. Aim + random power = real rounds with knockouts and settles.
+	var shooter := _find_pen(player)
+	var opponent := _find_pen(_other(player))
+	var direction: Vector2 = Vector2.RIGHT
+	if shooter != null and opponent != null:
+		var toward: Vector2 = opponent.global_position - shooter.global_position
+		if toward.length_squared() > 1.0:
+			direction = toward.normalized()
 	var power := _rng.randf_range(_min_power, _max_power)
 	fire_now(player, direction * power)
+
+func _other(player: String) -> String:
+	if player == "red":
+		return "blue"
+	return "red"
 
 func _current_player() -> String:
 	if _main == null:
