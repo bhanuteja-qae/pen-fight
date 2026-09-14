@@ -118,7 +118,7 @@ with the unwritten co-presence priority (`:166-175`) counted where the item serv
 |---|---:|---:|---:|---:|---|---|
 | A1 persistence | 5 | 1 | 5 | 1 | now | Convergence of both audits; ~20 lines on existing `ConfigFile` + gate string |
 | A2 skin name | 3 | 1 | 5 | 1 | now | Labelling; makes the playtest instrument honest |
-| A3 alternation labels | 3 | 1 | 5 | 1 | now | Labelling + one missing test case; fixes a phantom momentum variable |
+| A3 alternation labels | 3 | 1 | 5 | 1 | now | Labelling + one missing test case; pins the convention and corrects a misnamed (not phantom) momentum effect |
 | A4 dead constants | 1 | 1 | 3 | 1 | now | Hygiene; no player-facing change |
 | A5 spin-arc line | 2 | 1 | 4 | 1 | now | Docs only; protects Pillar 2's boundary |
 | B1 3-cue turn system | 2 | 3 | 4 | 3 | next | Feel claim unvalidated; risks adding ceremony against Pillar 5 |

@@ -102,21 +102,29 @@ const PEN_SPRITE_SCALE: float = 1.0 / 3.0
 ## Pen skin selection (Phase 1c): each player picks a pen DESIGN to play with.
 ## Only two pens are ever on the table — the extra designs are preference
 ## options, not extra players. Each skin carries its own shadow so the
-## silhouette can never drift from the pen.
+## silhouette can never drift from the pen, and its own display NAME so the
+## gate and the verdict can only ever name the pen that is actually in the
+## scene (docs/design/core-loop.md finding 4). Names stay colour words that
+## match the art — never "Red"/"Blue", which would contradict the CVD-safe
+## naming the sprites were chosen for.
 const PEN_SKINS: Dictionary = {
 	"amber": {
+		"name": "Amber",
 		"pen": "res://assets/pen_amber.png",
 		"shadow": "res://assets/pen_amber_shadow.png",
 	},
 	"cobalt": {
+		"name": "Cobalt",
 		"pen": "res://assets/pen_cobalt.png",
 		"shadow": "res://assets/pen_cobalt_shadow.png",
 	},
 	"graphite": {
+		"name": "Graphite",
 		"pen": "res://assets/pen_graphite.png",
 		"shadow": "res://assets/pen_graphite_shadow.png",
 	},
 	"ivory": {
+		"name": "Ivory",
 		"pen": "res://assets/pen_ivory.png",
 		"shadow": "res://assets/pen_ivory_shadow.png",
 	},
@@ -520,8 +528,9 @@ func _update_gate(st: Dictionary, phase: String) -> void:
 		_show_gate("%s's turn — tap to continue" % _display_name(cur))
 	elif phase == TurnState.PHASE_ROUND_OVER:
 		# Decided round (OOB winner or forfeit). The prompt carries the running
-		# match score; the tap either continues the match (winner first) or, once
-		# a player has reached rounds_to_win(), starts a fresh match.
+		# match score; the tap either continues the match — the next round starts
+		# with whoever did not flick last, see TurnState.continue_to_next_round()
+		# — or, once a player has reached rounds_to_win(), starts a fresh match.
 		var winner: String = _display_name(str(st.get("winner", "unknown")))
 		var score: String = "%d-%d" % [int(_round_wins.get("red", 0)), int(_round_wins.get("blue", 0))]
 		if _match_over:
@@ -554,7 +563,9 @@ func _show_gate(text: String) -> void:
 ## TurnGate.tapped (or F key): acknowledge the handoff and resume.
 ## - Turn handoff (AIM): unlock, remember this player is gated, sync the zone.
 ## - Decided round (ROUND_OVER): reset both pens, begin the next round with the
-##   winner first (ceremony skip: feel.reset() clears any hit-stop freeze).
+##   player who did not flick last (strict alternation — the round winner on a
+##   self-OOB loss, the loser on a knockout; ceremony skip: feel.reset() clears
+##   any hit-stop freeze).
 ## _input_locked is cleared so the active player can flick immediately.
 func _on_gate_tapped() -> void:
 	if turn_state == null or not _gate_showing:
@@ -602,7 +613,10 @@ func _apply_settings() -> void:
 	if haptics != null:
 		haptics.set_enabled(settings_store.haptics_on)
 	if settings_screen != null:
-		settings_screen.refresh()
+		# The sheet names each player after the design that slot is playing, so
+		# the rows follow a skin change instead of freezing on the default art
+		# (item A2). bind() re-applies the names and refreshes the sheet.
+		settings_screen.bind(settings_store, _display_name("red"), _display_name("blue"))
 
 
 ## A settings row was tapped. Mutates the store, re-applies it, persists, and
@@ -654,20 +668,19 @@ func settings_open() -> bool:
 	return settings_screen != null and settings_screen.is_open()
 
 
-## Human-readable player name for the gate prompt. Must match what the player
-## SEES on screen: the default sprites are amber (red slot) and cobalt (blue
-## slot), so "red" -> "Amber", "blue" -> "Cobalt" (review, UX-3: gate text must
-## not contradict the art — CVD-hostile confusion otherwise). If a skin env
-## override changes the art, names stay generic but consistent with the fixed
-## sprite set; P1/P2 relabeling is a UI-layer choice, not this constant.
+## Human-readable player name for the gate prompt, the verdict, the turn cue and
+## the settings rows. Must match what the player SEES on screen (review, UX-3:
+## gate text must not contradict the art — CVD-hostile confusion otherwise), so
+## the name follows the pen DESIGN that slot is actually playing rather than a
+## fixed default: with graphite or ivory selectable, the old hardcoded map could
+## name a pen that is not in the scene (docs/design/core-loop.md finding 4).
+## Names stay colour words matching the art — never "Red"/"Blue". An unknown
+## slot id falls back to its capitalised form.
 func _display_name(pen_id: String) -> String:
-	match pen_id:
-		"red":
-			return "Amber"
-		"blue":
-			return "Cobalt"
-		_:
-			return pen_id.capitalize()
+	var skin: String = str(_player_skins.get(pen_id, ""))
+	if PEN_SKINS.has(skin):
+		return str(PEN_SKINS[skin].get("name", skin.capitalize()))
+	return pen_id.capitalize()
 
 
 ## Autoplay soak-test: compact pen state for the stall log.

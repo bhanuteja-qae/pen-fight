@@ -3,8 +3,9 @@ class_name TurnStateTest
 ## Deterministic headless unit tests for TurnState (pure logic, Phase 1b).
 ## No randomness. Covers: begin_turn advancement, on_flick AIM->IN_FLIGHT,
 ## on_out_of_bounds winner resolution parking in ROUND_OVER, on_settled
-## next-turn advancement, forfeit_tick timeout, continue_to_next_round (winner
-## starts), stale/duplicate-event guards, and the table-rect geometric helper.
+## next-turn advancement, forfeit_tick timeout, continue_to_next_round (strict
+## alternation — the self-OOB case AND the knockout case), stale/duplicate-event
+## guards, and the table-rect geometric helper.
 ##
 ## Run headless (project root is game/):
 ##   godot --headless --path game --script res://tests/turn_state_test.gd
@@ -40,7 +41,8 @@ static func run_tests() -> bool:
 	_test_forfeit_timeout(failures)
 	_test_forfeit_boundary(failures)
 	_test_stale_and_duplicate_events_ignored(failures)
-	_test_continue_to_next_round_winner_starts(failures)
+	_test_continue_flicker_loses_winner_starts(failures)
+	_test_continue_knockout_loser_starts(failures)
 	_test_continue_cycles_red_blue(failures)
 	_test_continue_requires_round_over(failures)
 	_test_table_rect_helper(failures)
@@ -253,7 +255,9 @@ static func _test_stale_and_duplicate_events_ignored(failures: Array[String]) ->
 	ts2.on_settled("red")
 	_check(failures, ts2.state()["current_player"] == "blue", "stale settle does not double-advance")
 
-static func _test_continue_to_next_round_winner_starts(failures: Array[String]) -> void:
+## Flicker LOSES (self-OOB — the common case here): the winner starts the next
+## round, because strict alternation hands the turn to whoever did not flick last.
+static func _test_continue_flicker_loses_winner_starts(failures: Array[String]) -> void:
 	var ts = _new_ts()
 	ts.begin_turn()                    # round 1: red starts
 	ts.on_flick(Vector2(1, 0))
@@ -264,10 +268,29 @@ static func _test_continue_to_next_round_winner_starts(failures: Array[String]) 
 	ts.continue_to_next_round()
 	var s: Dictionary = ts.state()
 	_check(failures, s["phase"] == TurnStateScript.PHASE_AIM, "continue -> AIM")
-	_check(failures, s["current_player"] == "blue", "round winner starts the next round")
+	_check(failures, s["current_player"] == "blue",
+		"self-OOB: the round winner starts the next round (alternation coincides here)")
 	_check(failures, s["round_over"] == false, "round_over cleared after continue")
 	_check(failures, s["winner"] == "", "winner cleared after continue")
 	_check(failures, s["loser"] == "", "loser cleared after continue")
+
+
+## Flicker WINS (knocked the other pen off): strict alternation hands the next
+## round to the LOSER. This is the case the old "winner starts the next round"
+## label got wrong; it is pinned here so the convention cannot drift silently.
+static func _test_continue_knockout_loser_starts(failures: Array[String]) -> void:
+	var ts = _new_ts()
+	ts.begin_turn()                    # round 1: red starts
+	ts.on_flick(Vector2(1, 0))
+	ts.on_out_of_bounds("blue")        # red flicked and knocked blue off -> red wins
+	ts.resolve_pending_oob()
+	_check(failures, ts.state()["phase"] == TurnStateScript.PHASE_ROUND_OVER, "knockout parks in ROUND_OVER")
+	_check(failures, ts.state()["winner"] == "red", "red is the round winner on a knockout")
+	ts.continue_to_next_round()
+	var s: Dictionary = ts.state()
+	_check(failures, s["phase"] == TurnStateScript.PHASE_AIM, "knockout: continue -> AIM")
+	_check(failures, s["current_player"] == "blue",
+		"knockout: the LOSER starts the next round (strict alternation, not winner-first)")
 
 static func _test_continue_cycles_red_blue(failures: Array[String]) -> void:
 	var ts = _new_ts()

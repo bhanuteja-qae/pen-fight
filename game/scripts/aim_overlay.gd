@@ -36,6 +36,16 @@ extends Node2D
 ## No-op when idle: _draw() returns immediately unless show_drag() has been
 ## fed a live drag since the last clear(). Main drives it per frame with
 ## set_pen(pen) + show_drag(aim_input.get_drag_info()) and clear() on reset.
+##
+## PREDICTION BOUNDARY (design pillar 2 — "Unassisted Geometry", see
+## docs/design/design-pillars.md): the overlay may show the player what their OWN
+## grip is doing — heading, power, and the spin the grab offset will produce —
+## and must NEVER show what the shot will DO: no predicted path, no endpoint, no
+## prior-shot ghost trail, no bank line. The spin arc is inside the line because
+## it reads out the player's input; the launch cone's open far end exists for the
+## same reason ("reads as direction, not predicted path"). A change that draws
+## where the pen will END UP crosses the line and deletes the skill expression
+## this game is built on. If you are adding to the overlay, re-read this first.
 
 const FONT_SIZE: int = 11
 

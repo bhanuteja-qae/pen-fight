@@ -13,17 +13,23 @@ extends RefCounted
 ## the table only advances the turn to the next player (`on_settled` ->
 ## `begin_turn`).
 ##
-## Contract phases: AIM, IN_FLIGHT, SETTLED, FORFEIT, GAME_OVER, ROUND_OVER.
+## Shipped phases: AIM, IN_FLIGHT, SETTLED, ROUND_OVER. The phase contract also
+## named FORFEIT and GAME_OVER (docs/phase05-contract.md:35); neither was ever
+## assigned in the shipped build — a forfeit parks in PHASE_ROUND_OVER like any
+## other decided round — so those two constants were deleted rather than left as
+## dead vocabulary a future reader would trust. Add them back only alongside the
+## code that assigns them.
 ## Decided rounds (OOB winner or forfeit) PARK in PHASE_ROUND_OVER — nothing
 ## auto-advances; Main shows the tap-to-continue gate and calls
-## continue_to_next_round() to start the next round (winner first).
+## continue_to_next_round(), which starts the next round with the player who did
+## NOT flick last (strict alternation — see begin_turn()). That is the round
+## winner whenever the flicker lost, which is the common case here because
+## self-OOB ends most rounds; on a knockout it is the loser.
 
-# Phase constants (contract: phase in {AIM, IN_FLIGHT, SETTLED, FORFEIT, GAME_OVER, ROUND_OVER}).
+# Phase constants (shipped set — see the class doc above).
 const PHASE_AIM: String = "AIM"
 const PHASE_IN_FLIGHT: String = "IN_FLIGHT"
 const PHASE_SETTLED: String = "SETTLED"
-const PHASE_FORFEIT: String = "FORFEIT"
-const PHASE_GAME_OVER: String = "GAME_OVER"
 const PHASE_ROUND_OVER: String = "ROUND_OVER"
 
 var _pens: Array[String] = []
@@ -103,10 +109,12 @@ func begin_turn() -> void:
 	_decided_by_oob = false
 
 ## Round-over gate (docs §3.5 #1): the ONLY way out of PHASE_ROUND_OVER.
-## Caller (Main's tap-to-continue) invokes this after a decided round. The
-## winner starts the next round: begin_turn() cycles to the next player (the
-## round winner when the starter lost, which is the hot-seat convention) and
-## clears the round-over bookkeeping. Any other phase is a no-op.
+## Caller (Main's tap-to-continue) invokes this after a decided round. The next
+## round starts with whoever did NOT flick last — begin_turn() advances the index
+## by one (strict alternation, the hot-seat convention). That is the round winner
+## when the flicker lost, which is the common case (self-OOB ends most rounds),
+## and the loser when the flicker knocked the other pen out. Also clears the
+## round-over bookkeeping. Any other phase is a no-op.
 func continue_to_next_round() -> void:
 	if _phase != PHASE_ROUND_OVER:
 		return

@@ -26,8 +26,9 @@ winner — no gate, no ceremony.
 ROUND_OVER is the ONLY place a decided round (OOB winner or forfeit) rests:
 - nothing auto-advances; Main locks aim input (AimInput.input_locked = true)
   and shows the centered "TAP TO CONTINUE" prompt.
-- `continue_to_next_round()` -> begin_turn(): winner starts the next round
-  (hot-seat cycling — the player who started round N sits out until round N+1).
+- `continue_to_next_round()` -> begin_turn(): the next round starts with the
+  player who did NOT flick last (strict alternation in `begin_turn()`; that is
+  the round winner when the flicker lost, and the loser on a knockout).
 - state() exposes winner / loser / round_winner / round_over.
 - on_flick / forfeit_tick are no-ops while parked.
 

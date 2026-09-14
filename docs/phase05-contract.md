@@ -32,7 +32,10 @@ engine concurrently — the `.godot/` import cache races).
 
 ### TurnState (Agent C) — pure logic, NO Node2D/scene-tree/physics deps
 - Constructor args: pens list, forfeit_timeout. Internal: `current_player`, `phase`
-  (`AIM`, `IN_FLIGHT`, `SETTLED`, `FORFEIT`, `GAME_OVER`)
+  (`AIM`, `IN_FLIGHT`, `SETTLED`, `ROUND_OVER`). The `FORFEIT` / `GAME_OVER` phases
+  named here are **not shipped**: neither is assigned anywhere in the build, and a
+  forfeit parks in `ROUND_OVER` like every other decided round. Their constants were
+  deleted from `turn_state.gd`; re-add them only with the code that assigns them.
 - `func begin_turn() -> void`, `func on_flick(impulse: Vector2) -> void`
 - `func on_settled(pen_uid: String) -> void` — resolve win geometry vs table rect
 - `func on_out_of_bounds(pen_uid: String) -> void` — winner decided HERE, geometrically,

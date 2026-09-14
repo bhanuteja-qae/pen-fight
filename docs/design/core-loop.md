@@ -146,13 +146,19 @@ the last three are structural hygiene.
   contradiction. It is a labelling problem: the shorthand "winner starts" holds
   in only one of the two outcomes, and the single assertion that carries it
   (`turn_state_test.gd:267`) passes only because its flicker also lost.
-- **Consequence:** alternation is the real, deliberate convention, so the 4–16
-  blue lead in the headless gate **cannot** be "winner-starts momentum"
-  (`docs/handoff-2026-09-14.md` §5). Whatever the imbalance is, it is not that —
-  if it is structural at all it is first-flick/one-tempo advantage at round
-  start, and the attribution should be corrected (or dropped, given the harness
-  drives both sides with the same auto-flick policy) before it reaches a human
-  playtest.
+- **Consequence — CORRECTED against evidence (20-round gate log, 2026-09-14):** the
+  convention is strict alternation, so "winner starts" is a **misnomer, not a myth**.
+  The two coincide whenever the *flicker* lost — the common case here, because
+  self-OOB ends most rounds — and diverge on a **knockout**, where the next start
+  goes to the player who was just knocked out. That divergence is what produces
+  streaks: a knockout by X hands the next round to the player X just beat, who then
+  tends to lose too, so the same winner repeats. The observed 4–16 split is
+  therefore streak-driven, and the 20-round log shows it directly — winners do not
+  alternate (`blue, red, red, red`, then twelve blue wins in a row, then red), which
+  can only happen through knockouts. So the handoff's attribution
+  (`docs/handoff-2026-09-14.md` §5) is right about the *effect* and wrong about the
+  *name*; what a human should be asked is whether a long streak reads as
+  unfairness — a playtest question, not a code bug.
 - **Change:** keep alternation (fairer for hot-seat), make the label true: change
   "winner starts" to "the player who did not flick last starts" in `main.gd:516`
   and `main.gd:537`, `turn_gate.md:29`, and the test message; then add the

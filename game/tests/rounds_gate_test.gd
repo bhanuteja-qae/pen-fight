@@ -85,7 +85,7 @@ func _on_physics_frame() -> void:
 		return
 	var snapshot: Dictionary = _turn_state.state()
 	var phase: String = str(snapshot.get("phase", ""))
-	if phase == TurnState.PHASE_ROUND_OVER or phase == TurnState.PHASE_GAME_OVER:
+	if phase == TurnState.PHASE_ROUND_OVER:
 		_on_round_over(snapshot)
 		return
 	_schedule_for_active_player(snapshot)
@@ -222,11 +222,17 @@ func _finish(passed: bool, detail: String) -> void:
 	var blue_wins: int = _wins.get("blue", 0)
 	# Balance floor (review, QA-1): both sides must WIN at least once. A 0/N
 	# split means one side can literally never win — a real regression. Note
-	# the observed 4/16-type splits are winner-starts MOMENTUM (the seeded
-	# first winner shoots first next round; pre-resize the same seed gave
-	# 13/7), not left/right asymmetry — the test drives both sides identically
-	# from point-symmetric spawns. So the floor is >= 1, not a 50/50
-	# expectation; the split itself is printed for the balance watch.
+	# the observed 4/16-type splits are streak-driven (pre-resize the same seed
+	# gave 13/7), not left/right asymmetry: the test drives both sides
+	# identically from point-symmetric spawns, so a structural side advantage is
+	# ruled out by construction. The round-start convention is strict
+	# alternation (TurnState.begin_turn — whoever did not flick last starts),
+	# which hands the next round to the winner in the common self-OOB case and
+	# to the loser on a knockout, so a winner only keeps the tempo when the
+	# flicker lost. The floor is therefore >= 1, not a 50/50 expectation; the
+	# split itself is printed for the balance watch, and whether it reads as
+	# unfairness to a human is the playtest question in
+	# docs/handoff-2026-09-14.md §5.
 	var both_sides_won: bool = red_wins >= 1 and blue_wins >= 1
 	if passed and not both_sides_won:
 		print("rounds_gate_test: BALANCE FAIL — one side never won (red=%d blue=%d) — "

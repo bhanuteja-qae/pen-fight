@@ -77,9 +77,10 @@ func _on_physics_frame() -> void:
 		return
 	var snapshot: Dictionary = _turn_state.state()
 	var phase: String = str(snapshot.get("phase", ""))
-	# A decided round parks in ROUND_OVER (OOB knockout or forfeit). Accept the
-	# legacy GAME_OVER phase too in case a merged TurnState still uses it.
-	if phase == TurnState.PHASE_ROUND_OVER or phase == TurnState.PHASE_GAME_OVER:
+	# A decided round parks in ROUND_OVER (OOB knockout or forfeit). PHASE_FORFEIT
+	# and PHASE_GAME_OVER no longer exist — never assigned in the shipped build,
+	# so a merged TurnState that set them would be a real bug, not a legacy shape.
+	if phase == TurnState.PHASE_ROUND_OVER:
 		var winner: String = str(snapshot.get("winner", ""))
 		if winner == "":
 			_finish(false, "round ended in %s but no winner was declared" % phase)

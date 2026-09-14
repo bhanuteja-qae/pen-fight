@@ -42,6 +42,7 @@ var _failures: Array[String] = []
 var _cases_run: int = 0
 var _verdicts: int = 0
 var _verdict_taken: bool = false
+var _failed_cases: Dictionary = {}
 var _current_case: String = ""
 var _cfg_backup: PackedByteArray = PackedByteArray()
 var _cfg_existed: bool = false
@@ -76,8 +77,8 @@ func _bootstrap() -> void:
 func _summary() -> String:
 	if _failures.is_empty():
 		return "series_record_test: ALL PASS (%d cases)" % _cases_run
-	return "series_record_test: %d of %d cases FAILED — %s" % [
-		_failures.size(), _cases_run, "; ".join(_failures)]
+	return "series_record_test: %d of %d cases FAILED (%d assertions) — %s" % [
+		_failed_cases.size(), _cases_run, _failures.size(), "; ".join(_failures)]
 
 
 # ------------------------------------------------------- 1. store round trip
@@ -307,6 +308,7 @@ func _fail(why: String) -> void:
 	if not _verdict_taken:
 		_verdict_taken = true
 		_verdicts += 1
+	_failed_cases[_current_case] = true
 	_failures.append("%s: %s" % [_current_case, why])
 	push_error("series_record_test FAIL %s — %s" % [_current_case, why])
 
