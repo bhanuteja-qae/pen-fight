@@ -79,28 +79,56 @@ const FORFEIT_TIMEOUT: float = 15.0
 ## QA-6: this constant and the scene MUST agree).
 const TABLE_RECT: Rect2 = Rect2(-590.0, -320.0, 1180.0, 640.0)
 
+## Every pen texture is authored at 540x30 and drawn at PEN_SPRITE_SCALE, which
+## lands it on exactly 180x10 px on screen — the physics capsule
+## (PenBody half_len 85 + radius 5). The skins are real pens scaled into the
+## game: a skin swap can never resize the pen, because the scale is applied by
+## set_pen_skin() rather than left to each skin's own sprite.
+## Regenerate the art with: game/assets/generate_pens_real.py
+const PEN_SPRITE_SCALE: float = 1.0 / 3.0
+
 ## Pen skin selection (Phase 1c): each player picks a pen DESIGN to play with.
-## Only two pens are ever on the table — the third sprite is a preference
-## option, not a third player. Skins map pen_id -> asset path; the scene,
-## physics, and TurnState still use exactly two pens.
+## Only two pens are ever on the table — the extra designs are preference
+## options, not extra players. Each skin carries its own shadow so the
+## silhouette can never drift from the pen.
 const PEN_SKINS: Dictionary = {
-	"red": "res://assets/pen_red_v4.png",
-	"blue": "res://assets/pen_blue_v4.png",
-	"green": "res://assets/pen_green_v4.png",
+	"amber": {
+		"pen": "res://assets/pen_amber.png",
+		"shadow": "res://assets/pen_amber_shadow.png",
+	},
+	"cobalt": {
+		"pen": "res://assets/pen_cobalt.png",
+		"shadow": "res://assets/pen_cobalt_shadow.png",
+	},
+	"graphite": {
+		"pen": "res://assets/pen_graphite.png",
+		"shadow": "res://assets/pen_graphite_shadow.png",
+	},
+	"ivory": {
+		"pen": "res://assets/pen_ivory.png",
+		"shadow": "res://assets/pen_ivory_shadow.png",
+	},
 }
-var _player_skins: Dictionary = {"red": "red", "blue": "blue"}
+var _player_skins: Dictionary = {"red": "amber", "blue": "cobalt"}
 
 
-## Pick the pen design for a player (e.g. set_pen_skin("blue", "green")).
-## Applies immediately to that player's Sprite2D. Returns false if the player
-## or skin is unknown.
+## Pick the pen design for a player (e.g. set_pen_skin("blue", "graphite")).
+## Applies immediately to that player's pen sprite AND its shadow, and forces
+## the shared footprint scale — so every design draws the same 180x10 pen.
+## Returns false if the player or skin is unknown.
 func set_pen_skin(player: String, skin: String) -> bool:
 	if not _player_skins.has(player) or not PEN_SKINS.has(skin):
 		return false
 	_player_skins[player] = skin
+	var entry: Dictionary = PEN_SKINS[skin]
 	var sprite := _pen_sprite_node(player)
 	if sprite != null:
-		sprite.texture = load(PEN_SKINS[skin]) as Texture2D
+		sprite.texture = load(entry["pen"]) as Texture2D
+		sprite.scale = Vector2(PEN_SPRITE_SCALE, PEN_SPRITE_SCALE)
+	var shadow := _pen_shadow_node(player)
+	if shadow != null:
+		shadow.texture = load(entry["shadow"]) as Texture2D
+		shadow.scale = Vector2(PEN_SPRITE_SCALE, PEN_SPRITE_SCALE)
 	return true
 
 
@@ -119,6 +147,18 @@ func _pen_sprite_node(player: String) -> Sprite2D:
 			return $PenRed/Sprite2D
 		"blue":
 			return $PenBlue/Sprite2D
+		_:
+			return null
+
+
+## The pen's drop shadow sprite (swapped with the skin so silhouette and pen
+## always match).
+func _pen_shadow_node(player: String) -> Sprite2D:
+	match player:
+		"red":
+			return $PenRed/Shadow
+		"blue":
+			return $PenBlue/Shadow
 		_:
 			return null
 
@@ -186,7 +226,7 @@ func _ready() -> void:
 
 	turn_state.begin_turn()
 	# Skin selection: apply env overrides AFTER the sprites exist but before
-	# the first frame renders, so PENFIGHT_SKIN_<PLAYER>=green shows from t=0.
+	# the first frame renders, so PENFIGHT_SKIN_<PLAYER>=ivory shows from t=0.
 	_apply_default_skins()
 	# The very first turn is the game opening, not a settle handoff — the gate
 	# would be noise here, and the no-input forfeit acceptance path needs the

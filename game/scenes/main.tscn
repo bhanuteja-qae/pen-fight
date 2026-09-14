@@ -31,6 +31,7 @@ position = Vector2(0, 0)
 
 [node name="Sprite2D" type="Sprite2D" parent="Table" unique_id=10003]
 texture = ExtResource("3_table")
+z_index = -5
 
 [node name="TableBounds" type="CollisionShape2D" parent="Table" unique_id=10004]
 shape = SubResource("table_bounds")
@@ -48,14 +49,15 @@ pen_id = "red"
 
 [node name="Shadow" type="Sprite2D" parent="PenRed" unique_id=10019]
 texture = ExtResource("6_shadow_red")
-position = Vector2(4, 6)
-scale = Vector2(0.408, 0.408)
-z_index = -1
-modulate = Color(0, 0, 0, 0.44)
+position = Vector2(3, 4)
+scale = Vector2(0.333333, 0.333333)
+z_index = 0
+modulate = Color(0, 0, 0, 0.5)
 
 [node name="Sprite2D" type="Sprite2D" parent="PenRed" unique_id=10009]
 texture = ExtResource("4_red")
-scale = Vector2(0.408, 0.408)
+scale = Vector2(0.333333, 0.333333)
+z_index = 1
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="PenRed" unique_id=10010]
 shape = SubResource("pen_shape")
@@ -74,14 +76,15 @@ pen_id = "blue"
 
 [node name="Shadow" type="Sprite2D" parent="PenBlue" unique_id=10020]
 texture = ExtResource("7_shadow_blue")
-position = Vector2(4, 6)
-scale = Vector2(0.408, 0.408)
-z_index = -1
-modulate = Color(0, 0, 0, 0.44)
+position = Vector2(3, 4)
+scale = Vector2(0.333333, 0.333333)
+z_index = 0
+modulate = Color(0, 0, 0, 0.5)
 
 [node name="Sprite2D" type="Sprite2D" parent="PenBlue" unique_id=10012]
 texture = ExtResource("5_blue")
-scale = Vector2(0.408, 0.408)
+scale = Vector2(0.333333, 0.333333)
+z_index = 1
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="PenBlue" unique_id=10013]
 shape = SubResource("pen_shape")
