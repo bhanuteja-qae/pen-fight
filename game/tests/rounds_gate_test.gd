@@ -220,6 +220,19 @@ func _finish(passed: bool, detail: String) -> void:
 		detail = "20-round gate sustained"
 	var red_wins: int = _wins.get("red", 0)
 	var blue_wins: int = _wins.get("blue", 0)
+	# Balance floor (review, QA-1): both sides must WIN at least once. A 0/N
+	# split means one side can literally never win — a real regression. Note
+	# the observed 4/16-type splits are winner-starts MOMENTUM (the seeded
+	# first winner shoots first next round; pre-resize the same seed gave
+	# 13/7), not left/right asymmetry — the test drives both sides identically
+	# from point-symmetric spawns. So the floor is >= 1, not a 50/50
+	# expectation; the split itself is printed for the balance watch.
+	var both_sides_won: bool = red_wins >= 1 and blue_wins >= 1
+	if passed and not both_sides_won:
+		print("rounds_gate_test: BALANCE FAIL — one side never won (red=%d blue=%d) — "
+			+ "win rule or spawn geometry regression" % [red_wins, blue_wins])
+		passed = false
+		detail = "balance floor: both sides must win >= 1 round"
 	print("rounds_gate_test: %s — %s (rounds=%d red=%d blue=%d, shots=%d, %.1fs)" % [
 		"PASS" if passed else "FAIL", detail, _rounds_resolved, red_wins, blue_wins,
 		_shots_fired, _elapsed_seconds()])

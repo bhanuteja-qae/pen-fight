@@ -38,9 +38,12 @@ signal flick_ready(direction: Vector2, power: float, contact_offset: float)
 ## flick on the wrong turn or during the round-over handoff.
 var input_locked: bool = false
 
-## Minimum drag distance (px). Releasing inside this radius cancels the gesture
-## (emits nothing).
-@export var min_drag_pixels: float = 15.0
+## Minimum drag distance (px). Releasing within this of the PRESS cancels the
+## gesture (emits nothing). Raised 15 -> 30 (review, UX-2): a 16-30px touch
+## jitter used to launch a weak accidental flick (power 0.1-0.19) instead of
+## cancelling; spec CANCEL_RADIUS is 34 — this is the pragmatic middle until a
+## distance-to-PEN variant lands.
+@export var min_drag_pixels: float = 30.0
 ## Drag distance (px) that produces full power (1.0). Power is capped there.
 @export var max_drag_pixels: float = 160.0
 ## The active pen body. The grab zone is this pen's capsule (barrel + tip/cap

@@ -39,10 +39,31 @@ var _settled_pen_uids: Array[String] = []
 ## Pens that exceeded MOVED_LINEAR_VEL during the current flight (PenBody.moved).
 ## Emptied each turn; used by the stalemate rule (docs/ART_AND_FEEL_SPEC.md §7):
 ## a settled turn where NO pen moved is a forfeit, not a clean hand-over.
+## NOTE (review, QA-4): with the shipped input, the weakest legal flick
+## (min_drag 15/160 -> power 0.094 -> ~140 px/s) already clears MOVED_LINEAR_VEL
+## (25 px/s), so the stalemate forfeit is NOT reachable through human input —
+## it exists as a scripted/edge-case backstop. The real anti-stall mechanism is
+## the no-input idle forfeit (main.gd FORFEIT_TIMEOUT). Do not delete this rule
+## (it still protects scripted zero-power flights), do not claim it is the
+## primary anti-stall.
 var _moved_pen_uids: Array[String] = []
+## Pens that reported out-of-bounds THIS flight (PenBody.out_of_bounds).
+## Buffered (instead of deciding on the first event) so a same-tick double-OOB
+## sees BOTH pens: when both leave the table the FLICKER loses regardless of
+## event order (review, QA-3). Resolved once per frame by resolve_pending_oob().
+var _oob_pending: Array[String] = []
+## In-flight hard backstop (spec §7: "the backstop that makes the other two
+## safe"). A settling/creeping pen may never settle (engine sleep disabled), so
+## IN_FLIGHT must resolve on a hard clock. [TUNE]
+const RESOLVE_TIMEOUT := 8.0
+var _resolve_elapsed: float = 0.0
 var _winner_uid: String = ""
 var _loser_uid: String = ""
 var _round_over: bool = false
+## True when the CURRENT parked round was decided by an OOB verdict (vs a
+## forfeit/backstop). Lets Main pick the impact ceremony strength after
+## resolution; cleared each turn.
+var _decided_by_oob: bool = false
 
 ## pens: list of pen UIDs, e.g. ["red", "blue"]. Stored as String.
 ## forfeit_timeout: seconds the active player has to flick before the round is
@@ -74,9 +95,12 @@ func begin_turn() -> void:
 	_last_impulse = Vector2.ZERO
 	_settled_pen_uids = []
 	_moved_pen_uids = []
+	_oob_pending = []
+	_resolve_elapsed = 0.0
 	_winner_uid = ""
 	_loser_uid = ""
 	_round_over = false
+	_decided_by_oob = false
 
 ## Round-over gate (docs §3.5 #1): the ONLY way out of PHASE_ROUND_OVER.
 ## Caller (Main's tap-to-continue) invokes this after a decided round. The
@@ -87,6 +111,12 @@ func continue_to_next_round() -> void:
 	if _phase != PHASE_ROUND_OVER:
 		return
 	begin_turn()
+
+
+## True when the current parked round was decided by an OOB verdict rather than
+## a forfeit/backstop (drives which ceremony strength Main plays).
+func decided_by_oob() -> bool:
+	return _decided_by_oob
 
 ## The active player flicked. Valid only during AIM -> transitions to
 ## IN_FLIGHT. Records the impulse and marks the flicked pen (the active
@@ -99,7 +129,10 @@ func on_flick(impulse: Vector2) -> void:
 	_flicked_pen = current_player()
 	_last_impulse = impulse
 	_forfeit_elapsed = 0.0
+	_resolve_elapsed = 0.0
 	_settled_pen_uids.clear()
+	_moved_pen_uids.clear()
+	_oob_pending.clear()
 	for pen in _pens:
 		if pen != _flicked_pen:
 			_settled_pen_uids.append(pen)
@@ -138,25 +171,66 @@ func on_settled(pen_uid: String) -> void:
 		else:
 			begin_turn()
 
-## A pen left the table (PenBody.out_of_bounds). Winner is decided HERE,
-## geometrically, BEFORE any ceremony (docs §3.2): the flicked pen leaving the
-## table means the OTHER player wins the round. (Defensive branch: a
-## non-flicked pen going OOB would award the flicking player.) Events outside
+## A pen left the table (PenBody.out_of_bounds). Buffers the event instead of
+## deciding immediately: both pens can leave in the SAME physics tick, and the
+## rule for that tie is "the FLICKER loses" regardless of which event arrives
+## first (review QA-3). resolve_pending_oob() (called once per frame by Main)
+## decides the round after all same-tick events have arrived. Events outside
 ## IN_FLIGHT are ignored so a decided round cannot be re-decided.
 func on_out_of_bounds(pen_uid: String) -> void:
 	if _phase != PHASE_IN_FLIGHT:
 		return
-	# Decide the round geometrically HERE (docs §3.2), then PARK in ROUND_OVER:
-	# the ceremony and the tap-to-continue gate are pure presentation over an
-	# already-settled result. on_flick / forfeit_tick are no-ops from here on.
+	if _oob_pending.has(pen_uid):
+		return  # duplicate event for an already-buffered pen
+	_oob_pending.append(pen_uid)
+
+## Resolve the round from buffered OOB events. Called by Main once per frame
+## AFTER the physics tick, so every OOB event from that tick has arrived.
+## Decision: both pens off the table -> the FLICKER loses (tie rule); exactly
+## one pen off -> that pen's player loses (the other wins). Parks in
+## ROUND_OVER. No-op when there is nothing pending.
+func resolve_pending_oob() -> void:
+	if _phase != PHASE_IN_FLIGHT:
+		return
+	if _oob_pending.is_empty():
+		return
 	_phase = PHASE_ROUND_OVER
 	_round_over = true
-	if pen_uid == _flicked_pen:
-		_loser_uid = pen_uid
+	_decided_by_oob = true
+	if _oob_pending.size() >= 2:
+		# Both pens left the table in the same tick: the flicker loses.
+		_loser_uid = _flicked_pen
+		_winner_uid = _other_player(_flicked_pen)
+	elif _oob_pending.has(_flicked_pen):
+		_loser_uid = _flicked_pen
 		_winner_uid = _other_player(_flicked_pen)
 	else:
-		_loser_uid = pen_uid
+		_loser_uid = _oob_pending[0]
 		_winner_uid = _flicked_pen
+
+## In-flight hard backstop (spec §7). Main calls this each frame while the
+## round is unresolved; after RESOLVE_TIMEOUT seconds in IN_FLIGHT the round is
+## forced to a verdict: OOB events win if any happened; otherwise a moved pen
+## hands over to the next player; a never-moved flight is a stalemate forfeit.
+## This replaces the "blank IN_FLIGHT hang" failure mode (a creeping pen can
+## never satisfy the settle detector because engine sleep is disabled).
+func resolve_tick(delta: float) -> void:
+	if _phase != PHASE_IN_FLIGHT:
+		return
+	_resolve_elapsed += maxf(delta, 0.0)
+	if _resolve_elapsed < RESOLVE_TIMEOUT:
+		return
+	if not _oob_pending.is_empty():
+		resolve_pending_oob()
+		return
+	if _moved_pen_uids.is_empty():
+		# Stalemate under the backstop: the flight never meaningfully moved.
+		_phase = PHASE_ROUND_OVER
+		_round_over = true
+		_loser_uid = _flicked_pen
+		_winner_uid = _other_player(_flicked_pen)
+	else:
+		begin_turn()
 
 ## Hard forfeit timeout (docs: 4-6 s). Called by Main each frame; accumulates
 ## delta only while a turn is in AIM. Once the active player has not flicked
@@ -210,6 +284,8 @@ func state() -> Dictionary:
 		"last_impulse": _last_impulse,
 		"settled_pens": _settled_pen_uids,
 		"moved_pens": _moved_pen_uids,
+		"oob_pending": _oob_pending,
+		"resolve_elapsed": _resolve_elapsed,
 		"winner": _winner_uid,
 		"loser": _loser_uid,
 		"round_winner": _winner_uid,

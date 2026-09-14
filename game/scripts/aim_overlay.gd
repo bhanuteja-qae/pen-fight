@@ -91,6 +91,9 @@ var _pen: PenBody = null
 var _font: Font = null
 var _has_drag: bool = false
 var _drag: Dictionary = {}
+## Idle turn cue state (see show_turn).
+var _turn_visible: bool = false
+var _turn_label: String = ""
 
 
 func _ready() -> void:
@@ -143,8 +146,39 @@ func clear() -> void:
 		queue_redraw()
 
 
+## Idle turn cue (review, UX-1/UX-2): during AIM with NO drag, highlight the
+## active pen so whose-turn is legible at a glance (the mockup's "YOUR FLICK"
+## banner + pen highlight; full 3-cue system — edge glow + opponent chip — is
+## roadmap UI, this is the minimal in-code slice). `label` is glyph-safe plain
+## text (e.g. "Amber" / "Cobalt"). Drawn only when no drag is active; a
+## show_drag() call overrides it until clear().
+func show_turn(label: String) -> void:
+	if _pen == null:
+		return
+	_turn_label = label
+	_turn_visible = true
+	queue_redraw()
+
+
+## Clear the idle turn cue (round over / gate up).
+func clear_turn() -> void:
+	if not _turn_visible:
+		return
+	_turn_visible = false
+	_turn_label = ""
+	queue_redraw()
+
+
+## True while an idle turn cue is visible.
+func is_turn_visible() -> bool:
+	return _turn_visible
+
+
 func _draw() -> void:
-	if not _has_drag or _pen == null:
+	if _pen == null:
+		return
+	if not _has_drag:
+		_draw_turn_cue()
 		return
 	var grab: Vector2 = _grab_point(float(_drag.get("grab_offset", 0.0)))
 	var current: Vector2 = _drag.get("current_pos", Vector2.ZERO)
@@ -161,6 +195,46 @@ func _draw() -> void:
 		_draw_max_tick(grab, direction)
 		_draw_spin_arc(float(_drag.get("grab_offset", 0.0)), direction, power)
 	_draw_grab_ring(grab)
+
+
+## Idle whose-turn cue (review UX-1): a dashed oval around the active pen plus
+## a "YOUR FLICK" banner near it — the minimal in-code slice of the mockup's
+## 3-cue system, shown between AIM turns so the hot-seat question ("is it my
+## turn?") never goes unanswered. Overridden the moment a drag starts.
+const TURN_OVAL_RADIUS := 46.0
+const TURN_OVAL_DASH := 6.0
+const TURN_OVAL_COLOR := Color(0.92, 0.95, 1.0, 0.55)
+const TURN_BANNER_TEXT := "YOUR FLICK"
+const TURN_BANNER_COLOR := Color(0.92, 0.95, 1.0)
+
+func _draw_turn_cue() -> void:
+	if not _turn_visible or _turn_label == "":
+		return
+	var center: Vector2 = _pen.global_position
+	_dashed_oval(center, TURN_OVAL_RADIUS, TURN_OVAL_DASH, TURN_OVAL_COLOR, 2.0)
+	# Banner above-left of the pen so it does not sit under the player's hand.
+	var banner_pos: Vector2 = center + Vector2(-TURN_OVAL_RADIUS * 0.7, -TURN_OVAL_RADIUS * 1.6)
+	draw_string(_font, banner_pos, TURN_BANNER_TEXT, HORIZONTAL_ALIGNMENT_LEFT, -1, 18, TURN_BANNER_COLOR)
+	if _turn_label != "":
+		draw_string(_font, banner_pos + Vector2(0.0, TURN_OVAL_RADIUS * 0.62),
+			_turn_label, HORIZONTAL_ALIGNMENT_LEFT, -1, 15,
+			Color(0.66, 0.77, 1.0))
+
+
+func _dashed_oval(center: Vector2, radius: float, _dash: float, color: Color, width: float) -> void:
+	var pts := PackedVector2Array([])
+	var n := 40
+	for i in range(n + 1):
+		var ang := TAU * float(i) / float(n)
+		pts.append(center + Vector2.from_angle(ang) * radius)
+	# Emit alternating dash segments by walking the polyline.
+	var on := true
+	for seg in range(n):
+		var a: Vector2 = pts[seg]
+		var b: Vector2 = pts[(seg + 1) % n]
+		if on:
+			draw_line(a, b, color, width)
+		on = not on
 
 
 # --- Geometry helpers ---------------------------------------------------------------

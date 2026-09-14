@@ -31,6 +31,10 @@ static func run_tests() -> bool:
 	_test_on_flick_transitions_to_in_flight(failures)
 	_test_out_of_bounds_declares_other_winner(failures)
 	_test_out_of_bounds_for_non_flicked_pen(failures)
+	_test_same_tick_double_oob_flicker_loses(failures)
+	_test_resolve_pending_oob_noop_without_events(failures)
+	_test_in_flight_backstop_resolves_hang(failures)
+	_test_in_flight_backstop_stalemate(failures)
 	_test_settled_advances_to_next_turn(failures)
 	_test_settled_stalemate_forfeits(failures)
 	_test_forfeit_timeout(failures)
@@ -94,6 +98,7 @@ static func _test_out_of_bounds_declares_other_winner(failures: Array[String]) -
 	ts.begin_turn()
 	ts.on_flick(Vector2(1, 0))
 	ts.on_out_of_bounds("red")
+	ts.resolve_pending_oob()  # verdict materializes at the frame boundary
 	var s: Dictionary = ts.state()
 	_check(failures, s["phase"] == TurnStateScript.PHASE_ROUND_OVER, "flicked-pen OOB -> ROUND_OVER (gate)")
 	_check(failures, s["winner"] == "blue", "other player wins when the flicked pen goes OOB")
@@ -106,10 +111,66 @@ static func _test_out_of_bounds_for_non_flicked_pen(failures: Array[String]) -> 
 	ts.begin_turn()
 	ts.on_flick(Vector2(1, 0))
 	ts.on_out_of_bounds("blue")
+	ts.resolve_pending_oob()
 	var s: Dictionary = ts.state()
 	_check(failures, s["phase"] == TurnStateScript.PHASE_ROUND_OVER, "defensive OOB also parks in ROUND_OVER")
 	_check(failures, s["winner"] == "red", "defensive: flicking player wins if the other pen goes OOB")
 	_check(failures, s["round_winner"] == "red", "defensive round_winner mirrors winner")
+
+static func _test_same_tick_double_oob_flicker_loses(failures: Array[String]) -> void:
+	# Review QA-3: BOTH pens leave the table in the same physics tick. The
+	# verdict must be "the FLICKER loses" regardless of which OOB event arrived
+	# first. Order the events so the DEFENDER (blue) is reported first — under
+	# the old immediate-decision code this would wrongly award the flicker.
+	var ts = _new_ts()
+	ts.begin_turn()
+	ts.on_flick(Vector2(1, 0))         # red is the flicker
+	ts.on_out_of_bounds("blue")        # defender reported first
+	ts.on_out_of_bounds("red")         # flicker reported second (same tick)
+	_check(failures, ts.state()["phase"] == TurnStateScript.PHASE_IN_FLIGHT,
+		"OOB events buffered, not decided, until the frame boundary")
+	ts.resolve_pending_oob()
+	var s: Dictionary = ts.state()
+	_check(failures, s["phase"] == TurnStateScript.PHASE_ROUND_OVER, "double-OOB parks in ROUND_OVER")
+	_check(failures, s["winner"] == "blue", "flicker LOSES when both pens leave (defender wins)")
+	_check(failures, s["loser"] == "red", "flicker is the loser in a same-tick double-OOB")
+
+static func _test_resolve_pending_oob_noop_without_events(failures: Array[String]) -> void:
+	var ts = _new_ts()
+	ts.begin_turn()
+	ts.on_flick(Vector2(1, 0))
+	ts.resolve_pending_oob()  # nothing buffered
+	_check(failures, ts.state()["phase"] == TurnStateScript.PHASE_IN_FLIGHT,
+		"resolve_pending_oob is a no-op with no buffered OOB events")
+
+static func _test_in_flight_backstop_resolves_hang(failures: Array[String]) -> void:
+	# Review QA-2 / spec §7: a creeping pen may never satisfy the settle
+	# detector, so IN_FLIGHT must resolve on a hard clock. A moved flight
+	# hands over; a never-moved flight is a stalemate forfeit.
+	var ts = _new_ts()
+	ts.begin_turn()
+	ts.on_flick(Vector2(1, 0))
+	ts.on_pen_moved("red")   # a real (weak but moving) flight
+	ts.resolve_tick(4.0)
+	_check(failures, ts.state()["phase"] == TurnStateScript.PHASE_IN_FLIGHT,
+		"in-flight stays unresolved before the backstop")
+	ts.resolve_tick(4.0)     # 8.0 total > RESOLVE_TIMEOUT (8.0, so equal counts)
+	ts.resolve_tick(0.1)     # push past
+	_check(failures, ts.state()["phase"] == TurnStateScript.PHASE_AIM,
+		"moved flight hands over to the next player after the backstop")
+	_check(failures, ts.state()["current_player"] == "blue",
+		"backstop handover advances to the next player")
+
+static func _test_in_flight_backstop_stalemate(failures: Array[String]) -> void:
+	var ts = _new_ts()
+	ts.begin_turn()
+	ts.on_flick(Vector2(0.001, 0.0))  # never moved
+	for i in range(10):
+		ts.resolve_tick(1.0)
+	_check(failures, ts.state()["phase"] == TurnStateScript.PHASE_ROUND_OVER,
+		"never-moved flight forfeits under the in-flight backstop")
+	_check(failures, ts.state()["winner"] == "blue",
+		"backstop stalemate awards the round to the other player")
 
 static func _test_settled_advances_to_next_turn(failures: Array[String]) -> void:
 	var ts = _new_ts()
@@ -173,8 +234,10 @@ static func _test_stale_and_duplicate_events_ignored(failures: Array[String]) ->
 	_check(failures, ts.state()["last_impulse"] == Vector2(1, 0), "second flick (not in AIM) is ignored")
 	# A duplicate OOB after the round is decided is ignored.
 	ts.on_out_of_bounds("red")
+	ts.resolve_pending_oob()   # verdict materializes here
 	var winner_before: String = ts.state()["winner"]
 	ts.on_out_of_bounds("blue")
+	ts.resolve_pending_oob()
 	_check(failures, ts.state()["winner"] == winner_before, "OOB after ROUND_OVER is ignored")
 	# on_flick / forfeit_tick are no-ops while the round is over (input locked).
 	ts.on_flick(Vector2(0, 1))
@@ -195,6 +258,7 @@ static func _test_continue_to_next_round_winner_starts(failures: Array[String]) 
 	ts.begin_turn()                    # round 1: red starts
 	ts.on_flick(Vector2(1, 0))
 	ts.on_out_of_bounds("red")         # red flicked & lost -> blue wins the round
+	ts.resolve_pending_oob()
 	_check(failures, ts.state()["phase"] == TurnStateScript.PHASE_ROUND_OVER, "round parks in ROUND_OVER")
 	_check(failures, ts.state()["winner"] == "blue", "blue is the round winner")
 	ts.continue_to_next_round()
@@ -210,10 +274,12 @@ static func _test_continue_cycles_red_blue(failures: Array[String]) -> void:
 	ts.begin_turn()                    # round 1: red
 	ts.on_flick(Vector2(1, 0))
 	ts.on_out_of_bounds("red")         # blue wins round 1
+	ts.resolve_pending_oob()
 	ts.continue_to_next_round()        # round 2: blue starts
 	_check(failures, ts.state()["current_player"] == "blue", "continue #1 -> blue starts round 2")
 	ts.on_flick(Vector2(1, 0))
 	ts.on_out_of_bounds("blue")        # red wins round 2
+	ts.resolve_pending_oob()
 	ts.continue_to_next_round()        # round 3: red starts
 	_check(failures, ts.state()["current_player"] == "red", "continue #2 cycles back to red")
 	_check(failures, ts.state()["phase"] == TurnStateScript.PHASE_AIM, "round 3 back in AIM")

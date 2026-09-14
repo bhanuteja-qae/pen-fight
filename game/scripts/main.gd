@@ -74,10 +74,10 @@ const AUTOPLAY_STALL_SECONDS: float = 5.0
 ## long may a turn sit unattended before we end it". [TUNE — playtest]
 const FORFEIT_TIMEOUT: float = 15.0
 ## World-space table rect; must match the TableBounds node geometry in main.tscn.
-## Spec coordinate contract (docs/ART_AND_FEEL_SPEC.md §1): playfield
-## Rect2(80,60,1120,600) in viewport coords = centered at (0,0): x -560..560,
-## y -300..300.
-const TABLE_RECT: Rect2 = Rect2(-560.0, -300.0, 1120.0, 600.0)
+## Phase 1d resize: table_bounds is now 1180x640 centered on the origin
+## (was 1120x600 — the 30 px/side growth is blocked-by-the-contract watch item
+## QA-6: this constant and the scene MUST agree).
+const TABLE_RECT: Rect2 = Rect2(-590.0, -320.0, 1180.0, 640.0)
 
 ## Pen skin selection (Phase 1c): each player picks a pen DESIGN to play with.
 ## Only two pens are ever on the table — the third sprite is a preference
@@ -207,6 +207,12 @@ func _process(delta: float) -> void:
 	# they are being asked to tap-to-continue.
 	if not _gate_showing:
 		turn_state.forfeit_tick(delta)
+	# OOB verdict + in-flight backstop (review QA-3/QA-2): buffered OOB events
+	# are resolved on a frame boundary (so a same-tick double-OOB sees both pens
+	# and the FLICKER loses), and IN_FLIGHT has a hard 8s clock so a creeping
+	# pen can never hang the round forever.
+	turn_state.resolve_pending_oob()
+	turn_state.resolve_tick(delta)
 	var st: Dictionary = turn_state.state()
 	var phase: String = str(st.get("phase", ""))
 	# Hard turn-transition gate: input is locked outside AIM so a player can
@@ -325,15 +331,27 @@ func _sync_aim_zone() -> void:
 ## Phase 1d: feed the aim overlay per-frame. The overlay draws the grab ring,
 ## pull band, launch cone + power fill + MAX tick, and spin arc from the
 ## CURRENT drag gesture (touch or mouse); idle when nothing is being dragged.
+## Also drives the IDLE turn cue (review UX-1): during AIM with no drag the
+## active pen is highlighted ("YOUR FLICK" banner) so whose-turn is legible;
+## cleared whenever the gate is up or the round is over.
 func _feed_aim_overlay() -> void:
 	if aim_overlay == null:
 		return
 	var pen := _active_pen()
-	if pen == null:
+	if pen == null or _gate_showing:
+		aim_overlay.clear_turn()
 		aim_overlay.clear()
 		return
 	aim_overlay.set_pen(pen)
-	aim_overlay.show_drag(aim_input.get_drag_info())
+	var info: Dictionary = aim_input.get_drag_info()
+	if info.is_empty() or not info.get("dragging", false):
+		# Idle AIM: show whose turn it is (overlay draws cue only when the
+		# live gesture is absent — a started drag overrides it automatically).
+		aim_overlay.clear()
+		aim_overlay.show_turn(_display_name(str(turn_state.state().get("current_player", ""))))
+	else:
+		aim_overlay.clear_turn()
+		aim_overlay.show_drag(info)
 
 
 ## PenBody.impact -> a layered thud on the SFX bus (per pen-pen / pen-table
@@ -375,16 +393,15 @@ func _check_game_over() -> void:
 		return
 	var winner: String = str(st.get("winner", "unknown"))
 	var loser: String = str(st.get("loser", "unknown"))
-	print("[GAME OVER] %s wins the round (loser: %s, phase: %s)." % [winner, loser, phase])
+	print("[GAME OVER] %s wins the round (loser: %s, phase: %s)." % [
+		_display_name(winner), _display_name(loser), phase])
 	_game_over_printed = true
-	# An OOB resolves via the signal path, which already fired the impact beat
-	# (_trigger_ceremony(4, 0.6)) before this ran. A forfeit resolves
-	# synchronously inside forfeit_tick() above with no signal, so if the
-	# ceremony has not fired yet this is the forfeit path — a gentler beat for
-	# a time-out, but the acceptance gate (shake/hit-stop fire on round
-	# resolve) needs it to also exercise the ceremony.
+	# Ceremony strength follows HOW the round was decided: an OOB verdict
+	# (including a same-tick double-OOB, now resolved on the frame boundary)
+	# plays the impact beat; forfeits/backstops play a gentler beat. The
+	# acceptance gate needs shake+hit-stop to fire on every round resolve.
 	if not _ceremony_fired:
-		_trigger_ceremony(3, 0.4)
+		_trigger_ceremony(4, 0.6) if turn_state.decided_by_oob() else _trigger_ceremony(3, 0.4)
 
 
 ## Drive the turn-transition gate (docs §3.5 #1). Shows it exactly once per
@@ -443,9 +460,20 @@ func _on_gate_tapped() -> void:
 	_sync_aim_zone()
 
 
-## Human-readable player name for the gate prompt ("red" -> "Red").
+## Human-readable player name for the gate prompt. Must match what the player
+## SEES on screen: the default sprites are amber (red slot) and cobalt (blue
+## slot), so "red" -> "Amber", "blue" -> "Cobalt" (review, UX-3: gate text must
+## not contradict the art — CVD-hostile confusion otherwise). If a skin env
+## override changes the art, names stay generic but consistent with the fixed
+## sprite set; P1/P2 relabeling is a UI-layer choice, not this constant.
 func _display_name(pen_id: String) -> String:
-	return pen_id.capitalize()
+	match pen_id:
+		"red":
+			return "Amber"
+		"blue":
+			return "Cobalt"
+		_:
+			return pen_id.capitalize()
 
 
 ## Autoplay soak-test: compact pen state for the stall log.
