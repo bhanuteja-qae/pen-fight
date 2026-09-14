@@ -1,0 +1,338 @@
+<meta charset="utf-8">
+<style>html,body{margin:0;padding:0;background:#241f1a;overflow:hidden}svg{display:block}
+.ui{font-family:"Liberation Sans","DejaVu Sans",sans-serif}
+.mn{font-family:"DejaVu Sans Mono",monospace}</style>
+<svg width="1600" height="800" viewBox="0 0 1600 800" xmlns="http://www.w3.org/2000/svg">
+<defs>
+
+  <!-- ===================== materials ===================== -->
+
+  <!-- brass/steel tip cone: cylinder shading across the width -->
+  <linearGradient id="brass" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0"    stop-color="#6b5a36"/>
+    <stop offset="0.16" stop-color="#a58d52"/>
+    <stop offset="0.30" stop-color="#e8dca6"/>
+    <stop offset="0.40" stop-color="#c4ab68"/>
+    <stop offset="0.72" stop-color="#7d6a3f"/>
+    <stop offset="1"    stop-color="#4a3d24"/>
+  </linearGradient>
+
+  <linearGradient id="steel" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0"    stop-color="#5b616b"/>
+    <stop offset="0.18" stop-color="#9aa2ad"/>
+    <stop offset="0.32" stop-color="#e6ebf1"/>
+    <stop offset="0.44" stop-color="#aeb6c1"/>
+    <stop offset="0.75" stop-color="#6a707a"/>
+    <stop offset="1"    stop-color="#42474f"/>
+  </linearGradient>
+
+  <!-- P1: translucent cobalt barrel -->
+  <linearGradient id="barrelBlue" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0"    stop-color="#0a1531"/>
+    <stop offset="0.13" stop-color="#1b3a7d"/>
+    <stop offset="0.25" stop-color="#5b8ce0"/>
+    <stop offset="0.31" stop-color="#a8c8ff"/>
+    <stop offset="0.38" stop-color="#3f6cc4"/>
+    <stop offset="0.70" stop-color="#1a3570"/>
+    <stop offset="1"    stop-color="#070f24"/>
+  </linearGradient>
+  <linearGradient id="capBlue" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0"    stop-color="#0b1832"/>
+    <stop offset="0.16" stop-color="#1d3f85"/>
+    <stop offset="0.29" stop-color="#4a7ad4"/>
+    <stop offset="0.36" stop-color="#2b57ab"/>
+    <stop offset="0.72" stop-color="#152c5e"/>
+    <stop offset="1"    stop-color="#060d1e"/>
+  </linearGradient>
+  <linearGradient id="gripBlue" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0"    stop-color="#10182b"/>
+    <stop offset="0.22" stop-color="#2a3550"/>
+    <stop offset="0.32" stop-color="#3f4d70"/>
+    <stop offset="0.70" stop-color="#1c2439"/>
+    <stop offset="1"    stop-color="#0b0f1a"/>
+  </linearGradient>
+
+  <!-- P2: opaque amber barrel -->
+  <linearGradient id="barrelAmber" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0"    stop-color="#3a1d05"/>
+    <stop offset="0.13" stop-color="#a05c11"/>
+    <stop offset="0.25" stop-color="#f0a23c"/>
+    <stop offset="0.31" stop-color="#ffd694"/>
+    <stop offset="0.38" stop-color="#d9861f"/>
+    <stop offset="0.70" stop-color="#8f4f0d"/>
+    <stop offset="1"    stop-color="#2c1504"/>
+  </linearGradient>
+  <linearGradient id="gripAmber" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0"    stop-color="#14100c"/>
+    <stop offset="0.22" stop-color="#332a22"/>
+    <stop offset="0.32" stop-color="#473a2e"/>
+    <stop offset="0.70" stop-color="#221b15"/>
+    <stop offset="1"    stop-color="#0d0a07"/>
+  </linearGradient>
+
+  <!-- desk laminate -->
+  <linearGradient id="deskBase" x1="0" y1="0" x2="0.35" y2="1">
+    <stop offset="0"   stop-color="#b8925f"/>
+    <stop offset="0.5" stop-color="#a07a4d"/>
+    <stop offset="1"   stop-color="#8a6740"/>
+  </linearGradient>
+
+  <filter id="woodGrain" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.0045 0.24" numOctaves="4" seed="7" result="n"/>
+    <feColorMatrix in="n" type="saturate" values="0"/>
+    <feComponentTransfer>
+      <feFuncA type="linear" slope="0.30" intercept="0"/>
+    </feComponentTransfer>
+  </filter>
+
+  <filter id="paperNoise" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3"/>
+    <feColorMatrix type="saturate" values="0"/>
+    <feComponentTransfer><feFuncA type="linear" slope="0.055"/></feComponentTransfer>
+  </filter>
+
+  <filter id="penShadow" x="-40%" y="-40%" width="180%" height="200%">
+    <feGaussianBlur stdDeviation="5.5"/>
+  </filter>
+  <filter id="deskDrop" x="-20%" y="-20%" width="140%" height="160%">
+    <feGaussianBlur stdDeviation="16"/>
+  </filter>
+  <filter id="glowSoft" x="-60%" y="-60%" width="220%" height="220%">
+    <feGaussianBlur stdDeviation="9"/>
+  </filter>
+  <filter id="specBlur" x="-50%" y="-60%" width="200%" height="220%">
+    <feGaussianBlur stdDeviation="2.1"/>
+  </filter>
+
+  <linearGradient id="sheen" x1="0.08" y1="0" x2="0.62" y2="1">
+    <stop offset="0"    stop-color="#fff" stop-opacity="0.10"/>
+    <stop offset="0.42" stop-color="#fff" stop-opacity="0.03"/>
+    <stop offset="0.75" stop-color="#000" stop-opacity="0.05"/>
+    <stop offset="1"    stop-color="#000" stop-opacity="0.12"/>
+  </linearGradient>
+
+  <radialGradient id="vignette" cx="0.5" cy="0.46" r="0.78">
+    <stop offset="0.45" stop-color="#000" stop-opacity="0"/>
+    <stop offset="0.80" stop-color="#000" stop-opacity="0.24"/>
+    <stop offset="1"    stop-color="#000" stop-opacity="0.55"/>
+  </radialGradient>
+
+  <radialGradient id="p1Glow" cx="0" cy="0.5" r="1">
+    <stop offset="0" stop-color="#5b8ce0" stop-opacity="0.55"/>
+    <stop offset="1" stop-color="#5b8ce0" stop-opacity="0"/>
+  </radialGradient>
+
+  <!-- ===================== PEN 1 · capped ballpoint, cobalt ===================== -->
+  <g id="penBlue">
+    <!-- metal tip cone + writing ball -->
+    <path d="M-220,0 L-203,-7 L-191,-9.4 L-191,9.4 L-203,7 Z" fill="url(#brass)"/>
+    <circle cx="-218.5" cy="0" r="2.1" fill="#d7dce2"/>
+    <!-- grip taper -->
+    <path d="M-191,-9.4 L-153,-12 L-153,12 L-191,9.4 Z" fill="url(#gripBlue)"/>
+    <!-- ink tube, seen through the translucent barrel -->
+    <rect x="-153" y="-1.9" width="256" height="3.8" rx="1.9" fill="#0a1b4a"/>
+    <!-- barrel -->
+    <rect x="-153" y="-12" width="274" height="24" fill="url(#barrelBlue)" opacity="0.92"/>
+    <!-- lengthwise specular -->
+    <rect x="-146" y="-8.4" width="258" height="2.6" rx="1.3" fill="#eaf2ff" opacity="0.62" filter="url(#specBlur)"/>
+    <!-- printed band -->
+    <rect x="-70" y="-12" width="4" height="24" fill="#0a1531" opacity="0.5"/>
+    <text x="-52" y="3.4" class="mono" font-size="8.4" letter-spacing="1.4"
+          fill="#dce8ff" opacity="0.5">PEN FIGHT · 0.7 FINE</text>
+    <!-- collar ring -->
+    <rect x="121" y="-13" width="9" height="26" rx="2" fill="url(#steel)"/>
+    <!-- cap -->
+    <path d="M130,-13 L201,-13 Q221,-13 221,0 Q221,13 201,13 L130,13 Z" fill="url(#capBlue)"/>
+    <rect x="136" y="-9.2" width="76" height="2.4" rx="1.2" fill="#cfe0ff" opacity="0.45" filter="url(#specBlur)"/>
+    <!-- clip -->
+    <path d="M141,-11 L141,-19.5 Q141,-22 146,-22 L200,-22 Q206,-22 206,-17 L206,-12.5
+             Q206,-10.8 203,-11.4 L203,-17 Q203,-19 199,-19 L147,-19 Q144,-19 144,-16.4 L144,-11 Z"
+          fill="url(#steel)"/>
+    <rect x="146" y="-20.4" width="52" height="1.5" rx="0.7" fill="#f2f6fa" opacity="0.6"/>
+  </g>
+
+  <!-- ===================== PEN 2 · retractable click pen, amber ===================== -->
+  <g id="penAmber">
+    <path d="M-214,0 L-198,-6.6 L-187,-9 L-187,9 L-198,6.6 Z" fill="url(#brass)"/>
+    <circle cx="-212.5" cy="0" r="2" fill="#d7dce2"/>
+    <!-- rubberised grip with moulded dots -->
+    <path d="M-187,-9 L-141,-11.6 L-141,11.6 L-187,9 Z" fill="url(#gripAmber)"/>
+    <g fill="#6d5a46" opacity="0.75">
+      <circle cx="-178" cy="-5" r="1.25"/><circle cx="-168" cy="-5.6" r="1.25"/>
+      <circle cx="-158" cy="-6" r="1.25"/><circle cx="-148" cy="-6.3" r="1.25"/>
+      <circle cx="-178" cy="1.2" r="1.25"/><circle cx="-168" cy="0.9" r="1.25"/>
+      <circle cx="-158" cy="0.6" r="1.25"/><circle cx="-148" cy="0.4" r="1.25"/>
+      <circle cx="-173" cy="6.4" r="1.25"/><circle cx="-163" cy="6" r="1.25"/>
+      <circle cx="-153" cy="5.6" r="1.25"/>
+    </g>
+    <!-- barrel, opaque, hex-faceted -->
+    <rect x="-141" y="-11.6" width="300" height="23.2" fill="url(#barrelAmber)"/>
+    <line x1="-141" y1="-4.6" x2="159" y2="-4.6" stroke="#2a1404" stroke-opacity="0.30" stroke-width="0.9"/>
+    <line x1="-141" y1="5.2"  x2="159" y2="5.2"  stroke="#2a1404" stroke-opacity="0.30" stroke-width="0.9"/>
+    <rect x="-134" y="-8" width="286" height="2.4" rx="1.2" fill="#fff3dc" opacity="0.58" filter="url(#specBlur)"/>
+    <text x="-96" y="3.2" class="mono" font-size="8.4" letter-spacing="1.5"
+          fill="#3a1d05" opacity="0.62">RETRACT 1.0 M</text>
+    <!-- metal end collar + plunger (the shape tell vs. pen 1) -->
+    <rect x="159" y="-11.6" width="26" height="23.2" fill="url(#steel)"/>
+    <rect x="185" y="-6.4" width="17" height="12.8" rx="2" fill="url(#steel)"/>
+    <rect x="202" y="-8.6" width="11" height="17.2" rx="3.4" fill="url(#barrelAmber)"/>
+    <!-- clip -->
+    <path d="M150,-10 L150,-18.6 Q150,-21 155,-21 L188,-21 Q194,-21 194,-16.2 L194,-11.8
+             Q194,-10.2 191,-10.8 L191,-16 Q191,-18 187,-18 L156,-18 Q153,-18 153,-15.6 L153,-10 Z"
+          fill="url(#steel)"/>
+    <rect x="157" y="-19.4" width="30" height="1.5" rx="0.7" fill="#f2f6fa" opacity="0.6"/>
+  </g>
+
+  <!-- silhouettes used only to cast the fake shadows -->
+  <g id="silBlue">
+    <rect x="-206" y="-13" width="412" height="26" rx="13" fill="#000"/>
+    <rect x="141" y="-22" width="65" height="11" rx="5" fill="#000"/>
+  </g>
+  <g id="silAmber">
+    <rect x="-200" y="-12.6" width="400" height="25" rx="12" fill="#000"/>
+    <rect x="150" y="-21" width="44" height="11" rx="5" fill="#000"/>
+  </g>
+
+  <linearGradient id="floorGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0"   stop-color="#9a9382"/>
+    <stop offset="0.45" stop-color="#6f6a5c"/>
+    <stop offset="1"   stop-color="#413c34"/>
+  </linearGradient>
+  <linearGradient id="farDeskGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#8a6c45"/><stop offset="1" stop-color="#5a4429"/>
+  </linearGradient>
+  <radialGradient id="lampPool" cx="0.5" cy="0.42" r="0.62">
+    <stop offset="0"   stop-color="#ffe9c2" stop-opacity="0.30"/>
+    <stop offset="0.6" stop-color="#ffd9a0" stop-opacity="0.10"/>
+    <stop offset="1"   stop-color="#000000" stop-opacity="0.0"/>
+  </radialGradient>
+  <filter id="dof" x="-15%" y="-15%" width="130%" height="130%">
+    <feGaussianBlur stdDeviation="4.5"/>
+  </filter>
+  <filter id="dofFar" x="-15%" y="-15%" width="130%" height="130%">
+    <feGaussianBlur stdDeviation="7"/>
+  </filter>
+  <filter id="speckle" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.55" numOctaves="3" seed="11"/>
+    <feColorMatrix type="saturate" values="0.15"/>
+    <feComponentTransfer><feFuncA type="linear" slope="0.10"/></feComponentTransfer>
+  </filter>
+  <linearGradient id="deskEdgeDark" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#000" stop-opacity="0.55"/>
+    <stop offset="1" stop-color="#000" stop-opacity="0"/>
+  </linearGradient>
+
+  <linearGradient id="windowLight" x1="0" y1="0" x2="1" y2="0.3">
+    <stop offset="0"    stop-color="#cfe2ff" stop-opacity="0.22"/>
+    <stop offset="0.45" stop-color="#cfe2ff" stop-opacity="0.05"/>
+    <stop offset="1"    stop-color="#cfe2ff" stop-opacity="0"/>
+  </linearGradient>
+  <linearGradient id="chairBack" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#7a5c3a"/><stop offset="1" stop-color="#4e3a24"/>
+  </linearGradient>
+</defs>
+<rect width="1600" height="800" fill="#3a352d"/>
+
+<!-- the room beyond your desk -->
+<g filter="url(#dofFar)">
+  <rect x="-40" y="0" width="1680" height="168" fill="url(#floorGrad)"/>
+  <!-- daylight falling in from the window wall, left -->
+  <rect x="-40" y="0" width="1000" height="168" fill="url(#windowLight)"/>
+  <!-- the desk in front of you: top surface, front rail, legs -->
+  <rect x="150" y="4" width="1320" height="40" rx="4" fill="url(#farDeskGrad)"/>
+  <rect x="150" y="44" width="1320" height="17" fill="#3b2d1c"/>
+  <rect x="262" y="61" width="17" height="78" fill="#4a4c52"/>
+  <rect x="1342" y="61" width="17" height="78" fill="#4a4c52"/>
+  <!-- a chair tucked in, its back above the desk line -->
+  <rect x="516" y="-26" width="232" height="52" rx="11" fill="url(#chairBack)"/>
+  <rect x="596" y="26" width="16" height="96" fill="#4a4c52"/>
+  <rect x="664" y="26" width="16" height="96" fill="#4a4c52"/>
+  <!-- schoolbag slumped on the floor, right -->
+  <path d="M1006,150 q4,-74 66,-78 q64,-4 70,74 z" fill="#333a4a"/>
+  <path d="M1024,106 q46,-24 98,-3" fill="none" stroke="#4b5468" stroke-width="8"/>
+  <rect x="1050" y="118" width="46" height="20" rx="4" fill="#232936"/>
+</g>
+
+<!-- floor around your own desk -->
+<g filter="url(#dof)">
+  <rect x="-40" y="150" width="1680" height="700" fill="url(#floorGrad)"/>
+  <rect x="-40" y="150" width="1680" height="700" fill="#cfc9b4" filter="url(#speckle)" opacity="0.45"/>
+  <rect x="-40" y="150" width="900" height="700" fill="url(#windowLight)"/>
+  <!-- your own chair leg, nearest thing in frame -->
+  <rect x="78" y="540" width="30" height="290" rx="6" fill="#3d4046"/>
+  <!-- a pencil someone dropped -->
+  <g transform="translate(1470,690) rotate(-24)">
+    <rect x="-58" y="-4" width="116" height="8" rx="3" fill="#9a7b3f"/>
+    <path d="M58,-4 L74,0 L58,4 Z" fill="#d9c59a"/>
+  </g>
+</g>
+
+<!-- overhead light pooled on the desk -->
+<rect width="1600" height="800" fill="url(#lampPool)"/>
+
+<!-- your desk: the only thing in focus -->
+<rect x="220" y="138" width="1160" height="640" rx="12" fill="#000"
+      opacity="0.7" filter="url(#dofFar)"/>
+<g>
+  <rect x="210" y="120" width="1180" height="640" rx="6" fill="url(#deskBase)"/>
+  <rect x="210" y="120" width="1180" height="640" rx="6" fill="#5e4426" filter="url(#woodGrain)"/>
+  <rect x="210" y="120" width="1180" height="640" rx="6" fill="#fff" filter="url(#paperNoise)" opacity="0.5"/>
+  <rect x="210" y="120" width="1180" height="640" rx="6" fill="url(#sheen)"/>
+  <rect x="210" y="120" width="1180" height="26" fill="url(#deskEdgeDark)" opacity="0.45"/>
+  <rect x="210" y="120" width="1180" height="640" rx="6" fill="none"
+        stroke="#e6c496" stroke-opacity="0.5" stroke-width="2"/>
+</g>
+<!-- ACTIVE-PLAYER CUE 1: the whole near edge of the desk glows P1 blue -->
+<defs>
+  <linearGradient id="turnGlow" x1="0" y1="1" x2="0" y2="0">
+    <stop offset="0"   stop-color="#5b8ce0" stop-opacity="0.85"/>
+    <stop offset="0.35" stop-color="#5b8ce0" stop-opacity="0.22"/>
+    <stop offset="1"   stop-color="#5b8ce0" stop-opacity="0"/>
+  </linearGradient>
+</defs>
+<rect x="210" y="620" width="1180" height="140" fill="url(#turnGlow)"/>
+<rect x="210" y="754" width="1180" height="6" fill="#5b8ce0" opacity="0.95"/>
+
+<!-- opponent pen -->
+<g transform="translate(1118,268) rotate(28) scale(0.408)">
+  <use href="#silAmber" transform="translate(14,22)" opacity="0.42" filter="url(#penShadow)"/>
+  <use href="#penAmber"/>
+</g>
+
+<!-- ACTIVE-PLAYER CUE 2: a ring around the pen that is yours to flick -->
+<g transform="translate(560,556)">
+  <ellipse cx="0" cy="0" rx="132" ry="46" fill="#5b8ce0" opacity="0.10"/>
+  <ellipse cx="0" cy="0" rx="132" ry="46" fill="none" stroke="#7ea8ee"
+           stroke-opacity="0.75" stroke-width="2.5" stroke-dasharray="9 7"/>
+</g>
+<g transform="translate(560,556) rotate(-9) scale(0.408)">
+  <use href="#silBlue" transform="translate(14,22)" opacity="0.44" filter="url(#penShadow)"/>
+  <use href="#penBlue"/>
+</g>
+
+<!-- ACTIVE-PLAYER CUE 3: a named banner on the active player's side -->
+<g class="ui" transform="translate(560,700)">
+  <rect x="-142" y="-25" width="284" height="50" rx="25" fill="#0d1524" opacity="0.86"/>
+  <circle cx="-112" cy="0" r="11" fill="#5b8ce0"/>
+  <circle cx="-112" cy="0" r="17" fill="none" stroke="#5b8ce0" stroke-opacity="0.4" stroke-width="2"/>
+  <text x="-86" y="7" font-size="19" font-weight="bold" fill="#eaf2ff" letter-spacing="0.6">P1 &#8212; YOUR FLICK</text>
+</g>
+
+<!-- score -->
+<g class="ui" transform="translate(250,162)">
+  <rect x="0" y="0" width="250" height="64" rx="6" fill="#0d1524" opacity="0.8"/>
+  <rect x="0" y="0" width="4" height="64" fill="#5b8ce0"/>
+  <text x="18" y="25" font-size="11" letter-spacing="2.2" fill="#8e97a8">BEST OF 5 &#183; ROUND 4</text>
+  <text x="18" y="51" font-size="22" font-weight="bold" fill="#eaf2ff">P1</text>
+  <text x="54" y="51" font-size="22" font-weight="bold" fill="#5b8ce0">2</text>
+  <text x="75" y="51" font-size="22" fill="#5b6070">&#8212;</text>
+  <text x="98" y="51" font-size="22" font-weight="bold" fill="#f0a23c">1</text>
+  <text x="119" y="51" font-size="22" font-weight="bold" fill="#eaf2ff">P2</text>
+</g>
+<!-- opponent, dimmed: unmistakably not their turn -->
+<g class="ui" transform="translate(1110,162)" opacity="0.42">
+  <rect x="0" y="0" width="230" height="46" rx="23" fill="#0d1524" opacity="0.75"/>
+  <circle cx="28" cy="23" r="9" fill="#f0a23c"/>
+  <text x="50" y="29" font-size="16" fill="#cbd3e0">P2 &#183; waiting</text>
+</g>
+</svg>

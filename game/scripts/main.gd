@@ -66,7 +66,13 @@ var _autoplay_outside_aim: float = 0.0
 ## missed — a stall must be diagnosable, not silent).
 const AUTOPLAY_STALL_SECONDS: float = 5.0
 
-const FORFEIT_TIMEOUT: float = 4.0
+## Idle (no-input) forfeit backstop. 15 s: long enough that a thinking player
+## is never punished (old 4 s read as a spontaneous game-over — "tap to
+## restart"), short enough that an AFK opponent in hot-seat is noticed. The
+## anti-stall job (weak/fishy flicks never moving a pen) is carried by the
+## stalemate forfeit in turn_state.gd, NOT this timer — this is purely "how
+## long may a turn sit unattended before we end it". [TUNE — playtest]
+const FORFEIT_TIMEOUT: float = 15.0
 ## World-space table rect; must match the TableBounds node geometry in main.tscn.
 ## Spec coordinate contract (docs/ART_AND_FEEL_SPEC.md §1): playfield
 ## Rect2(80,60,1120,600) in viewport coords = centered at (0,0): x -560..560,

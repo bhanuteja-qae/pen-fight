@@ -46,7 +46,7 @@ var _round_over: bool = false
 
 ## pens: list of pen UIDs, e.g. ["red", "blue"]. Stored as String.
 ## forfeit_timeout: seconds the active player has to flick before the round is
-##   forfeit (docs: 4-6 s hard timeout).
+##   forfeit (docs: 4-6 s hard timeout; game default 15 s — tune at playtest).
 ## table_rect: table geometry in world units (defaults to an empty Rect2()).
 ##   Kept pure (Rect2 is a Variant type — no scene dependency). The state
 ##   machine's win rule (flicked pen OOB -> other player wins) is event-driven
