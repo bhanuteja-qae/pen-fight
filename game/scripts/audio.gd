@@ -125,6 +125,25 @@ func _setup_buses() -> void:
 	print("AudioManager: buses Master/SFX/Music -> indexes %d/%d/%d, volumes 1.0/0.9/0.6" % [_master_bus, _sfx_bus, _music_bus])
 
 
+## Master mute, driven by the "Sound" row in Settings. Resolves the master bus
+## index defensively: a headless/dummy audio server reports no buses and this
+## degrades to a no-op rather than erroring in a settings screen.
+func set_muted(muted: bool) -> void:
+	if _master_bus < 0:
+		_master_bus = AudioServer.get_bus_index(BUS_MASTER)
+	if _master_bus < 0:
+		return
+	AudioServer.set_bus_mute(_master_bus, muted)
+
+
+## True when the master bus is muted (read back from the server, so it reflects
+## reality even after a device-level mute).
+func is_muted() -> bool:
+	if _master_bus < 0:
+		return false
+	return AudioServer.is_bus_mute(_master_bus)
+
+
 ## Find a bus by StringName; create it (add_bus appends at the end, then
 ## set_bus_name) if missing, then set its linear volume. Returns -1 on failure.
 func _ensure_bus(name: StringName, rename_to: String, volume: float) -> int:

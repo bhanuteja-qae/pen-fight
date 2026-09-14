@@ -26,6 +26,11 @@ const HIT_STOP_TIME_SCALE: float = 0.02
 const HIT_STOP_MIN_FRAMES: int = 2
 const HIT_STOP_MAX_FRAMES: int = 6
 
+## Screen-shake master switch (the "Screen shake" row in Settings). Hit-stop is
+## deliberately NOT gated by this: it is a freeze, not movement, and disabling it
+## would change how hits READ rather than how much the screen moves.
+var enabled: bool = true
+
 var _trauma: float = 0.0
 var _hit_stop_frames_left: int = 0
 var _rng := RandomNumberGenerator.new()
@@ -40,6 +45,8 @@ var _rng := RandomNumberGenerator.new()
 ## Add 0..1 trauma (stacking, clamped). Call when a hit/impact is REACTED to,
 ## i.e. after the outcome is already decided — never during resolution.
 func shake(trauma: float) -> void:
+	if not enabled:
+		return
 	_trauma = clampf(_trauma + trauma, 0.0, 1.0)
 
 

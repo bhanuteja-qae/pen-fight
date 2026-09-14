@@ -38,6 +38,18 @@ var audio_mgr: AudioManager = null
 ## Hard turn-transition gate overlay (docs §3.5 #1): created in _ready and
 ## driven from here. Self-contained CanvasLayer — no TurnState/PenBody refs.
 var turn_gate: TurnGate = null
+
+## Player settings (persisted) + the sheet that edits them, + haptics. The
+## store is the single source of truth; Main applies every value here so the
+## screen stays a pure view (see _apply_settings / _on_setting_row).
+var settings_store: SettingsStore = null
+var settings_screen: SettingsScreen = null
+var haptics: Haptics = null
+## Round wins this match, keyed by pen_id, and whether the match is decided.
+## A round win is counted when a round resolves; the match ends at
+## settings_store.rounds_to_win() and a tap starts a fresh match.
+var _round_wins: Dictionary = {"red": 0, "blue": 0}
+var _match_over: bool = false
 ## Debug autoplay harness (AutoFlick), created only in debug builds with
 ## PENFIGHT_AUTOPLAY=1. Kept as a member so a re-armed round can schedule the
 ## next flick after the gate tap restarts the game.
@@ -224,10 +236,25 @@ func _ready() -> void:
 		_auto_flick.auto_flick_requested.connect(_on_auto_flick_requested)
 		_auto_flick.arm(1.2)
 
+	# Player settings: load, apply (skins/mute/shake), then build the sheet that
+	# edits them. The env-var skin override stays LAST so an explicit
+	# PENFIGHT_SKIN_<PLAYER> still wins for QA captures.
+	settings_store = SettingsStore.new()
+	settings_store.load_from_disk()
+	haptics = Haptics.new()
+	settings_screen = SettingsScreen.new()
+	add_child(settings_screen)
+	settings_screen.bind(settings_store, _display_name("red"), _display_name("blue"))
+	settings_screen.row_pressed.connect(_on_setting_row)
+	settings_screen.closed.connect(_on_settings_closed)
+
 	turn_state.begin_turn()
 	# Skin selection: apply env overrides AFTER the sprites exist but before
 	# the first frame renders, so PENFIGHT_SKIN_<PLAYER>=ivory shows from t=0.
 	_apply_default_skins()
+	# Applied after the env override so a saved preference is what a real player
+	# gets, while an explicit PENFIGHT_SKIN_* still wins for QA.
+	_apply_settings()
 	# The very first turn is the game opening, not a settle handoff — the gate
 	# would be noise here, and the no-input forfeit acceptance path needs the
 	# first AIM turn to tick its timer (a gated first turn would pause forfeit
@@ -245,7 +272,10 @@ func _process(delta: float) -> void:
 	# Forfeit clock runs only while the gate is NOT up: a settle handoff gate
 	# ("<Player>'s turn — tap") must not burn the next player's timeout while
 	# they are being asked to tap-to-continue.
-	if not _gate_showing:
+	# The forfeit clock and the flick path are suspended under the gate AND
+	# under the settings sheet: a player reading settings must not lose a round
+	# to the idle timer, and a tap on the sheet must never flick a pen.
+	if not _gate_showing and not settings_open():
 		turn_state.forfeit_tick(delta)
 	# OOB verdict + in-flight backstop (review QA-3/QA-2): buffered OOB events
 	# are resolved on a frame boundary (so a same-tick double-OOB sees both pens
@@ -257,13 +287,17 @@ func _process(delta: float) -> void:
 	var phase: String = str(st.get("phase", ""))
 	# Hard turn-transition gate: input is locked outside AIM so a player can
 	# never flick on the wrong turn; the gate overlay drives the handoff.
-	aim_input.input_locked = phase != TurnState.PHASE_AIM
-	if not _gate_showing:
+	aim_input.input_locked = phase != TurnState.PHASE_AIM or settings_open()
+	# Resolve the round BEFORE building the gate prompt: _check_game_over() is
+	# what counts the round for the match, and the prompt quotes that score. It
+	# must run first or the gate shows the previous round's score and never
+	# updates (the gate only shows once per handoff, by design).
+	_check_game_over()
+	if not _gate_showing and not settings_open():
 		_update_gate(st, phase)
 	if phase == TurnState.PHASE_AIM:
 		_sync_aim_zone()
 		_feed_aim_overlay()
-	_check_game_over()
 	# Autoplay driver: keep rounds coming without a human.
 	# 1) Auto-tap ANY showing gate — a decided round's ROUND_OVER gate AND a
 	#    settle-handoff gate (both pens stayed on -> next player's turn). Random
@@ -295,6 +329,16 @@ func _process(delta: float) -> void:
 ## behavior. Mouse events are handled by TurnGate's own _unhandled_input, so
 ## this only forwards the keyboard path.
 func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey:
+		var kb: InputEventKey = event
+		if kb.pressed and (kb.keycode == KEY_ESCAPE or kb.physical_keycode == KEY_ESCAPE):
+			# Escape opens the settings sheet, or closes it if it is already up.
+			get_viewport().set_input_as_handled()
+			if settings_open():
+				settings_screen.close()
+			else:
+				open_settings()
+			return
 	if turn_state == null or not _gate_showing:
 		return
 	if event is InputEventKey:
@@ -322,6 +366,8 @@ func _on_flick_ready(direction: Vector2, power: float, contact_offset: float) ->
 	var pen := _active_pen()
 	if pen != null:
 		pen.apply_flick(direction, power, contact_offset)
+	if haptics != null:
+		haptics.flick(power)
 	# Whoosh tick on release (SFX). The sound layer never gates the game.
 	if audio_mgr != null:
 		audio_mgr.play_flick(power)
@@ -400,6 +446,8 @@ func _feed_aim_overlay() -> void:
 func _on_pen_impact(_pen_uid: String, impact_speed: float) -> void:
 	if audio_mgr != null:
 		audio_mgr.play_impact(impact_speed)
+	if haptics != null:
+		haptics.impact()
 
 
 ## Fired by PenBody.out_of_bounds AFTER TurnState.on_out_of_bounds has already
@@ -433,9 +481,18 @@ func _check_game_over() -> void:
 		return
 	var winner: String = str(st.get("winner", "unknown"))
 	var loser: String = str(st.get("loser", "unknown"))
-	print("[GAME OVER] %s wins the round (loser: %s, phase: %s)." % [
-		_display_name(winner), _display_name(loser), phase])
+	# Count the round for the match (guarded by _game_over_printed above, so
+	# exactly one increment per decided round) and decide the match.
+	if _round_wins.has(winner):
+		_round_wins[winner] = int(_round_wins[winner]) + 1
+	var target: int = settings_store.rounds_to_win() if settings_store != null else 99
+	_match_over = int(_round_wins.get(winner, 0)) >= target
+	print("[GAME OVER] %s wins the round %d-%d (loser: %s, phase: %s).%s" % [
+		_display_name(winner), int(_round_wins.get("red", 0)), int(_round_wins.get("blue", 0)),
+		_display_name(loser), phase, "  MATCH OVER" if _match_over else ""])
 	_game_over_printed = true
+	if haptics != null:
+		haptics.knockout()
 	# Ceremony strength follows HOW the round was decided: an OOB verdict
 	# (including a same-tick double-OOB, now resolved on the frame boundary)
 	# plays the impact beat; forfeits/backstops play a gentler beat. The
@@ -455,9 +512,15 @@ func _update_gate(st: Dictionary, phase: String) -> void:
 		# advanced to the next player — gate their turn before they can flick.
 		_show_gate("%s's turn — tap to continue" % _display_name(cur))
 	elif phase == TurnState.PHASE_ROUND_OVER:
-		# Decided round (OOB winner or forfeit): final prompt. The tap restarts
-		# the game with the winner going first.
-		_show_gate("%s wins — tap to restart" % _display_name(str(st.get("winner", "unknown"))))
+		# Decided round (OOB winner or forfeit). The prompt carries the running
+		# match score; the tap either continues the match (winner first) or, once
+		# a player has reached rounds_to_win(), starts a fresh match.
+		var winner: String = _display_name(str(st.get("winner", "unknown")))
+		var score: String = "%d-%d" % [int(_round_wins.get("red", 0)), int(_round_wins.get("blue", 0))]
+		if _match_over:
+			_show_gate("%s wins the match %s — tap for a rematch" % [winner, score])
+		else:
+			_show_gate("%s wins the round %s — tap to continue" % [winner, score])
 
 
 ## Raise the gate: lock flick routing, remember it's showing, hand the prompt
@@ -490,6 +553,10 @@ func _on_gate_tapped() -> void:
 		# Fresh round: re-arm the once-per-round verdict + ceremony guards.
 		_game_over_printed = false
 		_ceremony_fired = false
+		if _match_over:
+			# Match decided: the tap starts a new match, not another round.
+			_match_over = false
+			_round_wins = {"red": 0, "blue": 0}
 		turn_state.continue_to_next_round()
 		# Autoplay driver: schedule the next random flick for the new round so
 		# PENFIGHT_AUTOPLAY=1 keeps driving rounds without human input.
@@ -498,6 +565,73 @@ func _on_gate_tapped() -> void:
 	# The gate was just acknowledged for this turn — the player can flick now.
 	_acknowledged_player = turn_state.current_player()
 	_sync_aim_zone()
+
+
+## Apply every stored setting to the systems that own it. Called once at start
+## and again after any row change, so the screen never reaches into audio/feel
+## itself.
+func _apply_settings() -> void:
+	if settings_store == null:
+		return
+	set_pen_skin("red", settings_store.pen_red)
+	set_pen_skin("blue", settings_store.pen_blue)
+	if audio_mgr != null:
+		audio_mgr.set_muted(not settings_store.sound_on)
+	if feel != null:
+		feel.enabled = settings_store.screen_shake_on
+	if haptics != null:
+		haptics.set_enabled(settings_store.haptics_on)
+	if settings_screen != null:
+		settings_screen.refresh()
+
+
+## A settings row was tapped. Mutates the store, re-applies it, persists, and
+## repaints the sheet. Row order must match SettingsScreen.Row.
+func _on_setting_row(row: int) -> void:
+	if settings_store == null:
+		return
+	match row:
+		SettingsScreen.Row.SOUND:
+			settings_store.sound_on = not settings_store.sound_on
+		SettingsScreen.Row.HAPTICS:
+			settings_store.haptics_on = not settings_store.haptics_on
+			# Confirm the new state by touch, so the toggle is felt, not just seen.
+			haptics.knockout()
+		SettingsScreen.Row.SHAKE:
+			settings_store.screen_shake_on = not settings_store.screen_shake_on
+		SettingsScreen.Row.MATCH_LENGTH:
+			settings_store.match_length = settings_store.next_match_length()
+		SettingsScreen.Row.PEN_RED:
+			settings_store.set_pen("red", _next_design(settings_store.pen_red))
+		SettingsScreen.Row.PEN_BLUE:
+			settings_store.set_pen("blue", _next_design(settings_store.pen_blue))
+	_apply_settings()
+	settings_store.save_to_disk()
+
+
+## Next pen design in the skin list (cycles), for the "My pen" rows.
+func _next_design(current: String) -> String:
+	var keys: Array = PEN_SKINS.keys()
+	if keys.is_empty():
+		return current
+	var i: int = keys.find(current)
+	return str(keys[(i + 1) % keys.size()]) if i >= 0 else str(keys[0])
+
+
+func open_settings() -> void:
+	if settings_screen == null or _gate_showing:
+		return
+	settings_screen.open()
+
+
+func _on_settings_closed() -> void:
+	_sync_aim_zone()
+
+
+## True while the sheet is up: flicks and the forfeit clock are suspended, the
+## same way the turn gate suspends them (a settings tap must never flick).
+func settings_open() -> bool:
+	return settings_screen != null and settings_screen.is_open()
 
 
 ## Human-readable player name for the gate prompt. Must match what the player
