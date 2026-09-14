@@ -2,12 +2,12 @@
 
 [ext_resource type="Script" uid="uid://a2b3c4d5e6f7" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="Script" uid="uid://b3c4d5e6f7a8" path="res://scripts/pen_body.gd" id="2_pen"]
-[ext_resource type="Texture2D" path="res://assets/table.png" id="3_table"]
+[ext_resource type="Texture2D" path="res://assets/table_classroom.png" id="3_table"]
 [ext_resource type="Texture2D" path="res://assets/pen_amber.png" id="4_red"]
 [ext_resource type="Texture2D" path="res://assets/pen_cobalt.png" id="5_blue"]
 [ext_resource type="Texture2D" path="res://assets/pen_amber_shadow.png" id="6_shadow_red"]
 [ext_resource type="Texture2D" path="res://assets/pen_cobalt_shadow.png" id="7_shadow_blue"]
-[ext_resource type="Texture2D" path="res://assets/background_v2.png" id="8_bg"]
+[ext_resource type="Texture2D" path="res://assets/background_classroom.png" id="8_bg"]
 
 [sub_resource type="CapsuleShape2D" id="pen_shape"]
 radius = 5.0
