@@ -487,9 +487,16 @@ func _check_game_over() -> void:
 		_round_wins[winner] = int(_round_wins[winner]) + 1
 	var target: int = settings_store.rounds_to_win() if settings_store != null else 99
 	_match_over = int(_round_wins.get(winner, 0)) >= target
+	if _match_over and settings_store != null:
+		# Durable series record (docs/design/feature-priorities.md item A1): the
+		# one outcome that outlives the match, persisted immediately. Guarded by
+		# _game_over_printed above, so a decided match is recorded exactly once.
+		settings_store.record_match_win(winner)
 	print("[GAME OVER] %s wins the round %d-%d (loser: %s, phase: %s).%s" % [
 		_display_name(winner), int(_round_wins.get("red", 0)), int(_round_wins.get("blue", 0)),
 		_display_name(loser), phase, "  MATCH OVER" if _match_over else ""])
+	if _match_over:
+		print("[SERIES] %s" % _series_line())
 	_game_over_printed = true
 	if haptics != null:
 		haptics.knockout()
@@ -518,9 +525,22 @@ func _update_gate(st: Dictionary, phase: String) -> void:
 		var winner: String = _display_name(str(st.get("winner", "unknown")))
 		var score: String = "%d-%d" % [int(_round_wins.get("red", 0)), int(_round_wins.get("blue", 0))]
 		if _match_over:
-			_show_gate("%s wins the match %s — tap for a rematch" % [winner, score])
+			# The match-over prompt is the one gate that carries the durable
+			# series: the round score in `score` is about to be thrown away by the
+			# rematch tap, the series is not (item A1).
+			_show_gate("%s wins the match %s — tap for a rematch (%s)" % [winner, score, _series_line()])
 		else:
 			_show_gate("%s wins the round %s — tap to continue" % [winner, score])
+
+
+## The durable series record, formatted for the match-over gate:
+## "series: Amber 2, Cobalt 1". Reads the store; presentation only, no writes.
+func _series_line() -> String:
+	if settings_store == null:
+		return "series unavailable"
+	return "series: %s %d, %s %d" % [
+		_display_name("red"), settings_store.matches_won_red,
+		_display_name("blue"), settings_store.matches_won_blue]
 
 
 ## Raise the gate: lock flick routing, remember it's showing, hand the prompt
