@@ -19,6 +19,34 @@ claims always carry the full repo-relative path.
 
 ---
 
+## Status — what has shipped against this ranking
+
+Updated as items land. Rank 2 (G1) and rank 4 (C2) are the user's own gates; everything else is code.
+
+| Rank | Item | Status |
+|---:|---|---|
+| 1 | A1 persistence | **DONE** — `59c44a1` (series record + `[SERIES]` log + gate line, `series_record_test.gd`, mutation-checked) |
+| 2 | G1 human 20-round playtest | **READY, BLOCKED ON THE USER** — APK rebuilt from the A1–A5 build; questions and the corrected streak explanation are in `docs/handoff-2026-09-14.md` §5 |
+| 3 | A2+A3+A5 gate tells the truth | **DONE** — `535af4d` (skin-accurate names, alternation labels + knockout test case, documented prediction boundary) |
+| 4 | C2 Play Console + 12 testers | **BLOCKED ON THE USER** — zero engineering, 14-day calendar clock |
+| 5 | A4 dead phase vocabulary | **DONE** — `535af4d` (constants and dead test arms deleted, contract doc annotated) |
+| 6 | B3 refresh `ART_AND_FEEL_SPEC.md` | next |
+| 7 | E2 written co-presence pillar | next |
+| 8 | E1 player initials | next (pairs with A1) |
+| 9-10 | B1 3-cue turn system, B2 friction/mass lever | next — test on the G1 playtest first |
+| 11+ | C1 friend-challenge, E3 CI, E4 secrets | later |
+
+**Correction from the work, recorded rather than glossed:** the "winner-starts momentum" attribution this
+document inherited from the two audits is a **misnomer, not a myth**. The convention is strict alternation
+(whoever did not flick last starts), which coincides with "winner starts" whenever the *flicker* lost — the
+common case, because self-OOB ends most rounds — and diverges on a **knockout**, where the next start goes
+to the player who was just beaten. That divergence is what produces streaks, and the 20-round gate log shows
+it directly (winners do not alternate: `blue, red, red, red`, twelve blue wins in a row, then red). The
+effect is real and is a playtest question about perceived fairness; the name was wrong. `docs/design/core-loop.md`
+finding 3 carries the corrected reading.
+
+---
+
 ## Candidates
 
 The candidate set is the task's (a)-(d) plus four additions the evidence justifies, marked **(added)**.
