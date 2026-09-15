@@ -47,7 +47,7 @@ func _on_frame() -> void:
 	_frame += 1
 	if _frame >= 5:
 		_overlay.clear()
-		print("aim_overlay_smoke: PAS OK — overlay drew for %d frames without errors (grab ring + cone + spin arc)" % _frame)
+		print("aim_overlay_smoke: PASS OK — overlay drew for %d frames without errors (grab ring + cone + spin arc)" % _frame)
 		_done = true
 		quit(0)
 
