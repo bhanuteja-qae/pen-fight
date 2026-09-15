@@ -1,0 +1,1831 @@
+{
+  "angular_damp": 1.5,
+  "arm": "mass_0p80",
+  "k": 20,
+  "linear_damp": 2.0,
+  "mass": 0.8,
+  "profile_name": "graphite_anchor",
+  "runs": [
+    {
+      "aggregate": {
+        "angular_travel_deg_p50": 299.977278,
+        "contact_impulse_p50": 1244.10305,
+        "dispersion_deg_p50": 57.683136,
+        "mean": {
+          "angular_travel_deg": 250.075804,
+          "contact_impulse": 1191.323805,
+          "dispersion_deg": 46.735663,
+          "peak_speed": 1489.154785,
+          "settle_time_s": 1.654167,
+          "travel_px": 535.742359
+        },
+        "n": 4,
+        "peak_speed_p50": 1555.128845,
+        "self_oob_rate": 0.5,
+        "settle_time_s_p50": 1.741667,
+        "timed_out_rate": 0.0,
+        "travel_px_p50": 565.083345
+      },
+      "config": {
+        "angular_damp": 1.5,
+        "linear_damp": 2.0,
+        "mass": 0.8,
+        "profile_name": "graphite_anchor",
+        "seed": 1,
+        "shots": 4
+      },
+      "shots": [
+        {
+          "angular_travel_deg": 0.822602,
+          "contact_impulse": 905.53112,
+          "contact_offset": 0.019619,
+          "dir_deg": 2.954709,
+          "dispersion_deg": 2.166363,
+          "peak_speed": 1131.913818,
+          "power": 0.565957,
+          "self_oob": false,
+          "settle_time_s": 2.733333,
+          "shot": 0,
+          "term": "settled",
+          "travel_px": 518.577721
+        },
+        {
+          "angular_travel_deg": 285.723449,
+          "contact_impulse": 1142.91563,
+          "contact_offset": -0.905093,
+          "dir_deg": 17.904261,
+          "dispersion_deg": 68.285948,
+          "peak_speed": 1428.644531,
+          "power": 0.714322,
+          "self_oob": false,
+          "settle_time_s": 2.833333,
+          "shot": 1,
+          "term": "settled",
+          "travel_px": 654.902161
+        },
+        {
+          "angular_travel_deg": 399.526058,
+          "contact_impulse": 1345.29047,
+          "contact_offset": -0.851017,
+          "dir_deg": 27.077185,
+          "dispersion_deg": 47.080324,
+          "peak_speed": 1681.613159,
+          "power": 0.840807,
+          "self_oob": true,
+          "settle_time_s": 0.75,
+          "shot": 2,
+          "term": "oob",
+          "travel_px": 611.588968
+        },
+        {
+          "angular_travel_deg": 314.231106,
+          "contact_impulse": 1371.557999,
+          "contact_offset": 0.73532,
+          "dir_deg": 40.355813,
+          "dispersion_deg": 69.410016,
+          "peak_speed": 1714.447632,
+          "power": 0.857224,
+          "self_oob": true,
+          "settle_time_s": 0.3,
+          "shot": 3,
+          "term": "oob",
+          "travel_px": 357.900588
+        }
+      ]
+    },
+    {
+      "aggregate": {
+        "angular_travel_deg_p50": 77.465643,
+        "contact_impulse_p50": 1151.094675,
+        "dispersion_deg_p50": 32.274606,
+        "mean": {
+          "angular_travel_deg": 80.533807,
+          "contact_impulse": 1146.767545,
+          "dispersion_deg": 36.374605,
+          "peak_speed": 1433.459412,
+          "settle_time_s": 2.204167,
+          "travel_px": 572.257122
+        },
+        "n": 4,
+        "peak_speed_p50": 1438.868347,
+        "self_oob_rate": 0.25,
+        "settle_time_s_p50": 2.775,
+        "timed_out_rate": 0.0,
+        "travel_px_p50": 580.637275
+      },
+      "config": {
+        "angular_damp": 1.5,
+        "linear_damp": 2.0,
+        "mass": 0.8,
+        "profile_name": "graphite_anchor",
+        "seed": 2,
+        "shots": 4
+      },
+      "shots": [
+        {
+          "angular_travel_deg": 75.853506,
+          "contact_impulse": 1138.592625,
+          "contact_offset": -0.573055,
+          "dir_deg": 7.434588,
+          "dispersion_deg": 80.125199,
+          "peak_speed": 1423.240723,
+          "power": 0.71162,
+          "self_oob": false,
+          "settle_time_s": 2.833333,
+          "shot": 0,
+          "term": "settled",
+          "travel_px": 652.424994
+        },
+        {
+          "angular_travel_deg": 20.533943,
+          "contact_impulse": 888.641548,
+          "contact_offset": 0.073451,
+          "dir_deg": 20.501874,
+          "dispersion_deg": 0.824007,
+          "peak_speed": 1110.80188,
+          "power": 0.555401,
+          "self_oob": false,
+          "settle_time_s": 2.716667,
+          "shot": 1,
+          "term": "settled",
+          "travel_px": 508.849556
+        },
+        {
+          "angular_travel_deg": 146.669999,
+          "contact_impulse": 1163.596725,
+          "contact_offset": -0.417024,
+          "dir_deg": 19.658269,
+          "dispersion_deg": 19.787191,
+          "peak_speed": 1454.495972,
+          "power": 0.727248,
+          "self_oob": false,
+          "settle_time_s": 2.85,
+          "shot": 2,
+          "term": "settled",
+          "travel_px": 666.809541
+        },
+        {
+          "angular_travel_deg": 79.077781,
+          "contact_impulse": 1396.239281,
+          "contact_offset": 0.196631,
+          "dir_deg": 29.284789,
+          "dispersion_deg": 44.762021,
+          "peak_speed": 1745.299072,
+          "power": 0.87265,
+          "self_oob": true,
+          "settle_time_s": 0.416667,
+          "shot": 3,
+          "term": "oob",
+          "travel_px": 460.944396
+        }
+      ]
+    },
+    {
+      "aggregate": {
+        "angular_travel_deg_p50": 68.899846,
+        "contact_impulse_p50": 1212.325382,
+        "dispersion_deg_p50": 38.835703,
+        "mean": {
+          "angular_travel_deg": 89.109936,
+          "contact_impulse": 1137.372148,
+          "dispersion_deg": 38.723124,
+          "peak_speed": 1421.715134,
+          "settle_time_s": 2.0625,
+          "travel_px": 632.849593
+        },
+        "n": 4,
+        "peak_speed_p50": 1515.406616,
+        "self_oob_rate": 0.5,
+        "settle_time_s_p50": 2.116667,
+        "timed_out_rate": 0.0,
+        "travel_px_p50": 676.658227
+      },
+      "config": {
+        "angular_damp": 1.5,
+        "linear_damp": 2.0,
+        "mass": 0.8,
+        "profile_name": "graphite_anchor",
+        "seed": 3,
+        "shots": 4
+      },
+      "shots": [
+        {
+          "angular_travel_deg": 33.80327,
+          "contact_impulse": 1326.328087,
+          "contact_offset": -0.325834,
+          "dir_deg": 4.993894,
+          "dispersion_deg": 37.387812,
+          "peak_speed": 1657.909912,
+          "power": 0.828955,
+          "self_oob": false,
+          "settle_time_s": 2.9,
+          "shot": 0,
+          "term": "settled",
+          "travel_px": 760.244947
+        },
+        {
+          "angular_travel_deg": 33.328687,
+          "contact_impulse": 1453.711891,
+          "contact_offset": -0.123979,
+          "dir_deg": 11.875498,
+          "dispersion_deg": 43.814762,
+          "peak_speed": 1817.139893,
+          "power": 0.90857,
+          "self_oob": false,
+          "settle_time_s": 2.95,
+          "shot": 1,
+          "term": "settled",
+          "travel_px": 833.438904
+        },
+        {
+          "angular_travel_deg": 185.311367,
+          "contact_impulse": 1098.322678,
+          "contact_offset": 0.379843,
+          "dir_deg": 30.731076,
+          "dispersion_deg": 33.406327,
+          "peak_speed": 1372.90332,
+          "power": 0.686452,
+          "self_oob": true,
+          "settle_time_s": 1.333333,
+          "shot": 2,
+          "term": "oob",
+          "travel_px": 593.071507
+        },
+        {
+          "angular_travel_deg": 103.996422,
+          "contact_impulse": 671.125937,
+          "contact_offset": -0.284844,
+          "dir_deg": 40.357512,
+          "dispersion_deg": 40.283594,
+          "peak_speed": 838.90741,
+          "power": 0.419454,
+          "self_oob": true,
+          "settle_time_s": 1.066667,
+          "shot": 3,
+          "term": "oob",
+          "travel_px": 344.643014
+        }
+      ]
+    },
+    {
+      "aggregate": {
+        "angular_travel_deg_p50": 73.260544,
+        "contact_impulse_p50": 1095.514059,
+        "dispersion_deg_p50": 37.472338,
+        "mean": {
+          "angular_travel_deg": 155.661524,
+          "contact_impulse": 1109.788513,
+          "dispersion_deg": 35.752351,
+          "peak_speed": 1387.235596,
+          "settle_time_s": 1.870833,
+          "travel_px": 543.212254
+        },
+        "n": 4,
+        "peak_speed_p50": 1369.392517,
+        "self_oob_rate": 0.5,
+        "settle_time_s_p50": 2.141667,
+        "timed_out_rate": 0.0,
+        "travel_px_p50": 559.129574
+      },
+      "config": {
+        "angular_damp": 1.5,
+        "linear_damp": 2.0,
+        "mass": 0.8,
+        "profile_name": "graphite_anchor",
+        "seed": 4,
+        "shots": 4
+      },
+      "shots": [
+        {
+          "angular_travel_deg": 64.460829,
+          "contact_impulse": 912.007999,
+          "contact_offset": 0.462184,
+          "dir_deg": 9.802124,
+          "dispersion_deg": 51.970362,
+          "peak_speed": 1140.01001,
+          "power": 0.570005,
+          "self_oob": false,
+          "settle_time_s": 2.733333,
+          "shot": 0,
+          "term": "settled",
+          "travel_px": 522.286724
+        },
+        {
+          "angular_travel_deg": 36.38943,
+          "contact_impulse": 1112.814713,
+          "contact_offset": 0.176544,
+          "dir_deg": 11.897734,
+          "dispersion_deg": 22.974314,
+          "peak_speed": 1391.018311,
+          "power": 0.695509,
+          "self_oob": false,
+          "settle_time_s": 2.816667,
+          "shot": 1,
+          "term": "settled",
+          "travel_px": 637.597832
+        },
+        {
+          "angular_travel_deg": 82.06026,
+          "contact_impulse": 1078.213406,
+          "contact_offset": 0.22962,
+          "dir_deg": 22.075214,
+          "dispersion_deg": 56.499263,
+          "peak_speed": 1347.766724,
+          "power": 0.673883,
+          "self_oob": true,
+          "settle_time_s": 1.55,
+          "shot": 2,
+          "term": "oob",
+          "travel_px": 595.972424
+        },
+        {
+          "angular_travel_deg": 439.735579,
+          "contact_impulse": 1336.117935,
+          "contact_offset": 0.93538,
+          "dir_deg": 38.81989,
+          "dispersion_deg": 11.565464,
+          "peak_speed": 1670.147339,
+          "power": 0.835074,
+          "self_oob": true,
+          "settle_time_s": 0.383333,
+          "shot": 3,
+          "term": "oob",
+          "travel_px": 416.992035
+        }
+      ]
+    },
+    {
+      "aggregate": {
+        "angular_travel_deg_p50": 129.803459,
+        "contact_impulse_p50": 1450.434303,
+        "dispersion_deg_p50": 37.896826,
+        "mean": {
+          "angular_travel_deg": 143.387809,
+          "contact_impulse": 1298.667896,
+          "dispersion_deg": 40.063447,
+          "peak_speed": 1623.334824,
+          "settle_time_s": 1.85,
+          "travel_px": 608.441212
+        },
+        "n": 4,
+        "peak_speed_p50": 1813.042847,
+        "self_oob_rate": 0.5,
+        "settle_time_s_p50": 2.083333,
+        "timed_out_rate": 0.0,
+        "travel_px_p50": 605.648382
+      },
+      "config": {
+        "angular_damp": 1.5,
+        "linear_damp": 2.0,
+        "mass": 0.8,
+        "profile_name": "graphite_anchor",
+        "seed": 5,
+        "shots": 4
+      },
+      "shots": [
+        {
+          "angular_travel_deg": 56.621913,
+          "contact_impulse": 1441.650009,
+          "contact_offset": -0.437816,
+          "dir_deg": 5.729312,
+          "dispersion_deg": 59.990729,
+          "peak_speed": 1802.0625,
+          "power": 0.901031,
+          "self_oob": false,
+          "settle_time_s": 2.95,
+          "shot": 0,
+          "term": "settled",
+          "travel_px": 826.523603
+        },
+        {
+          "angular_travel_deg": 202.985004,
+          "contact_impulse": 1459.218597,
+          "contact_offset": 0.444816,
+          "dir_deg": 20.768441,
+          "dispersion_deg": 6.405789,
+          "peak_speed": 1824.023193,
+          "power": 0.912012,
+          "self_oob": true,
+          "settle_time_s": 1.55,
+          "shot": 1,
+          "term": "oob",
+          "travel_px": 806.569605
+        },
+        {
+          "angular_travel_deg": 46.475768,
+          "contact_impulse": 707.331419,
+          "contact_offset": 0.152204,
+          "dir_deg": 28.733919,
+          "dispersion_deg": 15.802924,
+          "peak_speed": 884.164246,
+          "power": 0.442082,
+          "self_oob": false,
+          "settle_time_s": 2.616667,
+          "shot": 2,
+          "term": "settled",
+          "travel_px": 404.72716
+        },
+        {
+          "angular_travel_deg": 267.468551,
+          "contact_impulse": 1586.471558,
+          "contact_offset": -0.617741,
+          "dir_deg": 36.118807,
+          "dispersion_deg": 78.054348,
+          "peak_speed": 1983.089355,
+          "power": 0.991545,
+          "self_oob": true,
+          "settle_time_s": 0.283333,
+          "shot": 3,
+          "term": "oob",
+          "travel_px": 395.944481
+        }
+      ]
+    },
+    {
+      "aggregate": {
+        "angular_travel_deg_p50": 178.894834,
+        "contact_impulse_p50": 1419.793797,
+        "dispersion_deg_p50": 56.715235,
+        "mean": {
+          "angular_travel_deg": 206.931545,
+          "contact_impulse": 1376.857018,
+          "dispersion_deg": 59.063588,
+          "peak_speed": 1721.071259,
+          "settle_time_s": 1.6875,
+          "travel_px": 633.455525
+        },
+        "n": 4,
+        "peak_speed_p50": 1774.742249,
+        "self_oob_rate": 0.5,
+        "settle_time_s_p50": 1.683333,
+        "timed_out_rate": 0.0,
+        "travel_px_p50": 570.595998
+      },
+      "config": {
+        "angular_damp": 1.5,
+        "linear_damp": 2.0,
+        "mass": 0.8,
+        "profile_name": "graphite_anchor",
+        "seed": 6,
+        "shots": 4
+      },
+      "shots": [
+        {
+          "angular_travel_deg": 146.584847,
+          "contact_impulse": 1582.410812,
+          "contact_offset": 0.599107,
+          "dir_deg": 9.907384,
+          "dispersion_deg": 49.433279,
+          "peak_speed": 1978.013428,
+          "power": 0.989007,
+          "self_oob": false,
+          "settle_time_s": 2.983333,
+          "shot": 0,
+          "term": "settled",
+          "travel_px": 907.342448
+        },
+        {
+          "angular_travel_deg": 41.498441,
+          "contact_impulse": 1085.429668,
+          "contact_offset": -0.12829,
+          "dir_deg": 19.372479,
+          "dispersion_deg": 59.140538,
+          "peak_speed": 1356.787109,
+          "power": 0.678394,
+          "self_oob": false,
+          "settle_time_s": 2.816667,
+          "shot": 1,
+          "term": "settled",
+          "travel_px": 621.907312
+        },
+        {
+          "angular_travel_deg": 428.43807,
+          "contact_impulse": 1329.073334,
+          "contact_offset": -0.992288,
+          "dir_deg": 28.612611,
+          "dispersion_deg": 73.390604,
+          "peak_speed": 1661.341675,
+          "power": 0.830671,
+          "self_oob": true,
+          "settle_time_s": 0.55,
+          "shot": 2,
+          "term": "oob",
+          "travel_px": 519.284683
+        },
+        {
+          "angular_travel_deg": 211.204821,
+          "contact_impulse": 1510.514259,
+          "contact_offset": -0.405344,
+          "dir_deg": 36.837151,
+          "dispersion_deg": 54.289932,
+          "peak_speed": 1888.142822,
+          "power": 0.944071,
+          "self_oob": true,
+          "settle_time_s": 0.4,
+          "shot": 3,
+          "term": "oob",
+          "travel_px": 485.287658
+        }
+      ]
+    },
+    {
+      "aggregate": {
+        "angular_travel_deg_p50": 134.910207,
+        "contact_impulse_p50": 1073.698807,
+        "dispersion_deg_p50": 43.713484,
+        "mean": {
+          "angular_travel_deg": 132.167345,
+          "contact_impulse": 1058.70955,
+          "dispersion_deg": 41.187344,
+          "peak_speed": 1323.386963,
+          "settle_time_s": 2.779167,
+          "travel_px": 606.544562
+        },
+        "n": 4,
+        "peak_speed_p50": 1342.123535,
+        "self_oob_rate": 0.0,
+        "settle_time_s_p50": 2.791667,
+        "timed_out_rate": 0.0,
+        "travel_px_p50": 615.144046
+      },
+      "config": {
+        "angular_damp": 1.5,
+        "linear_damp": 2.0,
+        "mass": 0.8,
+        "profile_name": "graphite_anchor",
+        "seed": 7,
+        "shots": 4
+      },
+      "shots": [
+        {
+          "angular_travel_deg": 69.137951,
+          "contact_impulse": 1318.787193,
+          "contact_offset": 0.800806,
+          "dir_deg": 4.178083,
+          "dispersion_deg": 62.077388,
+          "peak_speed": 1648.484009,
+          "power": 0.824242,
+          "self_oob": false,
+          "settle_time_s": 2.9,
+          "shot": 0,
+          "term": "settled",
+          "travel_px": 755.922594
+        },
+        {
+          "angular_travel_deg": 189.711015,
+          "contact_impulse": 1408.306789,
+          "contact_offset": 0.511367,
+          "dir_deg": 17.046892,
+          "dispersion_deg": 15.245018,
+          "peak_speed": 1760.383545,
+          "power": 0.880192,
+          "self_oob": false,
+          "settle_time_s": 2.933333,
+          "shot": 1,
+          "term": "settled",
+          "travel_px": 807.352005
+        },
+        {
+          "angular_travel_deg": 180.988601,
+          "contact_impulse": 828.61042,
+          "contact_offset": 0.725811,
+          "dir_deg": 19.576407,
+          "dispersion_deg": 26.136954,
+          "peak_speed": 1035.763062,
+          "power": 0.517882,
+          "self_oob": false,
+          "settle_time_s": 2.683333,
+          "shot": 2,
+          "term": "settled",
+          "travel_px": 474.365498
+        },
+        {
+          "angular_travel_deg": 88.831813,
+          "contact_impulse": 679.133797,
+          "contact_offset": -0.263341,
+          "dir_deg": 33.584349,
+          "dispersion_deg": 61.290014,
+          "peak_speed": 848.917236,
+          "power": 0.424459,
+          "self_oob": false,
+          "settle_time_s": 2.6,
+          "shot": 3,
+          "term": "settled",
+          "travel_px": 388.538151
+        }
+      ]
+    },
+    {
+      "aggregate": {
+        "angular_travel_deg_p50": 258.603311,
+        "contact_impulse_p50": 1206.204796,
+        "dispersion_deg_p50": 49.138631,
+        "mean": {
+          "angular_travel_deg": 241.596721,
+          "contact_impulse": 1209.077597,
+          "dispersion_deg": 44.874466,
+          "peak_speed": 1511.346924,
+          "settle_time_s": 1.779167,
+          "travel_px": 612.924668
+        },
+        "n": 4,
+        "peak_speed_p50": 1507.75592,
+        "self_oob_rate": 0.5,
+        "settle_time_s_p50": 1.775,
+        "timed_out_rate": 0.0,
+        "travel_px_p50": 617.023108
+      },
+      "config": {
+        "angular_damp": 1.5,
+        "linear_damp": 2.0,
+        "mass": 0.8,
+        "profile_name": "graphite_anchor",
+        "seed": 8,
+        "shots": 4
+      },
+      "shots": [
+        {
+          "angular_travel_deg": 42.547271,
+          "contact_impulse": 1230.796242,
+          "contact_offset": -0.541818,
+          "dir_deg": 4.071914,
+          "dispersion_deg": 44.845223,
+          "peak_speed": 1538.495239,
+          "power": 0.769248,
+          "self_oob": false,
+          "settle_time_s": 2.866667,
+          "shot": 0,
+          "term": "settled",
+          "travel_px": 705.376613
+        },
+        {
+          "angular_travel_deg": 117.424604,
+          "contact_impulse": 1181.61335,
+          "contact_offset": 0.583496,
+          "dir_deg": 10.926848,
+          "dispersion_deg": 78.398367,
+          "peak_speed": 1477.016602,
+          "power": 0.738508,
+          "self_oob": false,
+          "settle_time_s": 2.85,
+          "shot": 1,
+          "term": "settled",
+          "travel_px": 677.134049
+        },
+        {
+          "angular_travel_deg": 406.632989,
+          "contact_impulse": 1262.54673,
+          "contact_offset": 0.884456,
+          "dir_deg": 29.106278,
+          "dispersion_deg": 2.822235,
+          "peak_speed": 1578.18335,
+          "power": 0.789092,
+          "self_oob": true,
+          "settle_time_s": 0.7,
+          "shot": 2,
+          "term": "oob",
+          "travel_px": 556.912168
+        },
+        {
+          "angular_travel_deg": 399.782017,
+          "contact_impulse": 1161.354065,
+          "contact_offset": -0.829714,
+          "dir_deg": 33.656172,
+          "dispersion_deg": 53.43204,
+          "peak_speed": 1451.692505,
+          "power": 0.725846,
+          "self_oob": true,
+          "settle_time_s": 0.7,
+          "shot": 3,
+          "term": "oob",
+          "travel_px": 512.27584
+        }
+      ]
+    },
+    {
+      "aggregate": {
+        "angular_travel_deg_p50": 64.036074,
+        "contact_impulse_p50": 1169.534349,
+        "dispersion_deg_p50": 62.623548,
+        "mean": {
+          "angular_travel_deg": 107.56488,
+          "contact_impulse": 1101.36534,
+          "dispersion_deg": 55.62136,
+          "peak_speed": 1376.706619,
+          "settle_time_s": 1.833333,
+          "travel_px": 580.975041
+        },
+        "n": 4,
+        "peak_speed_p50": 1461.917908,
+        "self_oob_rate": 0.5,
+        "settle_time_s_p50": 1.816667,
+        "timed_out_rate": 0.0,
+        "travel_px_p50": 606.315617
+      },
+      "config": {
+        "angular_damp": 1.5,
+        "linear_damp": 2.0,
+        "mass": 0.8,
+        "profile_name": "graphite_anchor",
+        "seed": 9,
+        "shots": 4
+      },
+      "shots": [
+        {
+          "angular_travel_deg": 93.423805,
+          "contact_impulse": 722.064734,
+          "contact_offset": 0.850293,
+          "dir_deg": 9.755996,
+          "dispersion_deg": 79.770227,
+          "peak_speed": 902.580872,
+          "power": 0.45129,
+          "self_oob": false,
+          "settle_time_s": 2.616667,
+          "shot": 0,
+          "term": "settled",
+          "travel_px": 413.157454
+        },
+        {
+          "angular_travel_deg": 293.560414,
+          "contact_impulse": 1218.119335,
+          "contact_offset": -0.974555,
+          "dir_deg": 15.975118,
+          "dispersion_deg": 62.704272,
+          "peak_speed": 1522.64917,
+          "power": 0.761325,
+          "self_oob": false,
+          "settle_time_s": 2.866667,
+          "shot": 1,
+          "term": "settled",
+          "travel_px": 698.111477
+        },
+        {
+          "angular_travel_deg": 8.626959,
+          "contact_impulse": 1344.327927,
+          "contact_offset": 0.01778,
+          "dir_deg": 25.706664,
+          "dispersion_deg": 17.468119,
+          "peak_speed": 1680.40979,
+          "power": 0.840205,
+          "self_oob": true,
+          "settle_time_s": 1.016667,
+          "shot": 2,
+          "term": "oob",
+          "travel_px": 681.120793
+        },
+        {
+          "angular_travel_deg": 34.648343,
+          "contact_impulse": 1120.949364,
+          "contact_offset": -0.079171,
+          "dir_deg": 29.533302,
+          "dispersion_deg": 62.542823,
+          "peak_speed": 1401.186646,
+          "power": 0.700593,
+          "self_oob": true,
+          "settle_time_s": 0.833333,
+          "shot": 3,
+          "term": "oob",
+          "travel_px": 531.510441
+        }
+      ]
+    },
+    {
+      "aggregate": {
+        "angular_travel_deg_p50": 157.288991,
+        "contact_impulse_p50": 1332.170916,
+        "dispersion_deg_p50": 54.531441,
+        "mean": {
+          "angular_travel_deg": 195.788272,
+          "contact_impulse": 1292.374635,
+          "dispersion_deg": 48.60302,
+          "peak_speed": 1615.468292,
+          "settle_time_s": 2.5,
+          "travel_px": 730.589015
+        },
+        "n": 4,
+        "peak_speed_p50": 1665.213623,
+        "self_oob_rate": 0.25,
+        "settle_time_s_p50": 2.908333,
+        "timed_out_rate": 0.0,
+        "travel_px_p50": 763.622473
+      },
+      "config": {
+        "angular_damp": 1.5,
+        "linear_damp": 2.0,
+        "mass": 0.8,
+        "profile_name": "graphite_anchor",
+        "seed": 10,
+        "shots": 4
+      },
+      "shots": [
+        {
+          "angular_travel_deg": 68.962058,
+          "contact_impulse": 1581.979179,
+          "contact_offset": 0.411794,
+          "dir_deg": 6.764976,
+          "dispersion_deg": 59.32225,
+          "peak_speed": 1977.473999,
+          "power": 0.988737,
+          "self_oob": false,
+          "settle_time_s": 2.983333,
+          "shot": 0,
+          "term": "settled",
+          "travel_px": 907.095192
+        },
+        {
+          "angular_travel_deg": 111.998999,
+          "contact_impulse": 1324.434757,
+          "contact_offset": 0.591438,
+          "dir_deg": 9.155909,
+          "dispersion_deg": 81.826329,
+          "peak_speed": 1655.543457,
+          "power": 0.827772,
+          "self_oob": false,
+          "settle_time_s": 2.9,
+          "shot": 1,
+          "term": "settled",
+          "travel_px": 759.159724
+        },
+        {
+          "angular_travel_deg": 399.613047,
+          "contact_impulse": 1339.907074,
+          "contact_offset": 0.997735,
+          "dir_deg": 19.429977,
+          "dispersion_deg": 3.522867,
+          "peak_speed": 1674.883789,
+          "power": 0.837442,
+          "self_oob": false,
+          "settle_time_s": 2.916667,
+          "shot": 2,
+          "term": "settled",
+          "travel_px": 768.085223
+        },
+        {
+          "angular_travel_deg": 202.578984,
+          "contact_impulse": 923.177528,
+          "contact_offset": -0.435392,
+          "dir_deg": 36.015828,
+          "dispersion_deg": 49.740632,
+          "peak_speed": 1153.971924,
+          "power": 0.576986,
+          "self_oob": true,
+          "settle_time_s": 1.2,
+          "shot": 3,
+          "term": "oob",
+          "travel_px": 488.015921
+        }
+      ]
+    },
+    {
+      "aggregate": {
+        "angular_travel_deg_p50": 125.852216,
+        "contact_impulse_p50": 984.825039,
+        "dispersion_deg_p50": 30.24916,
+        "mean": {
+          "angular_travel_deg": 124.71902,
+          "contact_impulse": 993.157208,
+          "dispersion_deg": 34.931651,
+          "peak_speed": 1241.446518,
+          "settle_time_s": 1.8875,
+          "travel_px": 510.192935
+        },
+        "n": 4,
+        "peak_speed_p50": 1231.03125,
+        "self_oob_rate": 0.5,
+        "settle_time_s_p50": 2.091667,
+        "timed_out_rate": 0.0,
+        "travel_px_p50": 515.418076
+      },
+      "config": {
+        "angular_damp": 1.5,
+        "linear_damp": 2.0,
+        "mass": 0.8,
+        "profile_name": "graphite_anchor",
+        "seed": 11,
+        "shots": 4
+      },
+      "shots": [
+        {
+          "angular_travel_deg": 58.969022,
+          "contact_impulse": 1033.266449,
+          "contact_offset": -0.409731,
+          "dir_deg": 8.919439,
+          "dispersion_deg": 65.42942,
+          "peak_speed": 1291.583008,
+          "power": 0.645792,
+          "self_oob": false,
+          "settle_time_s": 2.783333,
+          "shot": 0,
+          "term": "settled",
+          "travel_px": 591.909681
+        },
+        {
+          "angular_travel_deg": 4.749308,
+          "contact_impulse": 730.474234,
+          "contact_offset": -0.045052,
+          "dir_deg": 9.247671,
+          "dispersion_deg": 13.798863,
+          "peak_speed": 913.092834,
+          "power": 0.456546,
+          "self_oob": false,
+          "settle_time_s": 2.633333,
+          "shot": 1,
+          "term": "settled",
+          "travel_px": 418.025907
+        },
+        {
+          "angular_travel_deg": 242.422342,
+          "contact_impulse": 1272.50452,
+          "contact_offset": 0.564613,
+          "dir_deg": 28.981065,
+          "dispersion_deg": 20.400004,
+          "peak_speed": 1590.630737,
+          "power": 0.795315,
+          "self_oob": true,
+          "settle_time_s": 0.583333,
+          "shot": 2,
+          "term": "oob",
+          "travel_px": 513.258773
+        },
+        {
+          "angular_travel_deg": 192.73541,
+          "contact_impulse": 936.383629,
+          "contact_offset": -0.401412,
+          "dir_deg": 35.549922,
+          "dispersion_deg": 40.098317,
+          "peak_speed": 1170.479492,
+          "power": 0.58524,
+          "self_oob": true,
+          "settle_time_s": 1.55,
+          "shot": 3,
+          "term": "oob",
+          "travel_px": 517.577378
+        }
+      ]
+    },
+    {
+      "aggregate": {
+        "angular_travel_deg_p50": 176.835601,
+        "contact_impulse_p50": 951.920033,
+        "dispersion_deg_p50": 41.711125,
+        "mean": {
+          "angular_travel_deg": 157.862129,
+          "contact_impulse": 1007.924461,
+          "dispersion_deg": 43.705595,
+          "peak_speed": 1259.905594,
+          "settle_time_s": 2.554167,
+          "travel_px": 575.362386
+        },
+        "n": 4,
+        "peak_speed_p50": 1189.900024,
+        "self_oob_rate": 0.25,
+        "settle_time_s_p50": 2.725,
+        "timed_out_rate": 0.0,
+        "travel_px_p50": 541.200826
+      },
+      "config": {
+        "angular_damp": 1.5,
+        "linear_damp": 2.0,
+        "mass": 0.8,
+        "profile_name": "graphite_anchor",
+        "seed": 12,
+        "shots": 4
+      },
+      "shots": [
+        {
+          "angular_travel_deg": 158.076687,
+          "contact_impulse": 1034.866142,
+          "contact_offset": -0.999487,
+          "dir_deg": 9.794747,
+          "dispersion_deg": 18.720477,
+          "peak_speed": 1293.582642,
+          "power": 0.646791,
+          "self_oob": false,
+          "settle_time_s": 2.783333,
+          "shot": 0,
+          "term": "settled",
+          "travel_px": 592.825842
+        },
+        {
+          "angular_travel_deg": 195.594514,
+          "contact_impulse": 1321.889305,
+          "contact_offset": -0.780074,
+          "dir_deg": 12.186599,
+          "dispersion_deg": 19.626436,
+          "peak_speed": 1652.361694,
+          "power": 0.826181,
+          "self_oob": false,
+          "settle_time_s": 2.9,
+          "shot": 1,
+          "term": "settled",
+          "travel_px": 757.700667
+        },
+        {
+          "angular_travel_deg": 234.000949,
+          "contact_impulse": 805.968475,
+          "contact_offset": -0.965793,
+          "dir_deg": 19.555697,
+          "dispersion_deg": 63.795813,
+          "peak_speed": 1007.460632,
+          "power": 0.50373,
+          "self_oob": false,
+          "settle_time_s": 2.666667,
+          "shot": 2,
+          "term": "settled",
+          "travel_px": 461.347225
+        },
+        {
+          "angular_travel_deg": 43.776367,
+          "contact_impulse": 868.973923,
+          "contact_offset": -0.110549,
+          "dir_deg": 30.742957,
+          "dispersion_deg": 72.679655,
+          "peak_speed": 1086.217407,
+          "power": 0.543109,
+          "self_oob": true,
+          "settle_time_s": 1.866667,
+          "shot": 3,
+          "term": "oob",
+          "travel_px": 489.57581
+        }
+      ]
+    },
+    {
+      "aggregate": {
+        "angular_travel_deg_p50": 41.979941,
+        "contact_impulse_p50": 858.757663,
+        "dispersion_deg_p50": 18.039888,
+        "mean": {
+          "angular_travel_deg": 99.079414,
+          "contact_impulse": 963.876283,
+          "dispersion_deg": 31.342208,
+          "peak_speed": 1204.845367,
+          "settle_time_s": 2.133333,
+          "travel_px": 482.857989
+        },
+        "n": 4,
+        "peak_speed_p50": 1073.447083,
+        "self_oob_rate": 0.25,
+        "settle_time_s_p50": 2.625,
+        "timed_out_rate": 0.0,
+        "travel_px_p50": 476.086812
+      },
+      "config": {
+        "angular_damp": 1.5,
+        "linear_damp": 2.0,
+        "mass": 0.8,
+        "profile_name": "graphite_anchor",
+        "seed": 13,
+        "shots": 4
+      },
+      "shots": [
+        {
+          "angular_travel_deg": 0.160474,
+          "contact_impulse": 983.869267,
+          "contact_offset": -0.040862,
+          "dir_deg": -0.254587,
+          "dispersion_deg": 0.407824,
+          "peak_speed": 1229.83667,
+          "power": 0.614918,
+          "self_oob": false,
+          "settle_time_s": 2.766667,
+          "shot": 0,
+          "term": "settled",
+          "travel_px": 563.55692
+        },
+        {
+          "angular_travel_deg": 43.687963,
+          "contact_impulse": 733.646059,
+          "contact_offset": 0.252529,
+          "dir_deg": 15.223763,
+          "dispersion_deg": 26.641665,
+          "peak_speed": 917.057495,
+          "power": 0.458529,
+          "self_oob": false,
+          "settle_time_s": 2.633333,
+          "shot": 1,
+          "term": "settled",
+          "travel_px": 419.840926
+        },
+        {
+          "angular_travel_deg": 312.197301,
+          "contact_impulse": 1411.478901,
+          "contact_offset": 0.778137,
+          "dir_deg": 25.562021,
+          "dispersion_deg": 88.881234,
+          "peak_speed": 1764.348633,
+          "power": 0.882174,
+          "self_oob": true,
+          "settle_time_s": 0.516667,
+          "shot": 2,
+          "term": "oob",
+          "travel_px": 532.332699
+        },
+        {
+          "angular_travel_deg": 40.27192,
+          "contact_impulse": 726.510906,
+          "contact_offset": 0.126715,
+          "dir_deg": 29.153774,
+          "dispersion_deg": 9.43811,
+          "peak_speed": 908.138672,
+          "power": 0.454069,
+          "self_oob": false,
+          "settle_time_s": 2.616667,
+          "shot": 3,
+          "term": "settled",
+          "travel_px": 415.701412
+        }
+      ]
+    },
+    {
+      "aggregate": {
+        "angular_travel_deg_p50": 160.012753,
+        "contact_impulse_p50": 1126.258945,
+        "dispersion_deg_p50": 60.612572,
+        "mean": {
+          "angular_travel_deg": 158.943262,
+          "contact_impulse": 1212.649298,
+          "dispersion_deg": 56.489672,
+          "peak_speed": 1515.811554,
+          "settle_time_s": 1.754167,
+          "travel_px": 547.094125
+        },
+        "n": 4,
+        "peak_speed_p50": 1407.823547,
+        "self_oob_rate": 0.5,
+        "settle_time_s_p50": 1.941667,
+        "timed_out_rate": 0.0,
+        "travel_px_p50": 560.87476
+      },
+      "config": {
+        "angular_damp": 1.5,
+        "linear_damp": 2.0,
+        "mass": 0.8,
+        "profile_name": "graphite_anchor",
+        "seed": 14,
+        "shots": 4
+      },
+      "shots": [
+        {
+          "angular_travel_deg": 54.13434,
+          "contact_impulse": 1201.012421,
+          "contact_offset": -0.263907,
+          "dir_deg": 10.957877,
+          "dispersion_deg": 62.83513,
+          "peak_speed": 1501.265259,
+          "power": 0.750633,
+          "self_oob": false,
+          "settle_time_s": 2.866667,
+          "shot": 0,
+          "term": "settled",
+          "travel_px": 688.307372
+        },
+        {
+          "angular_travel_deg": 76.461038,
+          "contact_impulse": 1051.50547,
+          "contact_offset": 0.315136,
+          "dir_deg": 14.882632,
+          "dispersion_deg": 58.390014,
+          "peak_speed": 1314.381836,
+          "power": 0.657191,
+          "self_oob": false,
+          "settle_time_s": 2.8,
+          "shot": 1,
+          "term": "settled",
+          "travel_px": 602.415147
+        },
+        {
+          "angular_travel_deg": 243.564467,
+          "contact_impulse": 1007.125282,
+          "contact_offset": 0.619718,
+          "dir_deg": 27.591582,
+          "dispersion_deg": 25.143305,
+          "peak_speed": 1258.906616,
+          "power": 0.629453,
+          "self_oob": true,
+          "settle_time_s": 1.083333,
+          "shot": 2,
+          "term": "oob",
+          "travel_px": 519.334373
+        },
+        {
+          "angular_travel_deg": 261.613202,
+          "contact_impulse": 1590.954018,
+          "contact_offset": -0.565966,
+          "dir_deg": 40.868419,
+          "dispersion_deg": 79.59024,
+          "peak_speed": 1988.692505,
+          "power": 0.994346,
+          "self_oob": true,
+          "settle_time_s": 0.266667,
+          "shot": 3,
+          "term": "oob",
+          "travel_px": 378.319607
+        }
+      ]
+    },
+    {
+      "aggregate": {
+        "angular_travel_deg_p50": 142.214636,
+        "contact_impulse_p50": 1025.130653,
+        "dispersion_deg_p50": 48.281179,
+        "mean": {
+          "angular_travel_deg": 142.250609,
+          "contact_impulse": 1021.683931,
+          "dispersion_deg": 43.027798,
+          "peak_speed": 1277.104935,
+          "settle_time_s": 2.25,
+          "travel_px": 553.370317
+        },
+        "n": 4,
+        "peak_speed_p50": 1281.413361,
+        "self_oob_rate": 0.25,
+        "settle_time_s_p50": 2.633333,
+        "timed_out_rate": 0.0,
+        "travel_px_p50": 523.452805
+      },
+      "config": {
+        "angular_damp": 1.5,
+        "linear_damp": 2.0,
+        "mass": 0.8,
+        "profile_name": "graphite_anchor",
+        "seed": 15,
+        "shots": 4
+      },
+      "shots": [
+        {
+          "angular_travel_deg": 16.334779,
+          "contact_impulse": 717.165279,
+          "contact_offset": 0.338974,
+          "dir_deg": 4.291324,
+          "dispersion_deg": 11.361999,
+          "peak_speed": 896.456665,
+          "power": 0.448228,
+          "self_oob": false,
+          "settle_time_s": 2.616667,
+          "shot": 0,
+          "term": "settled",
+          "travel_px": 410.353912
+        },
+        {
+          "angular_travel_deg": 83.898763,
+          "contact_impulse": 1319.309139,
+          "contact_offset": 0.253459,
+          "dir_deg": 16.214005,
+          "dispersion_deg": 64.186834,
+          "peak_speed": 1649.136353,
+          "power": 0.824568,
+          "self_oob": false,
+          "settle_time_s": 2.9,
+          "shot": 1,
+          "term": "settled",
+          "travel_px": 756.221748
+        },
+        {
+          "angular_travel_deg": 268.238386,
+          "contact_impulse": 1288.889503,
+          "contact_offset": 0.709599,
+          "dir_deg": 21.733668,
+          "dispersion_deg": 53.817328,
+          "peak_speed": 1611.111938,
+          "power": 0.805556,
+          "self_oob": true,
+          "settle_time_s": 0.833333,
+          "shot": 2,
+          "term": "oob",
+          "travel_px": 611.141216
+        },
+        {
+          "angular_travel_deg": 200.53051,
+          "contact_impulse": 761.371803,
+          "contact_offset": -0.576479,
+          "dir_deg": 30.579577,
+          "dispersion_deg": 42.745031,
+          "peak_speed": 951.714783,
+          "power": 0.475857,
+          "self_oob": false,
+          "settle_time_s": 2.65,
+          "shot": 3,
+          "term": "settled",
+          "travel_px": 435.764393
+        }
+      ]
+    },
+    {
+      "aggregate": {
+        "angular_travel_deg_p50": 127.378848,
+        "contact_impulse_p50": 916.674232,
+        "dispersion_deg_p50": 20.987489,
+        "mean": {
+          "angular_travel_deg": 178.645281,
+          "contact_impulse": 979.026842,
+          "dispersion_deg": 31.286294,
+          "peak_speed": 1223.783539,
+          "settle_time_s": 2.170833,
+          "travel_px": 501.97114
+        },
+        "n": 4,
+        "peak_speed_p50": 1145.842834,
+        "self_oob_rate": 0.25,
+        "settle_time_s_p50": 2.7,
+        "timed_out_rate": 0.0,
+        "travel_px_p50": 491.020063
+      },
+      "config": {
+        "angular_damp": 1.5,
+        "linear_damp": 2.0,
+        "mass": 0.8,
+        "profile_name": "graphite_anchor",
+        "seed": 16,
+        "shots": 4
+      },
+      "shots": [
+        {
+          "angular_travel_deg": 28.20102,
+          "contact_impulse": 876.279926,
+          "contact_offset": 0.391188,
+          "dir_deg": 5.255093,
+          "dispersion_deg": 21.769765,
+          "peak_speed": 1095.349976,
+          "power": 0.547675,
+          "self_oob": false,
+          "settle_time_s": 2.716667,
+          "shot": 0,
+          "term": "settled",
+          "travel_px": 501.771274
+        },
+        {
+          "angular_travel_deg": 210.373883,
+          "contact_impulse": 957.068539,
+          "contact_offset": 0.795822,
+          "dir_deg": 17.907179,
+          "dispersion_deg": 3.693266,
+          "peak_speed": 1196.335693,
+          "power": 0.598168,
+          "self_oob": false,
+          "settle_time_s": 2.75,
+          "shot": 1,
+          "term": "settled",
+          "travel_px": 548.149728
+        },
+        {
+          "angular_travel_deg": 44.383812,
+          "contact_impulse": 838.922405,
+          "contact_offset": 0.155055,
+          "dir_deg": 22.327347,
+          "dispersion_deg": 20.205213,
+          "peak_speed": 1048.652954,
+          "power": 0.524327,
+          "self_oob": false,
+          "settle_time_s": 2.683333,
+          "shot": 2,
+          "term": "settled",
+          "travel_px": 480.268852
+        },
+        {
+          "angular_travel_deg": 431.62241,
+          "contact_impulse": 1243.836498,
+          "contact_offset": -0.978262,
+          "dir_deg": 32.032489,
+          "dispersion_deg": 79.476931,
+          "peak_speed": 1554.795532,
+          "power": 0.777398,
+          "self_oob": true,
+          "settle_time_s": 0.533333,
+          "shot": 3,
+          "term": "oob",
+          "travel_px": 477.694703
+        }
+      ]
+    },
+    {
+      "aggregate": {
+        "angular_travel_deg_p50": 66.657093,
+        "contact_impulse_p50": 843.837595,
+        "dispersion_deg_p50": 26.383106,
+        "mean": {
+          "angular_travel_deg": 97.299989,
+          "contact_impulse": 879.979324,
+          "dispersion_deg": 29.243168,
+          "peak_speed": 1099.974136,
+          "settle_time_s": 2.529167,
+          "travel_px": 502.479385
+        },
+        "n": 4,
+        "peak_speed_p50": 1054.796967,
+        "self_oob_rate": 0.25,
+        "settle_time_s_p50": 2.641667,
+        "timed_out_rate": 0.0,
+        "travel_px_p50": 480.321314
+      },
+      "config": {
+        "angular_damp": 1.5,
+        "linear_damp": 2.0,
+        "mass": 0.8,
+        "profile_name": "graphite_anchor",
+        "seed": 17,
+        "shots": 4
+      },
+      "shots": [
+        {
+          "angular_travel_deg": 8.92405,
+          "contact_impulse": 818.958855,
+          "contact_offset": -0.385323,
+          "dir_deg": 1.804343,
+          "dispersion_deg": 10.35617,
+          "peak_speed": 1023.698547,
+          "power": 0.511849,
+          "self_oob": false,
+          "settle_time_s": 2.683333,
+          "shot": 0,
+          "term": "settled",
+          "travel_px": 468.840143
+        },
+        {
+          "angular_travel_deg": 48.95047,
+          "contact_impulse": 1146.222115,
+          "contact_offset": 0.142408,
+          "dir_deg": 19.498292,
+          "dispersion_deg": 27.411111,
+          "peak_speed": 1432.777588,
+          "power": 0.716389,
+          "self_oob": false,
+          "settle_time_s": 2.833333,
+          "shot": 1,
+          "term": "settled",
+          "travel_px": 656.796953
+        },
+        {
+          "angular_travel_deg": 84.363716,
+          "contact_impulse": 868.716335,
+          "contact_offset": 0.239554,
+          "dir_deg": 26.976847,
+          "dispersion_deg": 53.85029,
+          "peak_speed": 1085.895386,
+          "power": 0.542948,
+          "self_oob": true,
+          "settle_time_s": 2.0,
+          "shot": 2,
+          "term": "oob",
+          "travel_px": 491.802486
+        },
+        {
+          "angular_travel_deg": 246.961718,
+          "contact_impulse": 686.019993,
+          "contact_offset": 0.771634,
+          "dir_deg": 31.303117,
+          "dispersion_deg": 25.355101,
+          "peak_speed": 857.525024,
+          "power": 0.428762,
+          "self_oob": false,
+          "settle_time_s": 2.6,
+          "shot": 3,
+          "term": "settled",
+          "travel_px": 392.477957
+        }
+      ]
+    },
+    {
+      "aggregate": {
+        "angular_travel_deg_p50": 101.487346,
+        "contact_impulse_p50": 1226.939726,
+        "dispersion_deg_p50": 50.520554,
+        "mean": {
+          "angular_travel_deg": 109.319861,
+          "contact_impulse": 1157.220459,
+          "dispersion_deg": 50.920256,
+          "peak_speed": 1446.525604,
+          "settle_time_s": 1.691667,
+          "travel_px": 558.536358
+        },
+        "n": 4,
+        "peak_speed_p50": 1533.674622,
+        "self_oob_rate": 0.5,
+        "settle_time_s_p50": 1.7,
+        "timed_out_rate": 0.0,
+        "travel_px_p50": 548.591137
+      },
+      "config": {
+        "angular_damp": 1.5,
+        "linear_damp": 2.0,
+        "mass": 0.8,
+        "profile_name": "graphite_anchor",
+        "seed": 18,
+        "shots": 4
+      },
+      "shots": [
+        {
+          "angular_travel_deg": 27.968346,
+          "contact_impulse": 1177.860546,
+          "contact_offset": 0.232067,
+          "dir_deg": 6.539083,
+          "dispersion_deg": 20.263136,
+          "peak_speed": 1472.325684,
+          "power": 0.736163,
+          "self_oob": false,
+          "settle_time_s": 2.85,
+          "shot": 0,
+          "term": "settled",
+          "travel_px": 674.983484
+        },
+        {
+          "angular_travel_deg": 93.819457,
+          "contact_impulse": 807.073307,
+          "contact_offset": 0.658575,
+          "dir_deg": 11.334546,
+          "dispersion_deg": 78.571421,
+          "peak_speed": 1008.841675,
+          "power": 0.504421,
+          "self_oob": false,
+          "settle_time_s": 2.666667,
+          "shot": 1,
+          "term": "settled",
+          "travel_px": 461.979675
+        },
+        {
+          "angular_travel_deg": 109.155235,
+          "contact_impulse": 1367.929077,
+          "contact_offset": 0.287363,
+          "dir_deg": 21.404197,
+          "dispersion_deg": 82.376781,
+          "peak_speed": 1709.911499,
+          "power": 0.854956,
+          "self_oob": true,
+          "settle_time_s": 0.733333,
+          "shot": 2,
+          "term": "oob",
+          "travel_px": 615.937601
+        },
+        {
+          "angular_travel_deg": 206.336406,
+          "contact_impulse": 1276.018906,
+          "contact_offset": 0.407194,
+          "dir_deg": 37.072165,
+          "dispersion_deg": 22.469688,
+          "peak_speed": 1595.02356,
+          "power": 0.797512,
+          "self_oob": true,
+          "settle_time_s": 0.516667,
+          "shot": 3,
+          "term": "oob",
+          "travel_px": 481.244674
+        }
+      ]
+    },
+    {
+      "aggregate": {
+        "angular_travel_deg_p50": 47.296993,
+        "contact_impulse_p50": 881.479263,
+        "dispersion_deg_p50": 35.158325,
+        "mean": {
+          "angular_travel_deg": 76.524007,
+          "contact_impulse": 998.474884,
+          "dispersion_deg": 33.212628,
+          "peak_speed": 1248.093628,
+          "settle_time_s": 2.129167,
+          "travel_px": 497.206974
+        },
+        "n": 4,
+        "peak_speed_p50": 1101.84906,
+        "self_oob_rate": 0.25,
+        "settle_time_s_p50": 2.625,
+        "timed_out_rate": 0.0,
+        "travel_px_p50": 504.722983
+      },
+      "config": {
+        "angular_damp": 1.5,
+        "linear_damp": 2.0,
+        "mass": 0.8,
+        "profile_name": "graphite_anchor",
+        "seed": 19,
+        "shots": 4
+      },
+      "shots": [
+        {
+          "angular_travel_deg": 29.709273,
+          "contact_impulse": 934.525681,
+          "contact_offset": 0.186874,
+          "dir_deg": 10.916915,
+          "dispersion_deg": 17.553302,
+          "peak_speed": 1168.156982,
+          "power": 0.584079,
+          "self_oob": false,
+          "settle_time_s": 2.733333,
+          "shot": 0,
+          "term": "settled",
+          "travel_px": 535.182151
+        },
+        {
+          "angular_travel_deg": 64.884713,
+          "contact_impulse": 652.459717,
+          "contact_offset": 0.374641,
+          "dir_deg": 17.196747,
+          "dispersion_deg": 44.980558,
+          "peak_speed": 815.574585,
+          "power": 0.407787,
+          "self_oob": false,
+          "settle_time_s": 2.566667,
+          "shot": 1,
+          "term": "settled",
+          "travel_px": 373.16706
+        },
+        {
+          "angular_travel_deg": 205.649686,
+          "contact_impulse": 1578.481293,
+          "contact_offset": -0.400748,
+          "dir_deg": 29.085267,
+          "dispersion_deg": 43.215199,
+          "peak_speed": 1973.101807,
+          "power": 0.986551,
+          "self_oob": true,
+          "settle_time_s": 0.533333,
+          "shot": 2,
+          "term": "oob",
+          "travel_px": 606.214871
+        },
+        {
+          "angular_travel_deg": 5.852356,
+          "contact_impulse": 828.432846,
+          "contact_offset": 0.014555,
+          "dir_deg": 32.709693,
+          "dispersion_deg": 27.101451,
+          "peak_speed": 1035.541138,
+          "power": 0.517771,
+          "self_oob": false,
+          "settle_time_s": 2.683333,
+          "shot": 3,
+          "term": "settled",
+          "travel_px": 474.263814
+        }
+      ]
+    },
+    {
+      "aggregate": {
+        "angular_travel_deg_p50": 194.292646,
+        "contact_impulse_p50": 1207.020617,
+        "dispersion_deg_p50": 56.489394,
+        "mean": {
+          "angular_travel_deg": 209.488778,
+          "contact_impulse": 1171.56564,
+          "dispersion_deg": 50.135869,
+          "peak_speed": 1464.457047,
+          "settle_time_s": 1.679167,
+          "travel_px": 563.322397
+        },
+        "n": 4,
+        "peak_speed_p50": 1508.775696,
+        "self_oob_rate": 0.5,
+        "settle_time_s_p50": 1.641667,
+        "timed_out_rate": 0.0,
+        "travel_px_p50": 562.039465
+      },
+      "config": {
+        "angular_damp": 1.5,
+        "linear_damp": 2.0,
+        "mass": 0.8,
+        "profile_name": "graphite_anchor",
+        "seed": 20,
+        "shots": 4
+      },
+      "shots": [
+        {
+          "angular_travel_deg": 79.2082,
+          "contact_impulse": 710.060644,
+          "contact_offset": 0.781921,
+          "dir_deg": 9.141429,
+          "dispersion_deg": 66.76228,
+          "peak_speed": 887.575745,
+          "power": 0.443788,
+          "self_oob": false,
+          "settle_time_s": 2.616667,
+          "shot": 0,
+          "term": "settled",
+          "travel_px": 406.288738
+        },
+        {
+          "angular_travel_deg": 309.377091,
+          "contact_impulse": 1261.310291,
+          "contact_offset": 0.994771,
+          "dir_deg": 15.927217,
+          "dispersion_deg": 79.449028,
+          "peak_speed": 1576.637695,
+          "power": 0.788319,
+          "self_oob": false,
+          "settle_time_s": 2.883333,
+          "shot": 1,
+          "term": "settled",
+          "travel_px": 722.92192
+        },
+        {
+          "angular_travel_deg": 22.939903,
+          "contact_impulse": 1562.160683,
+          "contact_offset": -0.048263,
+          "dir_deg": 24.445451,
+          "dispersion_deg": 46.216509,
+          "peak_speed": 1952.70105,
+          "power": 0.97635,
+          "self_oob": true,
+          "settle_time_s": 0.666667,
+          "shot": 2,
+          "term": "oob",
+          "travel_px": 673.693254
+        },
+        {
+          "angular_travel_deg": 426.429916,
+          "contact_impulse": 1152.730942,
+          "contact_offset": 0.95634,
+          "dir_deg": 34.765121,
+          "dispersion_deg": 8.115661,
+          "peak_speed": 1440.913696,
+          "power": 0.720457,
+          "self_oob": true,
+          "settle_time_s": 0.55,
+          "shot": 3,
+          "term": "oob",
+          "travel_px": 450.385677
+        }
+      ]
+    }
+  ],
+  "seeds": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20
+  ],
+  "shots_per_run": 4,
+  "stats": {
+    "angular_travel_deg": {
+      "max": 250.075804,
+      "mean": 147.8475,
+      "min": 76.524007,
+      "n": 20,
+      "stddev": 52.315908
+    },
+    "contact_impulse": {
+      "max": 1376.857018,
+      "mean": 1115.393119,
+      "min": 879.979324,
+      "n": 20,
+      "stddev": 128.350917
+    },
+    "dispersion_deg": {
+      "max": 59.063588,
+      "mean": 42.564705,
+      "min": 29.243168,
+      "n": 20,
+      "stddev": 8.910115
+    },
+    "peak_speed": {
+      "max": 1721.071259,
+      "mean": 1394.241386,
+      "min": 1099.974136,
+      "n": 20,
+      "stddev": 160.438634
+    },
+    "self_oob_rate": {
+      "max": 0.5,
+      "mean": 0.375,
+      "min": 0.0,
+      "n": 20,
+      "stddev": 0.151744
+    },
+    "settle_time_s": {
+      "max": 2.779167,
+      "mean": 2.05,
+      "min": 1.654167,
+      "n": 20,
+      "stddev": 0.337953
+    },
+    "timed_out_rate": {
+      "max": 0.0,
+      "mean": 0.0,
+      "min": 0.0,
+      "n": 20,
+      "stddev": 0.0
+    },
+    "travel_px": {
+      "max": 730.589015,
+      "mean": 567.469268,
+      "min": 482.857989,
+      "n": 20,
+      "stddev": 59.370502
+    }
+  }
+}

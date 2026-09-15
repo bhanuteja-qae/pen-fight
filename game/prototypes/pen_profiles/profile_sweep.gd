@@ -70,6 +70,36 @@ static func run(config: SweepConfig) -> Dictionary:
 	return await _run_on_tree(tree, config)
 
 
+## Wave-2 seed-paired arm: run one config over an explicit seed set and return
+## { profile_name, mass, linear_damp, angular_damp, shots_per_run, seeds, k,
+##   runs[], stats }. `stats` mirrors noise_floor.gd (per-run metric level ->
+## mean/stddev/min/max over the runs) so an arm is directly comparable to the
+## Wave-1 floor.
+static func run_series(config: SweepConfig, seeds: Array) -> Dictionary:
+	var runs: Array = []
+	for seed_value in seeds:
+		var cfg := SweepConfig.new()
+		cfg.profile_name = config.profile_name
+		cfg.mass = config.mass
+		cfg.linear_damp = config.linear_damp
+		cfg.angular_damp = config.angular_damp
+		cfg.seed = int(seed_value)
+		cfg.shots = config.shots
+		var result: Dictionary = await run(cfg)
+		runs.append(result)
+	return {
+		"profile_name": config.profile_name,
+		"mass": config.mass,
+		"linear_damp": config.linear_damp,
+		"angular_damp": config.angular_damp,
+		"shots_per_run": config.shots,
+		"seeds": seeds,
+		"k": seeds.size(),
+		"runs": runs,
+		"stats": _series_stats(runs),
+	}
+
+
 ## Serialize a result deterministically (sorted keys, 6-decimal floats).
 static func write_json(result: Dictionary, path: String) -> void:
 	var text := JSON.stringify(_round_variant(result), "  ", true)
@@ -88,6 +118,13 @@ func _init() -> void:
 
 
 func _drive_default() -> void:
+	# Wave 2 arm mode (see _parse_arm_args): `-- --out=... [--mass=...] ...`.
+	# No `--out` -> the Wave-1 default gate run below is unchanged.
+	var args := _parse_arm_args(OS.get_cmdline_user_args())
+	if not args.is_empty():
+		await _drive_arm(args)
+		return
+
 	var baseline := _make_config("cobalt_control", COBALT_MASS, COBALT_LINEAR_DAMP,
 		COBALT_ANGULAR_DAMP, DEFAULT_SEED, DEFAULT_SHOTS)
 	var anchor := _make_config("graphite_anchor", ANCHOR_MASS, COBALT_LINEAR_DAMP,
@@ -116,6 +153,65 @@ static func _make_config(profile_name: String, mass: float, linear_damp: float,
 	cfg.seed = seed_value
 	cfg.shots = shots
 	return cfg
+
+
+# --- Wave-2 CLI arm driver ----------------------------------------------------------
+
+## Parse `key=value` tokens from `OS.get_cmdline_user_args()` (the args after `--`).
+## Returns {} unless `--out=...` is present, so the default gate run is untouched.
+## Accepted keys (dashes or underscores): arm, profile, mass, linear_damp,
+## angular_damp, shots, seed_start, seed_end, out. Values are floats/ints only
+## where the sweep expects them; no other CLI surface is added.
+static func _parse_arm_args(argv: PackedStringArray) -> Dictionary:
+	var raw := {}
+	for token in argv:
+		var text := str(token)
+		if not text.contains("="):
+			continue
+		var parts := text.split("=", true, 1)
+		var key := parts[0].lstrip("-").replace("-", "_")
+		raw[key] = parts[1]
+	if not raw.has("out"):
+		return {}
+	return {
+		"arm": str(raw.get("arm", "arm")),
+		"profile": str(raw.get("profile", "cobalt_control")),
+		"mass": float(raw.get("mass", COBALT_MASS)),
+		"linear_damp": float(raw.get("linear_damp", COBALT_LINEAR_DAMP)),
+		"angular_damp": float(raw.get("angular_damp", COBALT_ANGULAR_DAMP)),
+		"shots": int(raw.get("shots", 4)),
+		"seed_start": int(raw.get("seed_start", 1)),
+		"seed_end": int(raw.get("seed_end", 20)),
+		"out": str(raw["out"]),
+	}
+
+
+## Run one arm over an inclusive seed range, write its JSON, print its stats, quit.
+func _drive_arm(args: Dictionary) -> void:
+	var seeds: Array = []
+	for s in range(int(args["seed_start"]), int(args["seed_end"]) + 1):
+		seeds.append(s)
+	var base := _make_config(str(args["profile"]), float(args["mass"]),
+		float(args["linear_damp"]), float(args["angular_damp"]), 0, int(args["shots"]))
+	var series: Dictionary = await run_series(base, seeds)
+	series["arm"] = str(args["arm"])
+	write_json(series, str(args["out"]))
+	var stats: Dictionary = series.get("stats", {})
+	var tag := str(args["arm"])
+	print("profile_sweep[%s]: profile=%s mass=%.3f lin_damp=%.3f ang_damp=%.3f seeds=%d..%d shots=%d k=%d" % [
+		tag, str(args["profile"]), float(args["mass"]),
+		float(args["linear_damp"]), float(args["angular_damp"]),
+		int(args["seed_start"]), int(args["seed_end"]), int(args["shots"]), seeds.size(),
+	])
+	for metric in stats.keys():
+		var st: Dictionary = stats[metric]
+		print("profile_sweep[%s]: %s mean=%.4f stddev=%.4f min=%.4f max=%.4f" % [
+			tag, metric, float(st["mean"]), float(st["stddev"]),
+			float(st["min"]), float(st["max"]),
+		])
+	print("profile_sweep[%s]: wrote %s" % [tag, ProjectSettings.globalize_path(str(args["out"]))])
+	print("profile_sweep[%s]: ALL PASS" % tag)
+	quit(0)
 
 
 # --- World construction (in code; no production scene edits) ------------------------
@@ -325,6 +421,51 @@ static func _p50(values: Array[float]) -> float:
 	if n % 2 == 1:
 		return sorted[mid]
 	return (sorted[mid - 1] + sorted[mid]) * 0.5
+
+
+## Wave-2: per-run metric level across the K seed runs -> mean/stddev/min/max,
+## exactly matching noise_floor.gd's statistic so arm-vs-floor comparison is
+## apples-to-apples. Per-shot metrics use the run's shot mean; rates use the run.
+static func _series_stats(runs: Array) -> Dictionary:
+	var per_shot: Array[String] = [
+		"travel_px", "peak_speed", "settle_time_s",
+		"contact_impulse", "angular_travel_deg", "dispersion_deg",
+	]
+	var rates: Array[String] = ["self_oob_rate", "timed_out_rate"]
+	var stats := {}
+	for metric in per_shot:
+		var values: Array[float] = []
+		for result in runs:
+			var mean_block: Dictionary = result.get("aggregate", {}).get("mean", {})
+			values.append(float(mean_block.get(metric, 0.0)))
+		stats[metric] = _describe(values)
+	for metric in rates:
+		var values: Array[float] = []
+		for result in runs:
+			values.append(float(result.get("aggregate", {}).get(metric, 0.0)))
+		stats[metric] = _describe(values)
+	return stats
+
+
+static func _describe(values: Array[float]) -> Dictionary:
+	var n := values.size()
+	if n == 0:
+		return {"n": 0, "mean": 0.0, "stddev": 0.0, "min": 0.0, "max": 0.0}
+	var total := 0.0
+	var lo := values[0]
+	var hi := values[0]
+	for v in values:
+		total += v
+		lo = minf(lo, v)
+		hi = maxf(hi, v)
+	var mean := total / float(n)
+	var variance := 0.0
+	if n > 1:
+		var sq := 0.0
+		for v in values:
+			sq += (v - mean) * (v - mean)
+		variance = sq / float(n - 1)
+	return {"n": n, "mean": mean, "stddev": sqrt(variance), "min": lo, "max": hi}
 
 
 static func _mean(values: Array[float]) -> float:
