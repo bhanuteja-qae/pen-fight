@@ -1,0 +1,119 @@
+{
+	"format": "policy-bot-wave2-v1",
+	"series_shots": 2,
+	"matches": [
+		{
+			"seed": 91001,
+			"red": "hitter",
+			"blue": "auto",
+			"backstop_rate": 0.0,
+			"no_impact_rate": 0.0,
+			"oob_rate": 0.5,
+			"shots": 2,
+			"mean_impulse": 0.9296,
+			"mean_contact_offset": 0.4222,
+			"spin_usage": 0.5,
+			"settle_time_s": 1.425
+		},
+		{
+			"seed": 91002,
+			"red": "spin",
+			"blue": "auto",
+			"backstop_rate": 0.0,
+			"no_impact_rate": 0.0,
+			"oob_rate": 0.0,
+			"shots": 2,
+			"mean_impulse": 0.5919,
+			"mean_contact_offset": 0.6437,
+			"spin_usage": 0.5,
+			"settle_time_s": 2.45
+		},
+		{
+			"seed": 91003,
+			"red": "edge",
+			"blue": "auto",
+			"backstop_rate": 0.0,
+			"no_impact_rate": 0.0,
+			"oob_rate": 0.5,
+			"shots": 2,
+			"mean_impulse": 0.8519,
+			"mean_contact_offset": 0.1821,
+			"spin_usage": 0.0,
+			"settle_time_s": 1.525
+		},
+		{
+			"seed": 91004,
+			"red": "hitter",
+			"blue": "spin",
+			"backstop_rate": 0.0,
+			"no_impact_rate": 0.0,
+			"oob_rate": 0.5,
+			"shots": 2,
+			"mean_impulse": 0.785,
+			"mean_contact_offset": 0.55,
+			"spin_usage": 0.5,
+			"settle_time_s": 1.5417
+		},
+		{
+			"seed": 91005,
+			"red": "hitter",
+			"blue": "edge",
+			"backstop_rate": 0.0,
+			"no_impact_rate": 0.5,
+			"oob_rate": 0.5,
+			"shots": 2,
+			"mean_impulse": 0.915,
+			"mean_contact_offset": 0.11,
+			"spin_usage": 0.0,
+			"settle_time_s": 1.4833
+		},
+		{
+			"seed": 91006,
+			"red": "spin",
+			"blue": "edge",
+			"backstop_rate": 0.0,
+			"no_impact_rate": 0.0,
+			"oob_rate": 0.5,
+			"shots": 2,
+			"mean_impulse": 0.79,
+			"mean_contact_offset": 0.44,
+			"spin_usage": 0.5,
+			"settle_time_s": 1.9333
+		}
+	],
+	"persona_metrics": [
+		{
+			"persona": "hitter",
+			"backstop_rate": 0.0,
+			"no_impact_rate": 0.0,
+			"oob_rate": 0.0,
+			"shots": 3,
+			"mean_impulse": 0.89,
+			"mean_contact_offset": 0.22,
+			"spin_usage": 0.0,
+			"settle_time_s": 2.5
+		},
+		{
+			"persona": "spin",
+			"backstop_rate": 0.0,
+			"no_impact_rate": 0.0,
+			"oob_rate": 0.3333,
+			"shots": 3,
+			"mean_impulse": 0.6533,
+			"mean_contact_offset": 0.88,
+			"spin_usage": 1.0,
+			"settle_time_s": 1.95
+		},
+		{
+			"persona": "edge",
+			"backstop_rate": 0.0,
+			"no_impact_rate": 0.3333,
+			"oob_rate": 0.6667,
+			"shots": 3,
+			"mean_impulse": 0.94,
+			"mean_contact_offset": 0.0,
+			"spin_usage": 0.0,
+			"settle_time_s": 1.4556
+		}
+	]
+}
