@@ -17,6 +17,19 @@ Repo `~/pen-fight` @ `main` · Godot 4.7.2 headless · offline only · no produc
   `angular_damp`) on a locally constructed pen. No production edits, no size changes (one footprint in V1).
 - All randomness through `RandomNumberGenerator` with explicit seeds. Every run must be re-runnable.
 
+## Ground truth from the repo (read; never modify)
+
+- `game/scripts/pen_body.gd`: `apply_flick(impulse_dir: Vector2, power: float, contact_offset: float = 0.0)`
+  — `power` is a **0..1 fraction**, scaled inside by `MAX_IMPULSE = 1600.0`; `contact_offset` is a
+  **fraction of half-length** (-1 tip .. 0 centre .. 1 cap), not px.
+- Settle thresholds: 6.0 px/s, 0.4 rad/s, 0.25 s debounce; `MOVED_LINEAR_VEL = 25.0`.
+- Geometry: pen capsule radius 5.0, half-length 85.0 (180×10 on screen); table `TABLE_RECT` 1180×640;
+  OOB = both capsule endpoints outside the rect grown by -(radius + 8.0).
+- A pen needs a `CollisionShape2D` (CapsuleShape2D) child and a node named `Table` carrying a
+  `RectangleShape2D` (1180×640) so the OOB geometry resolves — construct both in code.
+- Test convention (`game/tests/*.gd`): `extends SceneTree`, `_init()` → `quit(0|1)`, success line
+  `"<name>: ALL PASS"`. Physics-dependent tests drive `SceneTree.physics_frame` at 60 Hz.
+
 ## Deliverables & ownership
 
 ### Wave 1 — owner: OpenCode (deepseek-v4.1-flash)

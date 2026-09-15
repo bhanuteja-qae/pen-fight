@@ -15,6 +15,15 @@ Repo `~/pen-fight` @ `main` · Godot 4.7.2 headless · offline only · no produc
 - **Do NOT commit, do NOT push, do NOT run the full test suite.** Print raw gate output at the end.
 - Prototypes are cheap decision artifacts: no new autoloads, no scene edits, no assets, no network.
 
+## Ground truth from the repo (read; never modify)
+
+- Test convention (`game/tests/turn_state_test.gd`): `extends SceneTree`, `static func run_tests() -> bool`
+  as the programmatic entry, `func _init()` calling `quit(0 if ok else 1)`, success line
+  `"<name>: ALL PASS"`.
+- `TurnState` is pure logic and must stay that way; the app flow is a *separate* layer above it (ADR-0001).
+- Geometry for any fixtures: table `TABLE_RECT` 1180×640; pens are 180×10 on screen (capsule radius 5,
+  half-length 85).
+
 ## Deliverables & ownership
 
 ### Wave 1 — owner: Claude Code (Sonnet)
