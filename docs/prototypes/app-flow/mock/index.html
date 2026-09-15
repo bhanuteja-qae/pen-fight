@@ -1,0 +1,799 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pen Fight — App Flow Prototype (Wave 2, ticket #5)</title>
+<style>
+/* ============================================================
+   Tokens lifted from assets/design/mockups/{menu,settings,pen,game2}.html
+   (classroom-table identity): paper/ink for menus, wood laminate for the
+   desk itself, cobalt/amber as the two-player accent pair.
+   ============================================================ */
+:root{
+  --room-bg: #241f1a;
+  --desk-1: #b8925f;
+  --desk-2: #a07a4d;
+  --desk-3: #8a6740;
+  --desk-border: #e6c496;
+  --paper-bg: #f4efe2;
+  --rule-line: #a9bdd4;
+  --rule-margin: #d9707f;
+  --ink: #22304d;
+  --ink-soft: #4a5a78;
+  --muted: #6b7a90;
+  --muted-2: #8b97a8;
+  --cream: #f4efe2;
+  --p1: #5b8ce0;
+  --p1-deep: #3f6cc4;
+  --p2: #f0a23c;
+  --p2-deep: #d9861f;
+  --font-ui: "Liberation Sans", "DejaVu Sans", sans-serif;
+  --font-mono: "DejaVu Sans Mono", monospace;
+}
+
+*{ box-sizing: border-box; }
+
+html,body{
+  margin:0; padding:0; height:100%;
+  background: radial-gradient(ellipse at 50% 30%, #3a352d 0%, var(--room-bg) 70%);
+  font-family: var(--font-ui);
+  color: var(--ink);
+}
+
+/* ---------- overall layout: a phone resting on the desk ---------- */
+.room{
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:14px;
+  padding: 28px 12px 40px;
+}
+
+.room-caption{
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  color: #a89f8f;
+  text-align:center;
+}
+
+.desk-shelf{
+  width: min(430px, 94vw);
+  height: 34px;
+  border-radius: 10px 10px 0 0;
+  background: linear-gradient(180deg, var(--desk-1), var(--desk-2) 55%, var(--desk-3));
+  border: 1px solid var(--desk-border);
+  border-bottom: none;
+  box-shadow: 0 -2px 12px rgba(0,0,0,0.35) inset;
+}
+
+.device{
+  position: relative;
+  width: min(390px, 94vw);
+  height: 780px;
+  border-radius: 34px;
+  background: #14100c;
+  padding: 12px;
+  box-shadow: 0 30px 60px rgba(0,0,0,0.55), 0 0 0 2px #050403;
+}
+
+.screen-window{
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 24px;
+  overflow: hidden;
+  background: var(--paper-bg);
+}
+
+/* the persistent Android-style hardware Back affordance */
+.hw-back{
+  position:absolute;
+  left: 50%;
+  bottom: 8px;
+  transform: translateX(-50%);
+  z-index: 50;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(20,16,12,0.72);
+  color: var(--cream);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: bold;
+  letter-spacing: 0.4px;
+  cursor: pointer;
+}
+.hw-back:active{ background: rgba(20,16,12,0.92); }
+
+.toast{
+  position:absolute;
+  left:50%; bottom: 54px;
+  transform: translateX(-50%) translateY(8px);
+  z-index: 60;
+  background: var(--ink);
+  color: var(--cream);
+  font-size: 12.5px;
+  padding: 9px 14px;
+  border-radius: 8px;
+  max-width: 82%;
+  text-align:center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.toast.show{ opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ---------- screens ---------- */
+.screen{
+  position:absolute; inset:0;
+  display:none;
+  flex-direction:column;
+}
+.screen.active{ display:flex; }
+
+/* BOOT: closed exercise-book cover */
+#screen-BOOT{
+  background: linear-gradient(160deg, #1c2740, var(--ink) 60%, #16203a);
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  text-align:center;
+  color: var(--cream);
+}
+#screen-BOOT .cover-title{
+  font-size: 30px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+}
+#screen-BOOT .cover-sub{
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 2.6px;
+  color: #b9c6e0;
+  margin-bottom: 40px;
+}
+#screen-BOOT .cover-tap{
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 1px;
+  color: #8fa6c4;
+  border: 1px solid rgba(143,166,196,0.5);
+  border-radius: 999px;
+  padding: 8px 18px;
+}
+#screen-BOOT .cover-note{
+  position:absolute;
+  bottom: 76px;
+  left: 16px; right: 16px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: #6c7ea3;
+  text-align:center;
+}
+
+/* paper pages (HOME / MODE / PENS / SETTINGS) */
+.page{
+  position:relative;
+  flex:1;
+  padding: 30px 22px 90px 44px;
+  overflow-y:auto;
+}
+.page::before{ /* ruled lines */
+  content:"";
+  position:absolute;
+  left:44px; right:22px; top:110px; bottom:0;
+  background-image: repeating-linear-gradient(
+    to bottom, transparent, transparent 33px,
+    var(--rule-line) 33px, var(--rule-line) 34px);
+  opacity:0.55;
+  pointer-events:none;
+}
+.page::after{ /* red margin */
+  content:"";
+  position:absolute;
+  left: 30px; top:0; bottom:0; width:1.6px;
+  background: var(--rule-margin);
+  opacity:0.7;
+}
+.punch{
+  position:absolute; left:9px; width:13px; height:13px;
+  border-radius:50%; background: rgba(36,31,26,0.28);
+}
+
+.page-title{
+  font-size: 26px;
+  font-weight: bold;
+  letter-spacing: -0.5px;
+  color: var(--ink);
+  margin: 0 0 4px;
+  position:relative; z-index:1;
+}
+.page-sub{
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 2.4px;
+  color: var(--muted);
+  margin: 0 0 26px;
+  position:relative; z-index:1;
+}
+
+.back-inline{
+  position:relative; z-index:1;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  background:none;
+  border:none;
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight:bold;
+  cursor:pointer;
+  padding: 6px 0 18px;
+}
+
+.btn{
+  position:relative; z-index:1;
+  display:block;
+  width:100%;
+  text-align:left;
+  font-family: var(--font-ui);
+  font-size: 17px;
+  font-weight:bold;
+  letter-spacing: 0.6px;
+  padding: 16px 18px;
+  border-radius: 8px;
+  cursor:pointer;
+  margin-bottom: 14px;
+}
+.btn-primary{
+  background: var(--ink);
+  color: var(--cream);
+  border: none;
+}
+.btn-outline{
+  background: transparent;
+  color: var(--ink);
+  border: 2px solid rgba(34,48,77,0.55);
+}
+.btn-primary:active{ background:#1a2540; }
+.btn-outline:active{ background: rgba(34,48,77,0.08); }
+
+.flavor{
+  position:relative; z-index:1;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted-2);
+  margin-top: 22px;
+  line-height:1.7;
+}
+
+/* MODE cards */
+.mode-card{
+  position:relative; z-index:1;
+  border: 2px solid rgba(34,48,77,0.4);
+  border-radius: 10px;
+  padding: 16px 16px;
+  margin-bottom: 16px;
+  cursor:pointer;
+  background: rgba(255,255,255,0.35);
+}
+.mode-card:active{ background: rgba(34,48,77,0.08); }
+.mode-card h3{ margin:0 0 4px; font-size:18px; }
+.mode-card p{ margin:0; font-family: var(--font-mono); font-size:11.5px; color:var(--muted); }
+
+/* PENS grid */
+.pen-grid{
+  position:relative; z-index:1;
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.pen-card{
+  border-radius: 10px;
+  padding: 14px 12px;
+  cursor:pointer;
+  border: 2px solid transparent;
+  background: rgba(255,255,255,0.35);
+  text-align:center;
+}
+.pen-card.selected{ border-color: var(--ink); }
+.pen-chip{
+  height: 46px;
+  border-radius: 999px;
+  margin-bottom: 10px;
+}
+.pen-chip.cobalt{ background: linear-gradient(180deg,#1b3a7d,#a8c8ff 30%,#1a3570); }
+.pen-chip.amber{ background: linear-gradient(180deg,#a05c11,#ffd694 30%,#8f4f0d); }
+.pen-card .name{ font-weight:bold; font-size:14px; }
+.pen-card .tag{ font-family: var(--font-mono); font-size:10px; color:var(--muted); }
+
+/* SETTINGS rows */
+.setting-row{
+  position:relative; z-index:1;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding: 13px 0;
+}
+.setting-row .label{ font-size:16px; }
+.setting-row .value{ font-family: var(--font-ui); font-size:14px; color: var(--ink-soft); }
+.toggle{
+  width:52px; height:28px;
+  border-radius:999px;
+  border: 2px solid rgba(34,48,77,0.6);
+  background: transparent;
+  position:relative;
+  cursor:pointer;
+}
+.toggle .knob{
+  position:absolute; top:2px; left:2px;
+  width:20px; height:20px;
+  border-radius:50%;
+  background: var(--ink);
+  transition: left 0.15s ease, background 0.15s ease;
+}
+.toggle.on{ background: var(--ink); }
+.toggle.on .knob{ left: 26px; background: var(--cream); }
+
+.settings-back-btn{
+  position:relative; z-index:1;
+  margin-top: 30px;
+  display:inline-block;
+  background: var(--ink);
+  color: var(--cream);
+  font-weight:bold;
+  font-size:16px;
+  padding: 13px 34px;
+  border-radius: 6px;
+  border:none;
+  cursor:pointer;
+}
+
+/* PLAYING: the desk itself, not the notebook */
+#screen-PLAYING{
+  background: linear-gradient(160deg, var(--desk-1), var(--desk-2) 55%, var(--desk-3));
+  padding: 22px 18px 90px;
+  color: var(--cream);
+}
+.score-bar{
+  background: rgba(20,16,12,0.35);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 10px;
+}
+.score-bar .round{
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 2px;
+  color: #d9d2c2;
+  margin-bottom: 4px;
+}
+.score-bar .tally{ font-size:20px; font-weight:bold; }
+.score-bar .p1{ color: var(--p1); }
+.score-bar .p2{ color: var(--p2); }
+.turn-cue{
+  border-left: 4px solid var(--p1);
+  background: rgba(91,140,224,0.18);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-weight:bold;
+  font-size: 14px;
+  margin-bottom: 18px;
+}
+.match-placeholder{
+  flex:1;
+  border: 2px dashed rgba(244,239,226,0.45);
+  border-radius: 12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: #efe6cf;
+  padding: 30px;
+  line-height:1.6;
+}
+.leave-btn{
+  margin-top: 18px;
+  width:100%;
+  background: rgba(20,16,12,0.55);
+  color: var(--cream);
+  border: 1px solid rgba(244,239,226,0.35);
+  font-weight:bold;
+  font-size:15px;
+  padding: 14px;
+  border-radius: 8px;
+  cursor:pointer;
+}
+
+/* CONFIRM_LEAVE modal, overlaid ON TOP of the still-visible PLAYING screen */
+.leave-overlay{
+  position:absolute; inset:0;
+  z-index: 40;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background: rgba(15,12,9,0.55);
+  padding: 0 24px;
+}
+.leave-overlay.active{ display:flex; }
+.leave-modal{
+  width:100%;
+  max-width: 300px;
+  background: var(--paper-bg);
+  border-radius: 12px;
+  padding: 22px 20px;
+  box-shadow: 0 18px 40px rgba(0,0,0,0.5);
+}
+.leave-modal h3{ margin: 0 0 8px; font-size:19px; color:var(--ink); }
+.leave-modal p{ margin:0 0 20px; font-size:13px; color:var(--ink-soft); line-height:1.5; }
+.leave-modal .row{ display:flex; flex-direction:column; gap:10px; }
+.leave-modal button{
+  font-family: var(--font-ui);
+  font-weight:bold;
+  font-size:15px;
+  padding: 12px;
+  border-radius: 7px;
+  cursor:pointer;
+}
+.leave-modal .btn-keep{ background: transparent; border: 2px solid var(--ink); color: var(--ink); }
+.leave-modal .btn-leave{ background: var(--rule-margin); border:none; color:#fff; }
+
+/* ---------- debug / state panel (outside the phone, developer aid) ---------- */
+.debug-toggle{
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: #a89f8f;
+  background: none;
+  border: 1px solid #52493c;
+  border-radius: 6px;
+  padding: 5px 10px;
+  cursor:pointer;
+}
+.debug{
+  display:none;
+  width: min(430px, 94vw);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: #d8d0bf;
+  background: #17130f;
+  border: 1px solid #3a3226;
+  border-radius: 8px;
+  padding: 10px 12px;
+  max-height: 160px;
+  overflow-y:auto;
+}
+.debug.show{ display:block; }
+.debug .cur{ color: #f0a23c; font-weight:bold; margin-bottom:6px; }
+.debug .log-line{ opacity:0.85; }
+</style>
+</head>
+<body>
+
+<div class="room">
+  <div class="room-caption">PEN FIGHT &middot; APP FLOW PROTOTYPE &middot; wayfinder #5, Wave 2</div>
+
+  <div class="desk-shelf"></div>
+  <div class="device">
+    <div class="screen-window">
+
+      <!-- BOOT -->
+      <div class="screen active" id="screen-BOOT" data-tap-boot>
+        <div class="cover-title">PEN FIGHT</div>
+        <div class="cover-sub">TWO PLAYERS &middot; ONE DESK</div>
+        <div class="cover-tap">TAP TO OPEN</div>
+        <div class="cover-note">no timer here &mdash; boot_complete() fires the instant you tap, not after a wait</div>
+      </div>
+
+      <!-- HOME -->
+      <div class="screen" id="screen-HOME">
+        <div class="page">
+          <div class="punch" style="top:60px"></div>
+          <div class="punch" style="top:220px"></div>
+          <div class="punch" style="top:380px"></div>
+          <div class="page-title">Pen Fight</div>
+          <div class="page-sub">TWO PLAYERS &middot; ONE DESK</div>
+          <button class="btn btn-primary" data-action="open_mode_select">START &#8594;</button>
+          <button class="btn btn-outline" data-action="open_pens">PENS</button>
+          <button class="btn btn-outline" data-action="open_settings">SETTINGS</button>
+          <div class="flavor">
+            best of 5 &middot; hot-seat<br>
+            last played: P1 won 3&ndash;2
+          </div>
+        </div>
+      </div>
+
+      <!-- MODE -->
+      <div class="screen" id="screen-MODE">
+        <div class="page">
+          <button class="back-inline" data-action="handle_back">&#8249; Back</button>
+          <div class="page-title">Choose a mode</div>
+          <div class="page-sub">HOME &#8594; MODE</div>
+          <div class="mode-card" data-start-mode="hot_seat">
+            <h3>Pass &amp; Play</h3>
+            <p>two players, one device &mdash; hand it over each turn</p>
+          </div>
+          <div class="mode-card" data-start-mode="solo">
+            <h3>Solo</h3>
+            <p>practice against the bot</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- PENS -->
+      <div class="screen" id="screen-PENS">
+        <div class="page">
+          <button class="back-inline" data-action="handle_back">&#8249; Back</button>
+          <div class="page-title">Pens</div>
+          <div class="page-sub">HOME &#8594; PENS</div>
+          <div class="pen-grid">
+            <div class="pen-card selected" data-pen="cobalt">
+              <div class="pen-chip cobalt"></div>
+              <div class="name">Cobalt</div>
+              <div class="tag">P1 &middot; equipped</div>
+            </div>
+            <div class="pen-card" data-pen="amber">
+              <div class="pen-chip amber"></div>
+              <div class="name">Amber</div>
+              <div class="tag">P2</div>
+            </div>
+          </div>
+          <div class="flavor">pen choice is cosmetic only in this prototype &mdash; it is not part of the app-flow state machine.</div>
+        </div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="screen" id="screen-SETTINGS">
+        <div class="page">
+          <div class="page-title">Settings</div>
+          <div class="page-sub">HOME &#8594; SETTINGS</div>
+          <div class="setting-row">
+            <span class="label">Sound</span>
+            <button class="toggle on" data-toggle><span class="knob"></span></button>
+          </div>
+          <div class="setting-row">
+            <span class="label">Haptics</span>
+            <button class="toggle on" data-toggle><span class="knob"></span></button>
+          </div>
+          <div class="setting-row">
+            <span class="label">Screen shake</span>
+            <button class="toggle" data-toggle><span class="knob"></span></button>
+          </div>
+          <div class="setting-row">
+            <span class="label">Match length</span>
+            <span class="value">best of 5</span>
+          </div>
+          <div class="setting-row">
+            <span class="label">My pen</span>
+            <span class="value">Cobalt</span>
+          </div>
+          <button class="settings-back-btn" data-action="handle_back">BACK</button>
+        </div>
+      </div>
+
+      <!-- PLAYING (also the backdrop for CONFIRM_LEAVE) -->
+      <div class="screen" id="screen-PLAYING">
+        <div class="score-bar">
+          <div class="round">BEST OF 5 &middot; ROUND 4</div>
+          <div class="tally"><span class="p1">P1 2</span> &mdash; <span class="p2">1 P2</span></div>
+        </div>
+        <div class="turn-cue">P1 &mdash; YOUR FLICK</div>
+        <div class="match-placeholder">
+          [ match placeholder &mdash; Wave 2 does not render gameplay.<br>
+          MODE &#8594; PLAYING via start_match(mode); a real Game Session<br>
+          would be created here per ADR-0001. ]
+        </div>
+        <button class="leave-btn" data-action="handle_back">Leave match</button>
+
+        <div class="leave-overlay" id="overlay-CONFIRM_LEAVE">
+          <div class="leave-modal">
+            <h3>Leave the match?</h3>
+            <p>Your progress in this match will end. The match is still live behind this dialog until you confirm.</p>
+            <div class="row">
+              <button class="btn-keep" data-action="cancel_leave">Keep playing</button>
+              <button class="btn-leave" data-action="confirm_leave">Leave</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="hw-back" data-action="handle_back" title="Android hardware/gesture Back">&#9664; Back</button>
+      <div class="toast" id="toast"></div>
+    </div>
+  </div>
+
+  <button class="debug-toggle" id="debug-toggle">Show state debug</button>
+  <div class="debug" id="debug">
+    <div class="cur" id="debug-cur">screen: BOOT</div>
+    <div id="debug-log"></div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// Ported 1:1 from game/prototypes/app_flow/app_flow.gd (Wave 1,
+// wayfinder ticket #5). Same enum, same method names, same guards,
+// same signal-emission points. This file adds no navigation edge
+// and removes none — it only renders whatever `screen` currently is.
+// ============================================================
+const Screen = Object.freeze({
+  BOOT: "BOOT", HOME: "HOME", MODE: "MODE", PENS: "PENS",
+  SETTINGS: "SETTINGS", CONFIRM_LEAVE: "CONFIRM_LEAVE", PLAYING: "PLAYING",
+});
+
+class AppFlow {
+  constructor(){
+    this.screen = Screen.BOOT;
+    this._listeners = { screen_changed: [], gameplay_start_requested: [], gameplay_stop_requested: [] };
+  }
+  on(evt, fn){ this._listeners[evt].push(fn); }
+  _emit(evt, ...args){ this._listeners[evt].forEach(fn => fn(...args)); }
+  _transition(to){
+    const from = this.screen;
+    this.screen = to;
+    this._emit("screen_changed", from, to);
+  }
+  boot_complete(){
+    if (this.screen !== Screen.BOOT) return;
+    this._transition(Screen.HOME);
+  }
+  open_mode_select(){
+    if (this.screen !== Screen.HOME) return;
+    this._transition(Screen.MODE);
+  }
+  open_pens(){
+    if (this.screen !== Screen.HOME) return;
+    this._transition(Screen.PENS);
+  }
+  open_settings(){
+    if (this.screen !== Screen.HOME) return;
+    this._transition(Screen.SETTINGS);
+  }
+  confirm_leave(){
+    if (this.screen !== Screen.CONFIRM_LEAVE) return;
+    this._transition(Screen.HOME);
+    this._emit("gameplay_stop_requested");
+  }
+  cancel_leave(){
+    if (this.screen !== Screen.CONFIRM_LEAVE) return;
+    this._transition(Screen.PLAYING);
+  }
+  start_match(mode){
+    if (this.screen !== Screen.MODE) return;
+    this._transition(Screen.PLAYING);
+    this._emit("gameplay_start_requested", mode);
+  }
+  end_match(){
+    if (this.screen !== Screen.PLAYING) return;
+    this._transition(Screen.HOME);
+    this._emit("gameplay_stop_requested");
+  }
+  handle_back(){
+    switch (this.screen){
+      case Screen.BOOT:
+      case Screen.HOME:
+        return false;
+      case Screen.MODE:
+      case Screen.PENS:
+      case Screen.SETTINGS:
+        this._transition(Screen.HOME);
+        return true;
+      case Screen.CONFIRM_LEAVE:
+        this._transition(Screen.PLAYING);
+        return true;
+      case Screen.PLAYING:
+        this._transition(Screen.CONFIRM_LEAVE);
+        return true;
+      default:
+        return false;
+    }
+  }
+}
+
+// ---------- wiring: render + input ----------
+let flow = new AppFlow();
+const screenEls = {};
+[Screen.BOOT, Screen.HOME, Screen.MODE, Screen.PENS, Screen.SETTINGS, Screen.PLAYING]
+  .forEach(s => screenEls[s] = document.getElementById("screen-" + s));
+const overlayConfirmLeave = document.getElementById("overlay-CONFIRM_LEAVE");
+const toastEl = document.getElementById("toast");
+const debugCur = document.getElementById("debug-cur");
+const debugLog = document.getElementById("debug-log");
+
+function render(){
+  // PLAYING's DOM node stays mounted for both PLAYING and CONFIRM_LEAVE:
+  // the match must remain visibly present underneath the leave-confirm
+  // modal (contract: nothing is torn down until confirm_leave() fires).
+  const visible = (flow.screen === Screen.CONFIRM_LEAVE) ? Screen.PLAYING : flow.screen;
+  for (const key in screenEls){
+    screenEls[key].classList.toggle("active", key === visible);
+  }
+  overlayConfirmLeave.classList.toggle("active", flow.screen === Screen.CONFIRM_LEAVE);
+  debugCur.textContent = "screen: " + flow.screen;
+}
+
+function logLine(text){
+  const line = document.createElement("div");
+  line.className = "log-line";
+  line.textContent = text;
+  debugLog.prepend(line);
+  while (debugLog.children.length > 12) debugLog.removeChild(debugLog.lastChild);
+}
+
+function showToast(msg){
+  toastEl.textContent = msg;
+  toastEl.classList.add("show");
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => toastEl.classList.remove("show"), 1600);
+}
+
+flow.on("screen_changed", (from, to) => { logLine(from + " -> " + to); render(); });
+flow.on("gameplay_start_requested", (mode) => logLine("  signal: gameplay_start_requested(" + mode + ")"));
+flow.on("gameplay_stop_requested", () => logLine("  signal: gameplay_stop_requested()"));
+
+function resetFlow(){
+  flow = new AppFlow();
+  debugLog.innerHTML = "";
+  flow.on("screen_changed", (from, to) => { logLine(from + " -> " + to); render(); });
+  flow.on("gameplay_start_requested", (mode) => logLine("  signal: gameplay_start_requested(" + mode + ")"));
+  flow.on("gameplay_stop_requested", () => logLine("  signal: gameplay_stop_requested()"));
+  render();
+}
+
+document.querySelector("[data-tap-boot]").addEventListener("click", () => flow.boot_complete());
+
+document.querySelectorAll("[data-action]").forEach(el => {
+  el.addEventListener("click", (ev) => {
+    ev.stopPropagation();
+    const action = el.getAttribute("data-action");
+    if (action === "handle_back"){
+      const consumed = flow.handle_back();
+      if (!consumed) showToast("Nothing to go back to — the app would exit here.");
+      return;
+    }
+    flow[action]();
+  });
+});
+
+document.querySelectorAll("[data-start-mode]").forEach(el => {
+  el.addEventListener("click", () => flow.start_match(el.getAttribute("data-start-mode")));
+});
+
+// decorative, local-only UI state — not part of the ported state machine
+document.querySelectorAll("[data-toggle]").forEach(el => {
+  el.addEventListener("click", (ev) => { ev.stopPropagation(); el.classList.toggle("on"); });
+});
+document.querySelectorAll("[data-pen]").forEach(el => {
+  el.addEventListener("click", () => {
+    document.querySelectorAll("[data-pen]").forEach(c => c.classList.remove("selected"));
+    el.classList.add("selected");
+  });
+});
+
+document.getElementById("debug-toggle").addEventListener("click", (ev) => {
+  const dbg = document.getElementById("debug");
+  dbg.classList.toggle("show");
+  ev.target.textContent = dbg.classList.contains("show") ? "Hide state debug" : "Show state debug";
+});
+
+// keyboard affordance for desktop reviewers: Escape == Android Back
+document.addEventListener("keydown", (ev) => {
+  if (ev.key === "Escape"){
+    const consumed = flow.handle_back();
+    if (!consumed) showToast("Nothing to go back to — the app would exit here.");
+  }
+});
+
+render();
+</script>
+</body>
+</html>
