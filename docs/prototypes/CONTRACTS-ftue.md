@@ -102,9 +102,12 @@ Repo `~/pen-fight` @ `main` · offline only · no production behavior changes.
 cd ~/pen-fight/game
 flock /tmp/pf-godot.lock -c 'DISPLAY=:99 LIBGL_ALWAYS_SOFTWARE=1 timeout 240 ~/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script res://prototypes/ftue/ftue_flow_test.gd'
 flock /tmp/pf-godot.lock -c 'DISPLAY=:99 LIBGL_ALWAYS_SOFTWARE=1 timeout 120 ~/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script res://prototypes/ftue/ftue_flow.gd'   # must exit 0 with no script errors
-# screenshots (chromium binary: /home/ubuntu/.cache/ms-playwright/chromium-1234/chrome-linux/chrome)
-#   chrome --headless --disable-gpu --window-size=1280,720 --screenshot=<out>.png "file://<abs>/index.html#HOME"
-#   repeat with --window-size=720,1280  -> assert no horizontal overflow
+# screenshots — chromium binaries on this box (verified):
+#   full browser:  /home/ubuntu/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome  (needs --headless=new)
+#   headless shell (exact window sizes; use this one): /home/ubuntu/.cache/ms-playwright/chromium_headless_shell-1234/chrome-headless-shell-linux64/chrome-headless-shell
+#   e.g. chrome-headless-shell --no-sandbox --disable-gpu --window-size=1280,720 --screenshot=<out>.png "file://<abs>/index.html#HOME"
+#   repeat with --window-size=720,1280 and with 360,640 -> assert document.scrollWidth <= innerWidth (0 px overflow)
+#   (full Chromium reserves ~87px of height for browser chrome and clamps narrow windows, so it cannot do exact small viewports)
 ```
 
 ## Non-goals
