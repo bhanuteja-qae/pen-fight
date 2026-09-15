@@ -18,6 +18,7 @@ no-impact is hitter 0.0000, spin 0.0000, edge 0.3333 (<= 0.35). Edge's
 0.6667 OOB rate and its one no-impact in three require human playtest.
 
 Carry forward the current scoring weights, seeded per-candidate noise
-[-0.035,+0.035], and a fixed 250 ms visible think delay. Required locked
-runtime reruns and JSON diff could not be completed in this wave because the
-shared `/tmp/pf-godot.lock` remained occupied.
+[-0.035,+0.035], and a fixed 250 ms visible think delay. Verification completed
+at integration (orchestrator): two locked harness reruns on identical seeds
+produced byte-identical JSON (`DETERMINISM: IDENTICAL`), and `policy_bot_test`
+re-ran `ALL PASS`.

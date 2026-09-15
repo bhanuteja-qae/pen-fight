@@ -17,7 +17,7 @@ an independent adversarial driver (not part of the deliverables) covering Back a
 double-Back (including 6x repeated Back from a live match, which safely toggles
 `PLAYING ⇄ CONFIRM_LEAVE` forever), start/end_match misuse, settings/mode-switch attempts from
 `PLAYING`, and a negative sweep confirming `gameplay_start_requested` never escapes a menu state —
-29/29 checks pass. The mock's JS state machine is a verified line-for-line port of the GDScript one.
+29/29 checks pass. The mock's JS state machine is a verified line-for-line port of the GDScript one. The orchestrator re-ran the adversarial driver at integration: 29 checks, 0 failures.
 
 **Open risks (need a human, not more logic tests):** real device Back-gesture feel;
 whether the "match visible behind the leave dialog" affordance reads clearly to players; in-match
