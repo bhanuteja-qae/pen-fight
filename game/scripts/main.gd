@@ -536,8 +536,10 @@ func _update_gate(st: Dictionary, phase: String) -> void:
 		if _match_over:
 			# The match-over prompt is the one gate that carries the durable
 			# series: the round score in `score` is about to be thrown away by the
-			# rematch tap, the series is not (item A1).
-			_show_gate("%s wins the match %s — tap for a rematch (%s)" % [winner, score, _series_line()])
+			# rematch tap, the series is not (item A1). The series goes on its own
+			# line — as a single line the combined prompt measured 1276 px wide
+			# and was clipped at both screen edges.
+			_show_gate("%s wins the match %s — tap for a rematch\n%s" % [winner, score, _series_line()])
 		else:
 			_show_gate("%s wins the round %s — tap to continue" % [winner, score])
 

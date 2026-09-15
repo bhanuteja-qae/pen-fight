@@ -16,6 +16,17 @@ extends CanvasLayer
 
 signal tapped
 
+## Design font size for the prompt. Long prompts (the match-over line, which
+## carries the durable series) measured 1276 px wide at 44 px on a 1280-wide
+## viewport — clipped edge-to-edge. Rather than shrink the normal round prompts,
+## show_prompt() keeps this size when it fits and steps down only when it does
+## not, so short prompts are unchanged and long ones stay readable.
+const FONT_SIZE: int = 44
+const FONT_SIZE_MIN: int = 18
+const FONT_SIZE_STEP: int = 2
+## Never let glyphs touch the screen edge (also the autowrap width budget).
+const SIDE_MARGIN: float = 32.0
+
 var _dim: ColorRect = null
 var _label: Label = null
 
@@ -33,9 +44,15 @@ func _ready() -> void:
 	# Centered prompt text on top of the dim.
 	_label = Label.new()
 	_label.set_anchors_preset(Control.PRESET_FULL_RECT)
+	# Inset both edges so nothing is ever drawn flush against the screen edge.
+	_label.offset_left = SIDE_MARGIN
+	_label.offset_right = -SIDE_MARGIN
 	_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_label.add_theme_font_size_override("font_size", 44)
+	# Word-aware wrap is the safety net for any prompt longer than the inset
+	# width; explicit "\n" in the copy is how multi-part prompts are separated.
+	_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_label.add_theme_font_size_override("font_size", FONT_SIZE)
 	_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_label.z_index = 51
 	add_child(_label)
@@ -45,7 +62,42 @@ func _ready() -> void:
 ## Show the gate with the given prompt text (e.g. "Red's turn — tap to continue").
 func show_prompt(text: String) -> void:
 	_label.text = text
+	_fit_font_to_width()
 	visible = true
+
+
+## Largest size at or below FONT_SIZE at which EVERY line of the prompt fits the
+## inset width. Without this, the match-over prompt ("… tap for a rematch
+## (series: …)") overflowed a 1280-wide viewport and was cut at both ends, and
+## it degrades further on narrower logical viewports — the project stretches
+## with window/stretch/aspect=keep_height, so a tall phone's logical width is
+## far below 1280.
+func _fit_font_to_width() -> void:
+	if _label == null:
+		return
+	var font: Font = _label.get_theme_font("font")
+	if font == null:
+		return
+	var limit: float = maxf(64.0, get_viewport().get_visible_rect().size.x - 2.0 * SIDE_MARGIN)
+	var size: int = FONT_SIZE
+	while size > FONT_SIZE_MIN:
+		if _widest_line(font, size) <= limit:
+			break
+		size -= FONT_SIZE_STEP
+	_label.add_theme_font_size_override("font_size", size)
+
+
+## Rendered width of the prompt's widest explicit line at the given size.
+func _widest_line(font: Font, size: int) -> float:
+	var widest := 0.0
+	for line in _label.text.split("\n"):
+		widest = maxf(widest, font.get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x)
+	return widest
+
+
+## The size the prompt is currently rendered at (QA/tests read this).
+func prompt_font_size() -> int:
+	return _label.get_theme_font_size("font_size") if _label != null else 0
 
 
 ## Hide the gate. NOTE: named dismiss() not hide() — CanvasLayer already has a
