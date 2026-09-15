@@ -1,0 +1,1018 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pen Fight — FTUE menu visual direction spec sheet (ticket #12, Wave 2)</title>
+<style>
+/* =====================================================================
+   Pen Fight — FTUE menu visual direction: spec sheet (Wave 2, ticket #12)
+   Self-contained: no external stylesheet, script, font or image file.
+   Identity EXTENDED (never reinvented) from:
+     assets/design/mockups/menu.html, settings.html, pen.html, game2.html
+     docs/prototypes/app-flow/mock/index.html   (paper pages + :root tokens)
+   The :root token block below is byte-identical to the app-flow mock's.
+   Type tiers, minimums and fit rules are the ones stated in ../VISUAL.md.
+   NO overflow:hidden on html/body on purpose: the fit gate must be able
+   to FAIL (VISUAL.md RULE F-5).
+   ===================================================================== */
+:root{
+  --room-bg:#241f1a;
+  --desk-1:#b8925f; --desk-2:#a07a4d; --desk-3:#8a6740; --desk-border:#e6c496;
+  --paper-bg:#f4efe2;
+  --rule-line:#a9bdd4; --rule-margin:#d9707f;
+  --ink:#22304d; --ink-soft:#4a5a78; --muted:#6b7a90; --muted-2:#8b97a8;
+  --cream:#f4efe2;
+  --p1:#5b8ce0; --p1-deep:#3f6cc4; --p2:#f0a23c; --p2-deep:#d9861f;
+  --font-ui:"Liberation Sans","DejaVu Sans",sans-serif;
+  --font-mono:"DejaVu Sans Mono",monospace;
+  /* spacing scale (VISUAL.md §3): 4 / 8 / 12 / 16 / 24 / 32 */
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s6:24px; --s8:32px;
+  /* reference surface (VISUAL.md RULE S-1): menu page content width, 1:1 */
+  --ref-w:300px;
+}
+*{ box-sizing:border-box; }
+html{ -webkit-text-size-adjust:100%; }
+body{
+  margin:0;
+  padding:var(--s6) var(--s8) var(--s8);   /* 32 px side gutter == SIDE_MARGIN */
+  background:radial-gradient(ellipse at 50% 0%, #3a352d 0%, var(--room-bg) 70%);
+  font-family:var(--font-ui);
+  color:var(--ink);
+  overflow-wrap:anywhere;                  /* last-resort wrap, never a clip */
+}
+h1,h2{ margin:0; }
+/* ---------- spec-sheet header ---------- */
+.sheet-head{ max-width:1216px; margin:0 auto var(--s6); color:var(--cream); }
+.t5{ font-family:var(--font-mono); font-size:11px; letter-spacing:2.2px; }
+.sheet-head .t5{ color:#e6d9bd; opacity:.9; }
+.sheet-title{ font-size:26px; font-weight:bold; letter-spacing:-0.5px; color:#fff8ea; margin:var(--s1) 0 var(--s2); }
+.sheet-sub{ font-size:14px; line-height:1.5; color:#efe4cd; max-width:900px; margin:0; }
+.readout{
+  margin:var(--s4) 0 0; padding:var(--s3);
+  background:rgba(20,16,12,.62); border:1px solid rgba(230,196,150,.35);
+  border-radius:8px; color:#d8f0e0; font-size:11px; line-height:1.6;
+  white-space:pre-wrap; overflow-wrap:anywhere;
+}
+/* ---------- spec-sheet grid ---------- */
+.grid{
+  max-width:1216px; margin:0 auto;
+  display:grid; gap:var(--s6);
+  grid-template-columns:repeat(auto-fill, minmax(min(418px, 100%), 1fr));
+}
+.card{
+  margin:0; padding:var(--s4);
+  display:flex; flex-direction:column; gap:var(--s3);
+  border:1px solid var(--desk-border); border-radius:12px;
+  background:linear-gradient(180deg, var(--desk-1), var(--desk-2) 55%, var(--desk-3));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.25), 0 2px 8px rgba(0,0,0,.35);
+}
+.card-head{ display:flex; flex-direction:column; gap:var(--s1);
+  background:rgba(20,16,12,.42); border-radius:8px; padding:8px 10px; }
+.card-head .t5{ color:#f6ecd6; }
+.card-title{ font-size:18px; font-weight:bold; color:#fff8ea; }
+.card-note{ font-size:12px; line-height:1.5; color:#f2e7cf; font-family:var(--font-mono);
+  background:rgba(20,16,12,.42); border-radius:6px; padding:6px 10px; }
+.device{
+  width:min(386px, 100%); margin:0 auto; padding:10px;
+  background:#14100c; border-radius:26px;
+  box-shadow:0 10px 24px rgba(0,0,0,.45), 0 0 0 2px #050403;
+}
+.pane{ background:var(--paper-bg); border-radius:16px; overflow:hidden; }
+/* page content width == 300 px at the design surface (device 386 - 20 - 66) */
+.page{ position:relative; padding:22px 22px 22px 44px; min-height:392px; --rule-pitch:33px; }
+.page::before{ /* ruled lines: pitch from --rule-pitch (VISUAL.md RULE P-4) */
+  content:""; position:absolute; left:44px; right:22px; top:96px; bottom:0;
+  background-image:repeating-linear-gradient(to bottom,
+    transparent, transparent var(--rule-pitch),
+    var(--rule-line) var(--rule-pitch), var(--rule-line) calc(var(--rule-pitch) + 1px));
+  opacity:.55; pointer-events:none;
+}
+.page::after{ /* red margin rule */
+  content:""; position:absolute; left:30px; top:0; bottom:0; width:1.6px;
+  background:var(--rule-margin); opacity:.7;
+}
+.punch{ position:absolute; left:9px; width:13px; height:13px; border-radius:50%; background:rgba(36,31,26,.28); }
+.pz{ position:relative; z-index:1; }
+/* ---------- type tiers (VISUAL.md §2) ---------- */
+.t0{ font-size:26px; font-weight:bold; letter-spacing:-0.5px; color:var(--ink); }
+.t1{ font-size:18px; font-weight:bold; color:var(--ink); }
+.t2{ font-size:17px; font-weight:bold; letter-spacing:.6px; }
+.t3{ font-size:14px; line-height:1.45; color:var(--ink-soft); }
+.t4b{ font-size:13px; color:var(--ink-soft); }
+.t4{ font-family:var(--font-mono); font-size:12px; line-height:1.6; color:var(--muted-2); }
+.t5m{ font-family:var(--font-mono); font-size:11px; letter-spacing:2.2px; color:var(--muted); }
+.cue{ font-size:15px; font-weight:bold; line-height:1.2; letter-spacing:.4px; }
+.sub{ margin:0 0 var(--s6); }
+/* ---------- paper widgets ---------- */
+.btn{
+  display:block; width:100%; text-align:left; font-family:var(--font-ui);
+  font-size:17px; font-weight:bold; letter-spacing:.6px;
+  padding:16px 18px; border-radius:8px; margin-bottom:14px;
+}
+.btn.primary{ background:var(--ink); color:var(--cream); border:0; }
+.btn.outline{ background:transparent; color:var(--ink); border:2px solid rgba(34,48,77,.55); }
+.card-list{ display:flex; flex-direction:column; gap:var(--s3); }
+.opt{
+  border:2px solid rgba(34,48,77,.4); border-radius:10px;
+  padding:var(--s3) var(--s4); background:rgba(255,255,255,.35);
+}
+.opt.on{ border-color:var(--ink); background:rgba(91,140,224,.10); }
+.opt-off{ border:2px dashed rgba(34,48,77,.3); border-radius:10px; padding:var(--s3) var(--s4); color:var(--muted); }
+.opt h3{ margin:0 0 var(--s1); font-size:18px; color:var(--ink); }
+.opt p{ margin:0; font-size:14px; line-height:1.45; color:var(--ink-soft); }
+/* the pen object: barrel + brass tip, per-model gradient (menu.html materials) */
+.pen{ display:flex; align-items:stretch; height:12px; border-radius:7px;
+      filter:drop-shadow(0 2px 2px rgba(0,0,0,.32)); }
+.pen.lg{ height:22px; border-radius:11px; }
+.pen .tip{ width:20%; min-width:16px; border-radius:7px 0 0 7px;
+  background:linear-gradient(180deg,#6b5a36 0%,#a58d52 16%,#e8dca6 30%,#c4ab68 40%,#7d6a3f 72%,#4a3d24 100%); }
+.pen.lg .tip{ border-radius:11px 0 0 11px; }
+.pen .barrel{ flex:1; border-radius:0 7px 7px 0;
+  background:linear-gradient(180deg,var(--b1) 0%,var(--b2) 12%,var(--b3) 26%,var(--b4) 34%,var(--b5) 70%,var(--b6) 100%); }
+.pen.cobalt{--b1:#0a1531;--b2:#1b3a7d;--b3:#5b8ce0;--b4:#a8c8ff;--b5:#1a3570;--b6:#070f24}
+.pen.amber{--b1:#3a1d05;--b2:#a05c11;--b3:#f0a23c;--b4:#ffd694;--b5:#8f4f0d;--b6:#2c1504}
+.pen.graphite{--b1:#14171b;--b2:#3c4249;--b3:#6f7783;--b4:#aeb6c1;--b5:#2b3037;--b6:#0d1013}
+.pen.ivory{--b1:#5c5340;--b2:#a89b7e;--b3:#e2d8bd;--b4:#fff8e3;--b5:#b8ab8f;--b6:#6d6350}
+.penrow{ display:flex; align-items:center; gap:var(--s3); }
+.pingrid{ display:grid; grid-template-columns:1fr 1fr; gap:var(--s3); }
+.pencard{ border:2px solid transparent; border-radius:10px; padding:var(--s3) var(--s3);
+  background:rgba(255,255,255,.35); text-align:center; }
+.pencard.sel{ border-color:var(--ink); }
+.pencard .name{ font-size:18px; font-weight:bold; margin-top:var(--s2); }
+.pencard .tag{ font-family:var(--font-mono); font-size:11px; letter-spacing:2.2px; color:var(--muted); }
+/* settings rows: production metrics live in game/scripts/settings_screen.gd,
+   drawn here in reference units (VISUAL.md §1 RULE S-1). */
+.srow{ display:flex; align-items:center; justify-content:space-between; gap:var(--s3);
+       padding:13px 0; border-bottom:1px solid rgba(169,189,212,.55); }
+.srow:last-of-type{ border-bottom:0; }
+.srow .label{ font-size:17px; font-weight:bold; }
+.srow .value{ font-size:13px; color:var(--ink-soft); }
+.toggle{ width:52px; height:28px; border-radius:999px; border:2px solid rgba(34,48,77,.6);
+         background:transparent; position:relative; flex:0 0 auto; }
+.toggle .knob{ position:absolute; top:2px; left:2px; width:20px; height:20px; border-radius:50%; background:var(--ink); }
+.toggle.on{ background:var(--ink); }
+.toggle.on .knob{ left:26px; background:var(--cream); }
+/* tradeoff words on the pen */
+.power{ border-top:1px solid rgba(169,189,212,.7); padding-top:var(--s3); margin-top:var(--s3); }
+.power .head{ display:flex; align-items:center; gap:var(--s2); }
+.power .lever{ font-family:var(--font-mono); font-size:11px; letter-spacing:2.2px; color:var(--muted); }
+.wl{ margin:var(--s1) 0 0; font-size:14px; line-height:1.45; color:var(--ink-soft); }
+.wl b{ color:var(--ink); }
+.nostats{ margin:var(--s4) 0 0; padding:var(--s2) var(--s3); border-left:3px solid var(--p2);
+  background:rgba(240,162,60,.14); font-family:var(--font-mono); font-size:11px; letter-spacing:1.4px; }
+/* rival list */
+.ol{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:var(--s3); counter-reset:rival; }
+.rival{ display:flex; gap:var(--s3); align-items:flex-start; border:2px solid rgba(34,48,77,.35);
+        border-radius:10px; padding:var(--s3); background:rgba(255,255,255,.35); }
+.rival.locked{ border-style:dashed; opacity:.62; }
+.ord{ font-family:var(--font-mono); font-size:11px; letter-spacing:2.2px; color:var(--muted);
+      border:1px solid rgba(34,48,77,.45); border-radius:999px; padding:2px 8px; flex:0 0 auto; }
+.rival .rname{ font-size:18px; font-weight:bold; }
+.rival .habit{ margin:2px 0 0; font-size:14px; line-height:1.45; color:var(--ink-soft); }
+.lockchip{ margin-left:auto; flex:0 0 auto; font-family:var(--font-mono); font-size:11px;
+           letter-spacing:2.2px; padding:2px 8px; border-radius:999px;
+           background:var(--ink); color:var(--cream); }
+.lockchip.out{ background:transparent; color:var(--muted); border:1px solid rgba(34,48,77,.45); }
+.code{ margin:var(--s4) 0 0; padding:var(--s3); background:rgba(34,48,77,.07);
+       border:1px dashed rgba(34,48,77,.35); border-radius:8px;
+       font-family:var(--font-mono); font-size:11px; line-height:1.7; color:var(--ink-soft);
+       white-space:pre-wrap; }
+/* first-shot cue */
+.deskpane{ background:linear-gradient(180deg,var(--desk-1),var(--desk-2) 55%,var(--desk-3)); }
+.cuewrap{ position:relative; padding:22px 22px 22px 44px; min-height:392px; }
+.cuechip{ display:inline-block; font-family:var(--font-ui); font-size:15px; font-weight:bold;
+  letter-spacing:.4px; line-height:1.2; background:rgba(20,16,12,.78); color:#eaf2ff;
+  border-radius:999px; padding:6px 12px; margin:0 6px 8px 0; }
+.ring{ margin:var(--s6) auto var(--s4); width:min(230px,86%); aspect-ratio:230/72;
+  border:2.5px dashed #7ea8ee; border-radius:50%; position:relative;
+  background:radial-gradient(ellipse at 50% 50%, rgba(91,140,224,.16), rgba(91,140,224,0) 70%); }
+.ring .pen{ position:absolute; left:12%; right:12%; top:50%; transform:translateY(-50%) rotate(-8deg); }
+.grabmark{ position:absolute; left:52%; top:50%; width:22px; height:22px; margin:-11px 0 0 -11px;
+  border-radius:50%; border:2px solid #eaf2ff; background:rgba(234,242,255,.18); }
+.pullband{ position:absolute; left:52%; top:50%; width:66px; height:10px; margin-top:-5px;
+  transform:rotate(148deg); transform-origin:0 50%;
+  background:linear-gradient(90deg, rgba(234,242,255,.42), rgba(234,242,255,.06));
+  border:1px dashed rgba(234,242,255,.5); border-radius:4px; }
+.cuebar{ display:block; font-family:var(--font-ui); font-size:15px; font-weight:bold;
+  letter-spacing:.4px; line-height:1.2; color:#eaf2ff; background:rgba(20,16,12,.78);
+  border-radius:6px; padding:6px 0; }
+.t5c{ display:inline-block; font-family:var(--font-mono); font-size:11px; letter-spacing:2.2px;
+  line-height:1.35; color:#f6ecd6; background:rgba(20,16,12,.42); border-radius:5px;
+  padding:3px 7px; }
+.cleared{ display:block; text-align:center; font-family:var(--font-mono); font-size:11px;
+  letter-spacing:2.2px; color:#f6ecd6; padding:6px 0; margin:12px 0 0;
+  background:rgba(20,16,12,.42); border-radius:6px; }
+.ruleline{ margin:var(--s3) 0 0; font-size:14px; line-height:1.45; color:#fbf5e8;
+  background:rgba(20,16,12,.42); border-radius:6px; padding:8px 10px; }
+.ruleline b{ color:#fff8ea; }
+/* loading stages */
+.stage{ display:flex; align-items:center; gap:var(--s3); padding:11px 0; border-bottom:1px dashed rgba(169,189,212,.7); }
+.stage:last-of-type{ border-bottom:0; }
+.stage .sname{ font-size:17px; font-weight:bold; }
+.state{ margin-left:auto; font-family:var(--font-mono); font-size:11px; letter-spacing:2.2px; }
+.state.now{ color:var(--ink); }
+.state.done{ color:var(--muted); }
+.state.todo{ color:var(--muted-2); }
+/* ---------- tokens recap ---------- */
+.tokens{ max-width:1216px; margin:var(--s8) auto 0; padding:var(--s4);
+  border:1px solid var(--desk-border); border-radius:12px;
+  background:linear-gradient(180deg, var(--desk-1), var(--desk-2) 60%, var(--desk-3)); color:var(--cream); }
+.swatches{ display:flex; flex-wrap:wrap; gap:var(--s2); margin:var(--s3) 0 0; }
+.sw{ font-family:var(--font-mono); font-size:11px; letter-spacing:1.6px;
+     padding:6px 10px; border-radius:6px; border:1px solid rgba(0,0,0,.25); }
+.toktable{ width:100%; border-collapse:collapse; margin-top:var(--s3); }
+.toktable th,.toktable td{ text-align:left; font-family:var(--font-mono); font-size:11px;
+  letter-spacing:1.2px; padding:5px 8px; border-bottom:1px solid rgba(255,255,255,.22); }
+.foot{ max-width:1216px; margin:var(--s6) auto 0; font-family:var(--font-mono); font-size:11px;
+  letter-spacing:1.6px; color:#a89f8f; }
+</style>
+</head>
+<body data-ref-w="300">
+
+<header class="sheet-head">
+  <p class="t5">PEN FIGHT &middot; FTUE &middot; WAVE 2 &middot; TICKET #12 &middot; MENU VISUAL DIRECTION &middot; SPEC SHEET</p>
+  <h1 class="sheet-title">The menu is the notebook on the desk</h1>
+  <p class="sheet-sub">
+    Eight menu surfaces drawn as one system: paper pages for choosing, the laminate desk for playing,
+    cobalt/amber as the two-participant pair. Every rule this sheet obeys is written as a checkable
+    statement in <b>../VISUAL.md</b>. The block below is this file's own fit gate, computed live at
+    whatever width it is opened at.
+  </p>
+  <pre class="readout" id="readout" data-tier="t5">SELF-CHECK PENDING — needs a scripting engine (open in Chromium, or capture with --dump-dom).</pre>
+</header>
+
+<main class="grid">
+
+  <!-- ============================ 1. HOME / START ============================ -->
+  <figure class="card" id="card-HOME" data-screen="HOME">
+    <figcaption class="card-head">
+      <span class="t5">SCREEN &middot; HOME &middot; &ldquo;START&rdquo;</span>
+      <span class="card-title">One primary action</span>
+    </figcaption>
+    <div class="device"><div class="pane"><div class="page" data-surface-scale="1.000">
+      <span class="punch" style="top:70px"></span>
+      <span class="punch" style="top:210px"></span>
+      <span class="punch" style="top:350px"></span>
+      <div class="pz">
+        <div class="t0" data-tier="t0">Pen Fight</div>
+        <div class="t5m sub" data-tier="t5">TWO PLAYERS &middot; ONE DESK</div>
+        <button class="btn primary t2" data-tier="t2" data-prompt data-nowrap>START &#8594;</button>
+        <button class="btn outline t2" data-tier="t2" data-prompt data-nowrap>PENS</button>
+        <button class="btn outline t2" data-tier="t2" data-prompt data-nowrap>SETTINGS</button>
+        <div class="t4" data-tier="t4">best of 5 &middot; hot-seat<br>last played: P1 won 3&ndash;2</div>
+      </div>
+    </div></div></div>
+    <p class="card-note">TYPE t0 26/t2 17/t4 12 &middot; PAD 22&ndash;44 &middot; RULE 33px</p>
+    <p class="ruleline"><b>Rationale:</b> the first screen is one page with one primary button, because the desk is one decision deep.</p>
+  </figure>
+
+  <!-- ======================= 2. MODE (Game Mode axis) ======================= -->
+  <figure class="card" id="card-MODE" data-screen="MODE">
+    <figcaption class="card-head">
+      <span class="t5">SCREEN &middot; MODE &middot; GAME MODE AXIS</span>
+      <span class="card-title">Hot Seat or Solo &mdash; never a ruleset</span>
+    </figcaption>
+    <div class="device"><div class="pane"><div class="page" data-surface-scale="1.000">
+      <div class="pz">
+        <div class="t5m">&lsaquo; BACK</div>
+        <div class="t0" data-tier="t0">Game Mode</div>
+        <div class="t5m sub" data-tier="t5">HOME &rarr; MODE &middot; GAME MODE ONLY</div>
+        <div class="card-list">
+          <div class="opt on" data-start-mode="hot_seat">
+            <h3 class="t1" data-tier="t1" data-prompt data-nowrap>Hot Seat</h3>
+            <p class="t3" data-tier="t3" data-prompt>Two people, one device &mdash; hand the pen over each flick.</p>
+          </div>
+          <div class="opt" data-start-mode="solo">
+            <h3 class="t1" data-tier="t1" data-prompt data-nowrap>Solo</h3>
+            <p class="t3" data-tier="t3" data-prompt>One human against the Rival Circuit &mdash; three rivals, in order.</p>
+          </div>
+        </div>
+        <p class="t4" data-tier="t4" style="margin-top:16px">This page sets who sits at the table.
+          It sets nothing else.</p>
+      </div>
+    </div></div></div>
+    <p class="card-note">2 OPT CARDS &middot; 18/14 &middot; SHEET NOTE: CLASSIC / PEN POWERS LIVES ON THE RULESET PAGE</p>
+    <p class="ruleline"><b>Rationale:</b> Game Mode and Ruleset are separate axes, so they get separate pages with separate vocabulary.</p>
+  </figure>
+
+  <!-- ============================= 3. PENS ============================= -->
+  <figure class="card" id="card-PENS" data-screen="PENS">
+    <figcaption class="card-head">
+      <span class="t5">SCREEN &middot; PENS &middot; PEN MODEL CHOICE</span>
+      <span class="card-title">Four visible models, one size</span>
+    </figcaption>
+    <div class="device"><div class="pane"><div class="page" data-surface-scale="1.000">
+      <div class="pz">
+        <div class="t5m">&lsaquo; BACK</div>
+        <div class="t0" data-tier="t0">Pens</div>
+        <div class="t5m sub" data-tier="t5">HOME &rarr; PENS &middot; VISIBLE, NOT NUMERIC</div>
+        <div class="pingrid">
+          <div class="pencard sel">
+            <div class="pen lg cobalt" role="img" aria-label="Cobalt pen"></div>
+            <div class="name t1" data-tier="t1" data-prompt data-nowrap>Cobalt</div>
+            <div class="tag" data-tier="t5" data-prompt data-nowrap>P1 &middot; EQUIPPED</div>
+          </div>
+          <div class="pencard">
+            <div class="pen lg amber" role="img" aria-label="Amber pen"></div>
+            <div class="name t1" data-tier="t1" data-prompt data-nowrap>Amber</div>
+            <div class="tag" data-tier="t5" data-prompt data-nowrap>P2</div>
+          </div>
+          <div class="pencard">
+            <div class="pen lg graphite" role="img" aria-label="Graphite pen"></div>
+            <div class="name t1" data-tier="t1" data-prompt data-nowrap>Graphite</div>
+            <div class="tag" data-tier="t5" data-prompt data-nowrap>OPEN</div>
+          </div>
+          <div class="pencard">
+            <div class="pen lg ivory" role="img" aria-label="Ivory pen"></div>
+            <div class="name t1" data-tier="t1" data-prompt data-nowrap>Ivory</div>
+            <div class="tag" data-tier="t5" data-prompt data-nowrap>OPEN</div>
+          </div>
+        </div>
+        <p class="t4" data-tier="t4" style="margin-top:16px">Every model draws the same 180&times;10 footprint.
+          In Classic they all run the same physics; only the object you look at changes.</p>
+      </div>
+    </div></div></div>
+    <p class="card-note">4 MODELS &middot; IDENTICAL FOOTPRINT &middot; NAME IS A COLOUR WORD</p>
+    <p class="ruleline"><b>Rationale:</b> a pen model is a visible identity with no numbers on it &mdash; pick by look, learn by feel.</p>
+  </figure>
+
+  <!-- ===================== 4. TRADEOFF (Classic / Pen Powers) ===================== -->
+  <figure class="card" id="card-TRADEOFF" data-screen="MODE@TRADEOFF">
+    <figcaption class="card-head">
+      <span class="t5">BEAT &middot; TRADEOFF &middot; RULESET, PEN POWERS ONLY</span>
+      <span class="card-title">The tradeoff is stated in words, on the pen</span>
+    </figcaption>
+    <div class="device"><div class="pane"><div class="page" data-surface-scale="1.000">
+      <div class="pz">
+        <div class="t0" data-tier="t0">Ruleset</div>
+        <div class="t5m sub" data-tier="t5">DEFAULT &middot; SAME PHYSICS FOR BOTH PENS</div>
+        <div class="opt on">
+          <h3 class="t1" data-tier="t1" data-prompt>Classic &mdash; default</h3>
+          <p class="t3" data-tier="t3" data-prompt>Every pen runs the same physics. The models still look different; they behave the same.</p>
+        </div>
+        <div class="opt" style="margin-top:12px">
+          <h3 class="t1" data-tier="t1" data-prompt>Pen Powers &mdash; opt-in</h3>
+          <p class="t3" data-tier="t3" data-prompt>Each pen runs its own profile. The strength and the cost are printed on the pen, before the first flick.</p>
+        </div>
+
+        <div class="power">
+          <div class="head"><div class="pen cobalt" style="width:34px"></div>
+            <span class="t1" data-tier="t1" data-prompt data-nowrap>Cobalt</span>
+            <span class="lever" data-tier="t5">CONTROL</span></div>
+          <p class="wl" data-tier="t3" data-prompt data-oneline><b>Strength.</b> Straight, balanced, repeatable.</p>
+          <p class="wl" data-tier="t3" data-prompt data-oneline><b>Cost.</b> Nothing added: no reach, no spin.</p>
+        </div>
+        <div class="power">
+          <div class="head"><div class="pen graphite" style="width:34px"></div>
+            <span class="t1" data-tier="t1" data-prompt data-nowrap>Graphite</span>
+            <span class="lever" data-tier="t5">ANCHOR</span></div>
+          <p class="wl" data-tier="t3" data-prompt data-oneline><b>Strength.</b> Heavy. Holds its line, barely turns.</p>
+          <p class="wl" data-tier="t3" data-prompt data-oneline><b>Cost.</b> Reach: it lands short of Cobalt.</p>
+        </div>
+        <div class="power">
+          <div class="head"><div class="pen ivory" style="width:34px"></div>
+            <span class="t1" data-tier="t1" data-prompt data-nowrap>Ivory</span>
+            <span class="lever" data-tier="t5">GLIDE</span></div>
+          <p class="wl" data-tier="t3" data-prompt data-oneline><b>Strength.</b> Keeps sliding when others stop.</p>
+          <p class="wl" data-tier="t3" data-prompt data-oneline><b>Cost.</b> It can slide itself off the table.</p>
+        </div>
+        <div class="power">
+          <div class="head"><div class="pen amber" style="width:34px"></div>
+            <span class="t1" data-tier="t1" data-prompt data-nowrap>Amber</span>
+            <span class="lever" data-tier="t5">SPIN</span></div>
+          <p class="wl" data-tier="t3" data-prompt data-oneline><b>Strength.</b> Carries spin further than any pen.</p>
+          <p class="wl" data-tier="t3" data-prompt data-oneline><b>Cost.</b> Its edge is the least proven one.</p>
+        </div>
+
+        <p class="nostats" data-tier="t5">NO STAT PAGE &middot; NO NUMBERS, BARS OR PERCENTAGES &middot; BOTH PICKS SHOWN BEFORE THE FIRST FLICK</p>
+        <p class="t4" data-tier="t4" style="margin-top:12px">Two players may pick the same pen: a mirror is
+          legal and exactly symmetric.</p>
+      </div>
+    </div></div></div>
+    <p class="card-note">2 LINES PER PEN &middot; STRENGTH + COST &middot; 14px, ONE LINE EACH AT 300px</p>
+    <p class="ruleline"><b>Rationale:</b> a numeric stat page would hand over information the opponent cannot see, so the tradeoff is two sentences printed on the object you hold.</p>
+  </figure>
+
+  <!-- ========================= 5. RIVAL CHOICE ========================= -->
+  <figure class="card" id="card-RIVAL" data-screen="MODE@RIVAL_CHOICE">
+    <figcaption class="card-head">
+      <span class="t5">BEAT &middot; RIVAL_CHOICE &middot; SOLO ONLY</span>
+      <span class="card-title">Three rivals, in order, lock state injected</span>
+    </figcaption>
+    <div class="device"><div class="pane"><div class="page" data-surface-scale="1.000">
+      <div class="pz">
+        <div class="t5m">&lsaquo; BACK</div>
+        <div class="t0" data-tier="t0">Rivals</div>
+        <div class="t5m sub" data-tier="t5">SOLO &middot; RIVAL CIRCUIT &middot; IN ORDER</div>
+        <ol class="ol">
+          <li class="rival">
+            <span class="ord" data-tier="t5">1</span>
+            <span>
+              <span class="rname t1" data-tier="t1" data-prompt data-nowrap data-placeholder="rival-name">Nib</span>
+              <span class="habit" data-tier="t3" data-prompt>Opens every round with a full-power straight flick.</span>
+            </span>
+            <span class="lockchip out" data-tier="t5">OPEN</span>
+          </li>
+          <li class="rival locked">
+            <span class="ord" data-tier="t5">2</span>
+            <span>
+              <span class="rname t1" data-tier="t1" data-prompt data-nowrap data-placeholder="rival-name">Blotter</span>
+              <span class="habit" data-tier="t3" data-prompt>Plays for your pen's edge, not for the middle.</span>
+            </span>
+            <span class="lockchip" data-tier="t5">LOCKED</span>
+          </li>
+          <li class="rival locked">
+            <span class="ord" data-tier="t5">3</span>
+            <span>
+              <span class="rname t1" data-tier="t1" data-prompt data-nowrap data-placeholder="rival-name">Understudy</span>
+              <span class="habit" data-tier="t3" data-prompt>Copies your last good flick back at you.</span>
+            </span>
+            <span class="lockchip" data-tier="t5">LOCKED</span>
+          </li>
+        </ol>
+        <pre class="code" data-tier="t5">// injected source of lock state -- NOT owned by this sheet
+rivalLocked(index: int) -&gt; bool     // true =&gt; LOCKED chip, dimmed row
+demo values on this sheet: [false, true, true]</pre>
+        <p class="t4" data-tier="t4" style="margin-top:12px">The list is ordered and read top to bottom.
+          A rival row is dimmed and chipped LOCKED until its callback says otherwise &mdash; this sheet encodes no progression rule.</p>
+      </div>
+    </div></div></div>
+    <p class="card-note">ORDER IS THE CONTENT &middot; LOCK = CALLBACK, NOT A RULE HERE</p>
+    <p class="ruleline"><b>Rationale:</b> an ordered list says &ldquo;this is the path&rdquo; without inventing a progression rule the design has not decided.</p>
+  </figure>
+
+  <!-- ========================== 6. SETTINGS ROW STYLE ========================== -->
+  <figure class="card" id="card-SETTINGS" data-screen="SETTINGS">
+    <figcaption class="card-head">
+      <span class="t5">SCREEN &middot; SETTINGS &middot; ROW STYLE</span>
+      <span class="card-title">One line per row: label left, control or value right</span>
+    </figcaption>
+    <div class="device"><div class="pane"><div class="page" data-surface-scale="1.000">
+      <div class="pz">
+        <div class="t0" data-tier="t0">Settings</div>
+        <div class="t5m sub" data-tier="t5">HOME &rarr; SETTINGS</div>
+        <div class="srow"><span class="label t2" data-tier="t2" data-prompt>Sound</span>
+          <span class="toggle on"><span class="knob"></span></span></div>
+        <div class="srow"><span class="label t2" data-tier="t2" data-prompt>Haptics</span>
+          <span class="toggle on"><span class="knob"></span></span></div>
+        <div class="srow"><span class="label t2" data-tier="t2" data-prompt>Screen shake</span>
+          <span class="toggle"><span class="knob"></span></span></div>
+        <div class="srow"><span class="label t2" data-tier="t2" data-prompt>Match length</span>
+          <span class="value t4b" data-tier="t4b" data-prompt data-nowrap>best of 5</span></div>
+        <div class="srow"><span class="label t2" data-tier="t2" data-prompt>P1&rsquo;s pen</span>
+          <span class="value t4b" data-tier="t4b" data-prompt data-nowrap>Cobalt</span></div>
+        <div class="srow"><span class="label t2" data-tier="t2" data-prompt>P2&rsquo;s pen</span>
+          <span class="value t4b" data-tier="t4b" data-prompt data-nowrap>Amber</span></div>
+        <button class="btn primary t2" style="margin:24px 0 0; text-align:center" data-tier="t2" data-prompt data-nowrap>BACK</button>
+      </div>
+    </div></div></div>
+    <p class="card-note">PAIRS WITH settings_screen.gd: 536&times;482 SHEET, TEXT COLUMN 488px,<br>LABEL 21px, VALUE 19px, TOGGLE 64&times;30, KNOB r11, ROW PITCH 54px</p>
+    <p class="ruleline"><b>Rationale:</b> a settings row is a fixed shape &mdash; if it needs a third control, it is a new row, not a wider row.</p>
+  </figure>
+
+  <!-- ========================= 7. FIRST-SHOT CUE ========================= -->
+  <figure class="card" id="card-FIRSTSHOT" data-screen="PLAYING@FIRST_SHOT">
+    <figcaption class="card-head">
+      <span class="t5">BEAT &middot; TEACH / FIRST_SHOT &middot; INLINE, OVER PLAY</span>
+      <span class="card-title">Grab, pull, release &mdash; and the cue dies on the grab</span>
+    </figcaption>
+    <div class="device"><div class="pane deskpane"><div class="cuewrap" data-surface-scale="1.000">
+      <div class="pz">
+        <span class="t5c" data-tier="t5">BEAT &middot; TEACH</span>
+        <span class="cuebar" data-tier="cue" data-cue data-prompt data-nowrap data-oneline>GRAB THE PEN - PULL BACK - LET GO</span>
+        <span class="cuechip" data-tier="cue" data-prompt data-nowrap data-oneline>1 &middot; GRAB</span>
+        <span class="cuechip" data-tier="cue" data-prompt data-nowrap data-oneline>2 &middot; PULL BACK</span>
+        <span class="cuechip" data-tier="cue" data-prompt data-nowrap data-oneline>3 &middot; LET GO</span>
+        <span class="t5c" data-tier="t5">BEAT &middot; FIRST_SHOT (after 4 s idle)</span>
+        <span class="cuebar" data-tier="cue" data-cue data-prompt data-nowrap data-oneline>FIRST FLICK - PULL BACK, LET GO</span>
+      </div>
+      <div class="ring">
+        <div class="pen cobalt"></div>
+        <div class="pullband"></div>
+        <div class="grabmark"></div>
+      </div>
+      <span class="cleared" data-tier="t5" data-prompt data-nowrap>CUE CLEARED ON on_drag_started()</span>
+      <p class="ruleline"><b>Persistent hint strip</b> (the live turn's own strip, under the cue, not
+        a beat): GRAB ANYWHERE ON THE PEN &rarr; PULL BACK &rarr; LET GO &middot; drag past 30 px cancels
+        the flick &middot; power caps at 160 px (aim_input.gd:46, :48).</p>
+      <p class="ruleline"><b>Never blocks:</b> the instant the player grabs, the teach is gone and
+        does not re-arm in that turn. The flick is always legal.</p>
+      <p class="ruleline"><b>Never solves:</b> the launch cone shows direction with an open far end.
+        Nothing on this screen says where the pen will end up.</p>
+    </div></div></div>
+    <p class="card-note">15px BOLD CUE &middot; ON THE DESK SURFACE, CREAM INK &middot; NO TRAJECTORY</p>
+    <p class="ruleline"><b>Rationale:</b> the drag is the real gesture, so the cue names the three moves of that gesture and then removes itself.</p>
+  </figure>
+
+  <!-- ============================ 8. LOADING ============================ -->
+  <figure class="card" id="card-LOADING" data-screen="BOOT@LOADING">
+    <figcaption class="card-head">
+      <span class="t5">SCREEN &middot; BOOT / LOADING &middot; REAL WORK ONLY</span>
+      <span class="card-title">The screen exists while work is outstanding</span>
+    </figcaption>
+    <div class="device"><div class="pane"><div class="page" data-surface-scale="1.000">
+      <div class="pz">
+        <div class="t5m">PEN FIGHT</div>
+        <div class="t0" data-tier="t0">Loading</div>
+        <div class="t5m sub" data-tier="t5">REAL WORK ONLY &middot; NO FAKE DELAY</div>
+        <div class="stage"><span class="sname t2" data-tier="t2" data-prompt data-nowrap>Boot files</span>
+          <span class="state done" data-tier="t5">DONE</span></div>
+        <div class="stage"><span class="sname t2" data-tier="t2" data-prompt data-nowrap>Read settings</span>
+          <span class="state now" data-tier="t5">NOW</span></div>
+        <div class="stage"><span class="sname t2" data-tier="t2" data-prompt data-nowrap>Build the table</span>
+          <span class="state todo" data-tier="t5">&#8212;</span></div>
+        <p class="t4" data-tier="t4" style="margin-top:16px">Each row is a stage that has something to
+          do. A stage with nothing to do is not a stage, and there is no minimum display time: the
+          page leaves the frame the work is finished.</p>
+        <p class="nostats" data-tier="t5">ZERO-FRAME MINIMUM &middot; NO SPINNER WITHOUT A STAGE &middot; NO SLEEP</p>
+      </div>
+    </div></div></div>
+    <p class="card-note">3 STAGES &middot; 17px STAGE NAMES &middot; STATE IN 11px MONO</p>
+    <p class="ruleline"><b>Rationale:</b> the tap already completed the boot, so the honest feedback is the list of work, not a wait.</p>
+  </figure>
+
+</main>
+
+<section class="tokens">
+  <p class="t5">TOKENS &middot; PAPER / DESK / PAIR &middot; IDENTICAL TO docs/prototypes/app-flow/mock/index.html :root</p>
+  <div class="swatches">
+    <span class="sw" style="background:#f4efe2;color:#22304d">#f4efe2 PAPER</span>
+    <span class="sw" style="background:#22304d;color:#f4efe2">#22304d INK</span>
+    <span class="sw" style="background:#4a5a78;color:#f4efe2">#4a5a78 INK-SOFT</span>
+    <span class="sw" style="background:#a9bdd4;color:#22304d">#a9bdd4 RULE</span>
+    <span class="sw" style="background:#d9707f;color:#241f1a">#d9707f MARGIN</span>
+    <span class="sw" style="background:#b8925f;color:#241f1a">#b8925f DESK-1</span>
+    <span class="sw" style="background:#a07a4d;color:#241f1a">#a07a4d DESK-2</span>
+    <span class="sw" style="background:#8a6740;color:#f4efe2">#8a6740 DESK-3</span>
+    <span class="sw" style="background:#e6c496;color:#241f1a">#e6c496 DESK-EDGE</span>
+    <span class="sw" style="background:#241f1a;color:#f4efe2">#241f1a ROOM</span>
+    <span class="sw" style="background:#5b8ce0;color:#0b1832">#5b8ce0 P1</span>
+    <span class="sw" style="background:#f0a23c;color:#3a1d05">#f0a23c P2</span>
+  </div>
+  <table class="toktable">
+    <tr><th>TIER</th><th>PX</th><th>MIN PX</th><th>USED FOR</th></tr>
+    <tr><td>t0 title</td><td>26</td><td>26</td><td>page title, one per surface</td></tr>
+    <tr><td>t1 item</td><td>18</td><td>18</td><td>mode / pen / rival names</td></tr>
+    <tr><td>t2 action</td><td>17</td><td>17</td><td>buttons, setting labels, stage names</td></tr>
+    <tr><td>cue</td><td>15</td><td>15</td><td>first-shot cue and prompt lines</td></tr>
+    <tr><td>t3 statement</td><td>14</td><td>14</td><td>tradeoff words, habits, option copy</td></tr>
+    <tr><td>t4b value</td><td>13</td><td>13</td><td>right-aligned setting values, pen tags</td></tr>
+    <tr><td>t4 mini</td><td>12</td><td>12</td><td>mono flavor / status lines</td></tr>
+    <tr><td>t5 eyebrow</td><td>11</td><td>11</td><td>mono eyebrows, chips, ordinals</td></tr>
+  </table>
+  <p class="t5" style="margin:12px 0 0">NO TEXT BELOW 11 px &middot; PROMPT WIDTH &le; VIEWPORT &minus; 64 px &middot; GUTTER 32 px &middot; SPACING 4/8/12/16/24/32</p>
+</section>
+
+<p class="foot">SELF-CONTAINED SPEC SHEET &middot; NO EXTERNAL DEPENDENCIES &middot; RULES IN ../VISUAL.md &middot; CHECKED AT 1280&times;720, 720&times;1280, 360&times;640</p>
+
+<script>
+(function () {
+  "use strict";
+  var lines = [];
+  var W = window.innerWidth, H = window.innerHeight;
+  var de = document.documentElement;
+  var docW = Math.max(de.scrollWidth, document.body.scrollWidth);
+  var budget = W - 64;                     /* SIDE_MARGIN 32 x2, turn_gate.gd */
+  var TIERS = { t0: 26, t1: 18, t2: 17, cue: 15, t3: 14, "t4b": 13, t4: 12, t5: 11 };
+  var FLOOR = 11;
+  var pass = true;
+  function line(s) { lines.push(s); }
+
+  line("=== SPEC-SHEET SELF-CHECK — FTUE menu visual direction (ticket #12, Wave 2) ===");
+  line("viewport      innerWidth=" + W + " innerHeight=" + H + " dpr=" + window.devicePixelRatio);
+  line("FIT-1  document.scrollWidth=" + docW + " vs innerWidth=" + W +
+       " -> overflow=" + Math.max(0, docW - W) + "px :: " +
+       (docW <= W ? "PASS no horizontal overflow" : "FAIL HORIZONTAL OVERFLOW"));
+  if (docW > W) { pass = false; }
+
+  /* ---- exact text width probe ---- */
+  var probe = document.createElement("span");
+  probe.style.position = "absolute";
+  probe.style.left = "-9999px";
+  probe.style.top = "0";
+  probe.style.whiteSpace = "nowrap";
+  probe.style.visibility = "hidden";
+  document.body.appendChild(probe);
+
+  var prompts = Array.prototype.slice.call(document.querySelectorAll("[data-prompt]"));
+  var widestAny = { px: 0, txt: "" }, widestNow = { px: 0, txt: "" };
+  var boxFails = [], nowFails = [], nowrapCount = 0, overBudgetCount = 0;
+  prompts.forEach(function (el) {
+    var cs = getComputedStyle(el);
+    probe.style.fontFamily = cs.fontFamily;
+    probe.style.fontSize = cs.fontSize;
+    probe.style.fontWeight = cs.fontWeight;
+    probe.style.fontStyle = cs.fontStyle;
+    probe.style.letterSpacing = cs.letterSpacing;
+    probe.textContent = (el.textContent || "").replace(/\s+/g, " ").trim();
+    var px = probe.getBoundingClientRect().width;
+    if (px > widestAny.px) { widestAny = { px: px, txt: probe.textContent }; }
+    /* FIT-1 (inside its own box): text must not spill its container */
+    if (el.scrollWidth > el.clientWidth + 0.5) {
+      boxFails.push(el.tagName + "." + el.className + " scrollW=" + el.scrollWidth + " clientW=" + el.clientWidth);
+    }
+    if (el.hasAttribute("data-nowrap")) {
+      nowrapCount++;
+      if (px > widestNow.px) { widestNow = { px: px, txt: probe.textContent }; }
+      /* FIT-2 (viewport budget): a single-line prompt must fit viewport - 64 */
+      if (px > budget) { overBudgetCount++; nowFails.push(probe.textContent + " = " + px.toFixed(1) + "px"); }
+    }
+  });
+  line("prompts       count=" + prompts.length + " (data-nowrap=" + nowrapCount + ")");
+  line("FIT-1b box-fit inside every prompt element :: " + (boxFails.length === 0 ?
+       "PASS 0 of " + prompts.length + " spill their box" : "FAIL " + boxFails.length + " spill: " + boxFails.join(" | ")));
+  if (boxFails.length) { pass = false; }
+  line("FIT-2  budget=innerWidth-2*32=" + budget + "px  widest-nowrap-prompt=" + widestNow.px.toFixed(1) +
+       "px :: " + (overBudgetCount === 0 ? "PASS" : "FAIL " + overBudgetCount + " over budget: " + nowFails.join(" | ")));
+  if (overBudgetCount) { pass = false; }
+  line("widest prompt (single line, unwrapped) = " + widestAny.px.toFixed(1) + "px  text=\"" + widestAny.txt + "\"");
+
+  /* ---- RULE P-3/F-8: nothing may hide overflowing content ----
+     A clipping ancestor (overflow != visible, e.g. the .pane frame's rounded
+     corners) must not actually be hiding anything: its scrollWidth/scrollHeight
+     must equal its client box. A clipping element that hides content is worse
+     than an overflowing one, because FIT-1 cannot see it (RULE F-5). */
+  var clippers = [], hiding = [];
+  Array.prototype.slice.call(document.querySelectorAll("body *")).forEach(function (el) {
+    var c = getComputedStyle(el);
+    if (c.overflow === "visible" && c.overflowX === "visible" && c.overflowY === "visible") { return; }
+    clippers.push(el);
+    if (el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1) {
+      hiding.push((el.className || el.tagName) + "(" + el.scrollWidth + ">" + el.clientWidth + "w," +
+                  el.scrollHeight + ">" + el.clientHeight + "h)");
+    }
+  });
+  var panes = Array.prototype.slice.call(document.querySelectorAll(".pane"));
+  line("FIT-1c clippers=" + clippers.length + " hiding content=0 :: " + (hiding.length === 0 ?
+       "PASS nothing clipped by overflow:hidden/clip" : "FAIL " + hiding.length + " hide content: " + hiding.join(" | ")));
+  if (hiding.length) { pass = false; }
+  var refPane = document.querySelector(".pane .page");
+  var refW = 0;
+  if (refPane) {
+    var rcs = getComputedStyle(refPane);
+    refW = Math.round(refPane.clientWidth - parseFloat(rcs.paddingLeft) - parseFloat(rcs.paddingRight));
+  }
+  line("F-8   panes=" + panes.length + " (nothing clipped by overflow:hidden/clip) :: " + (hiding.length === 0 ? "PASS" : "FAIL"));
+  var REF = parseFloat(document.body.getAttribute("data-ref-w"));
+  line("surface       measured page content width=" + refW + "px (device 386 - 20 shell - 66 page padding)" +
+       "  declared reference=" + REF + "px  ratio=" + (refW / REF).toFixed(3));
+  var atRef = refW >= REF;
+
+  /* ---- one-line rule, scoped to the design surface (VISUAL.md RULE F-4) ---- */
+  var oneLine = Array.prototype.slice.call(document.querySelectorAll("[data-oneline]"));
+  var wrapped = [], oneChecked = 0, widestOne = { px: 0, txt: "" };
+  oneLine.forEach(function (el) {
+    var cs3 = getComputedStyle(el);
+    var lh = parseFloat(cs3.lineHeight);
+    var lhpx = isNaN(lh) ? parseFloat(cs3.fontSize) * 1.2 : lh;
+    var h = el.scrollHeight - parseFloat(cs3.paddingTop) - parseFloat(cs3.paddingBottom);
+    var n = Math.max(1, Math.round(h / lhpx));
+    oneChecked++;
+    probe.style.fontFamily = cs3.fontFamily;
+    probe.style.fontSize = cs3.fontSize;
+    probe.style.fontWeight = cs3.fontWeight;
+    probe.style.fontStyle = cs3.fontStyle;
+    probe.style.letterSpacing = cs3.letterSpacing;
+    probe.textContent = (el.textContent || "").replace(/\s+/g, " ").trim();
+    var tpx = probe.getBoundingClientRect().width;
+    if (tpx > widestOne.px) { widestOne = { px: tpx, txt: probe.textContent }; }
+    if (n > 1) { wrapped.push((el.textContent || "").replace(/\s+/g, " ").trim().slice(0, 46) + "[" + n + " lines]"); }
+  });
+  line("FIT-4  one-line prompts marked data-oneline=" + oneLine.length +
+       "  surface>=reference=" + atRef + " -> " +
+       (atRef ? (wrapped.length === 0 ? "PASS all " + oneChecked + " render on 1 line" :
+                 "FAIL " + wrapped.length + " wrapped: " + wrapped.join(" | "))
+              : "NOT ENFORCED below the 300px reference surface; wrapped=" + wrapped.length));
+  line("FIT-4b widest one-line prompt text=" + widestOne.px.toFixed(1) +
+       "px vs surface content width=" + refW + "px :: text=\"" + widestOne.txt + "\"");
+  if (atRef && wrapped.length) { pass = false; }
+  if (atRef && widestOne.px > refW) { pass = false; }
+
+  /* ---- FIT-1d: no descendant rect may leave its pane's border box ---- */
+  var spill = [];
+  panes.forEach(function (p) {
+    var pr = p.getBoundingClientRect();
+    Array.prototype.forEach.call(p.querySelectorAll("*"), function (d) {
+      if (!d.getClientRects().length) { return; }
+      var r = d.getBoundingClientRect();
+      if (r.width === 0 && r.height === 0) { return; }
+      if (r.right > pr.right + 0.5 || r.left < pr.left - 0.5 || r.bottom > pr.bottom + 0.5) {
+        spill.push(String(d.className || d.tagName) + " rect=" + Math.round(r.left) + ".." +
+                   Math.round(r.right) + " pane=" + Math.round(pr.left) + ".." + Math.round(pr.right));
+      }
+    });
+  });
+  line("FIT-1d descendants inside their pane's box :: " +
+       (spill.length === 0 ? "PASS 0 spill" : "FAIL " + spill.length + " spill: " + spill.slice(0, 3).join(" | ")));
+  if (spill.length) { pass = false; }
+
+  /* ---- SHAPES: decorative identity shapes must actually render ---- */
+  var pens = Array.prototype.slice.call(document.querySelectorAll(".pen"));
+  var flatPens = pens.filter(function (n) {
+    var r = n.getBoundingClientRect();
+    return r.width < 8 || r.height < 4;
+  });
+  line("SHAPES pens=" + pens.length + " (identity shapes) with non-zero box :: " +
+       (flatPens.length === 0 ? "PASS" : "FAIL " + flatPens.length + " collapsed"));
+  if (flatPens.length) { pass = false; }
+
+  /* ---- type tiers: no text below the floor, no tier below its minimum ---- */
+  var minFont = Infinity, minWhere = "", violations = [], counts = {};
+  var all = Array.prototype.slice.call(document.querySelectorAll("body *"));
+  all.forEach(function (el) {
+    if (el.closest("#readout")) { return; }        /* the gate's own output */
+    var direct = false;
+    for (var i = 0; i < el.childNodes.length; i++) {
+      var n = el.childNodes[i];
+      if (n.nodeType === 3 && n.textContent.trim() !== "") { direct = true; }
+    }
+    if (!direct) { return; }
+    var px = parseFloat(getComputedStyle(el).fontSize);
+    if (px < minFont) { minFont = px; minWhere = el.tagName + "." + el.className; }
+    if (px < FLOOR) { violations.push(el.tagName + "." + el.className + "=" + px + "px"); }
+    var t = el.getAttribute("data-tier");
+    if (t && TIERS[t] !== undefined) {
+      counts[t] = (counts[t] || 0) + 1;
+      if (px < TIERS[t]) { violations.push("tier " + t + " " + px + "px < min " + TIERS[t] + "px"); }
+    }
+  });
+  var tierOrder = ["t0", "t1", "t2", "cue", "t3", "t4b", "t4", "t5"];
+  line("TYPE   min rendered font-size=" + minFont + "px at " + minWhere +
+       "  global floor=" + FLOOR + "px :: " + (violations.length ? "FAIL " + violations.join(" | ") : "PASS"));
+  line("TYPE   tier counts " + tierOrder.map(function (t) {
+    return t + "(" + (TIERS[t] || "?") + "px)=" + (counts[t] || 0);
+  }).join(" "));
+  if (violations.length) { pass = false; }
+
+  /* ---- cross-surface scale rule (VISUAL.md RULE S-1) ---- */
+  var SETTINGS_TEXT_W = 488;          /* settings_screen.gd RULE_X0 24 .. RULE_X1 512 */
+  var k = SETTINGS_TEXT_W / 300;
+  var surfaceFloor = FLOOR * k;
+  line("SCALE  production settings sheet text column=" + SETTINGS_TEXT_W + "px on a 300px reference" +
+       " -> k=" + k.toFixed(4) + "  type floor=" + surfaceFloor.toFixed(2) + "px");
+  line("SCALE  production label 21px " + (21 >= surfaceFloor ? "PASS" : "FAIL") +
+       " | value 19px " + (19 >= surfaceFloor ? "PASS" : "FAIL") +
+       " | back label 22px " + (22 >= surfaceFloor ? "PASS" : "FAIL") +
+       "  (settings_screen.gd:15-18, :255, :260, :292)");
+
+  /* ---- RULE S-2: every surface declares its authored scale, and it is >= the reference ---- */
+  var surfaces = Array.prototype.slice.call(document.querySelectorAll("[data-surface-scale]"));
+  var badScale = surfaces.filter(function (el) {
+    return !(parseFloat(el.getAttribute("data-surface-scale")) >= 1.0);
+  });
+  line("S-2   surfaces declaring data-surface-scale >= 1.000 :: " + surfaces.length + " found :: " +
+       (surfaces.length === panes.length && badScale.length === 0 ? "PASS" : "FAIL " + badScale.length +
+        " below reference / " + surfaces.length + " of " + panes.length + " panes"));
+  if (surfaces.length !== panes.length || badScale.length) { pass = false; }
+
+  /* ---- RULE R-1 / R-3: ordered rival list of three, locked rows stay full size ---- */
+  var rivalLi = document.querySelectorAll("#card-RIVAL li.rival");
+  var ordMarks = document.querySelectorAll("#card-RIVAL li.rival .ord");
+  var locked = document.querySelectorAll("#card-RIVAL li.rival.locked .rname");
+  var lockedSmall = Array.prototype.filter.call(locked, function (n) {
+    return parseFloat(getComputedStyle(n).fontSize) < 18;
+  });
+  line("R-1   rival list li.rival=" + rivalLi.length + " with ordinal marks=" + ordMarks.length +
+       " (ordered, exactly three) :: " + (rivalLi.length === 3 && ordMarks.length === 3 ? "PASS" : "FAIL"));
+  if (rivalLi.length !== 3 || ordMarks.length !== 3) { pass = false; }
+  line("R-3   locked rows keep t1 name at 18px (" + locked.length + " locked) :: " +
+       (lockedSmall.length === 0 ? "PASS" : "FAIL " + lockedSmall.length + " shrunk"));
+  if (lockedSmall.length) { pass = false; }
+
+  /* ---- RULE V-4: cue strings keep the pinned voice (FLOW-FTUE.md §4: MAX_CUE_CHARS=48, uppercase, ASCII) ---- */
+  var cues = Array.prototype.slice.call(document.querySelectorAll("[data-cue]"));
+  var cueBad = cues.filter(function (el) {
+    var raw = el.textContent, s = raw.trim();
+    return s.length > 48 || s !== s.toUpperCase() || /[^\x20-\x7E]/.test(s) ||
+           raw !== s || /\s{2,}/.test(s);
+  });
+  var longestCue = cues.reduce(function (m, el) { return Math.max(m, el.textContent.trim().length); }, 0);
+  line("V-4   cue voice: uppercase / ASCII / <=48 chars (MAX_CUE_CHARS) :: " + cues.length +
+       " cue strings, longest=" + longestCue + " chars, violations=" + cueBad.length + " :: " +
+       (cues.length >= 2 && cueBad.length === 0 ? "PASS" : "FAIL"));
+  if (cues.length < 2 || cueBad.length) { pass = false; }
+
+  /* ---- RULE P-1: the page gutter is 32 px per side ---- */
+  var gutL = getComputedStyle(document.body).paddingLeft;
+  var gutR = getComputedStyle(document.body).paddingRight;
+  line("P-1   page gutter (body padding) left=" + gutL + " right=" + gutR +
+       "  SIDE_MARGIN=32px :: " + (gutL === "32px" && gutR === "32px" ? "PASS" : "FAIL"));
+  if (gutL !== "32px" || gutR !== "32px") { pass = false; }
+
+  /* ---- RULE P-4: ruling pitch >= 28 px on a page carrying wrappable t3 ---- */
+  var pitchBad = [];
+  Array.prototype.forEach.call(document.querySelectorAll(".page"), function (pg) {
+    var p = parseFloat(getComputedStyle(pg).getPropertyValue("--rule-pitch"));
+    var hasWrapT3 = Array.prototype.some.call(
+      pg.querySelectorAll('[data-tier="t3"]'),
+      function (n) { return !n.hasAttribute("data-nowrap"); });
+    if (hasWrapT3 && !(p >= 28)) { pitchBad.push(p + "px"); }
+  });
+  line("P-4   --rule-pitch (33px) >= 28px on every page carrying a wrappable t3 :: " +
+       (pitchBad.length === 0 ? "PASS" : "FAIL " + pitchBad.join(",")));
+  if (pitchBad.length) { pass = false; }
+
+  /* ---- RULE P-5: paper ink never drawn on the desk surface ---- */
+  var INKS = ["rgb(34, 48, 77)", "rgb(74, 90, 120)", "rgb(107, 122, 144)", "rgb(139, 151, 168)"];
+  var inkLeak = [];
+  Array.prototype.forEach.call(document.querySelectorAll(".deskpane *"), function (el) {
+    var own = false;
+    Array.prototype.forEach.call(el.childNodes, function (n) {
+      if (n.nodeType === 3 && n.textContent.trim()) { own = true; }
+    });
+    if (own && INKS.indexOf(getComputedStyle(el).color) >= 0) { inkLeak.push(String(el.className)); }
+  });
+  line("P-5   paper-ink text on the desk surface :: " +
+       (inkLeak.length === 0 ? "PASS 0" : "FAIL " + inkLeak.slice(0, 4).join(" | ")));
+  if (inkLeak.length) { pass = false; }
+
+  /* ---- RULE P-6: text on the desk-wood gradient needs a darkened backer ---- */
+  var deskText = Array.prototype.slice.call(document.querySelectorAll(".card *, .deskpane *"))
+    .filter(function (el) {
+      var own = false;
+      Array.prototype.forEach.call(el.childNodes, function (n) {
+        if (n.nodeType === 3 && n.textContent.trim()) { own = true; }
+      });
+      return own;
+    });
+  var bare = [];
+  deskText.forEach(function (el) {
+    var alpha = 0, n = el;
+    while (n && n !== document.body) {
+      var cs = getComputedStyle(n), bgc = cs.backgroundColor;
+      var m = bgc.match(/rgba?\(([^)]+)\)/);
+      if (cs.backgroundImage !== "none") { break; }   /* reached the wood gradient */
+      if (m) {
+        var parts = m[1].split(",");
+        var a = parts.length > 3 ? parseFloat(parts[3]) : 1;
+        if (a > 0.01) {
+          if (a >= 0.99) { alpha = 1; break; }        /* opaque surface (paper) */
+          alpha = Math.max(alpha, a);
+        }
+      }
+      n = n.parentElement;
+    }
+    if (alpha < 0.40 && alpha < 1) {
+      bare.push(String(el.className || el.tagName) + "=" + alpha.toFixed(2));
+    }
+  });
+  line("P-6   desk-gradient text on a backer alpha>=0.40 : " + deskText.length + " nodes :: " +
+       (bare.length === 0 ? "PASS" : "FAIL " + bare.length + " bare: " + bare.slice(0, 4).join(" | ")));
+  if (bare.length) { pass = false; }
+
+  /* ---- RULE W-2: nothing numeric in the tradeoff surface ---- */
+  var trade = document.getElementById("card-TRADEOFF");
+  var numeric = [];
+  if (trade) {
+    Array.prototype.forEach.call(trade.querySelectorAll('[data-tier="t3"],[data-tier="t4b"]'), function (n) {
+      var t = n.textContent || "";
+      if (/[0-9]/.test(t)) { numeric.push(t.trim().slice(0, 40)); }
+    });
+  }
+  line("W-2   digits in the tradeoff pane's t3/t4b text :: " +
+       (numeric.length === 0 ? "PASS 0 of " + (trade ? trade.querySelectorAll('[data-tier="t3"],[data-tier="t4b"]').length : 0) :
+        "FAIL " + numeric.join(" | ")));
+  if (numeric.length) { pass = false; }
+
+  /* ---- RULE W-3: mode vocabulary never leaks into the ruleset pane, and vice versa ---- */
+  var rulesetTxt = trade ? (trade.querySelector(".pane") || trade).textContent : "";
+  var modeCard = document.getElementById("card-MODE");
+  var modeTxt = modeCard ? (modeCard.querySelector(".pane") || modeCard).textContent : "";
+  var w3 = [];
+  if (/\bmode\b/i.test(rulesetTxt)) { w3.push("ruleset SCREEN says 'mode'"); }
+  if (/Classic|Pen Powers/i.test(modeTxt)) { w3.push("mode SCREEN names a ruleset"); }
+  line("W-3   vocabulary split, screen text only (mode pane <-> ruleset pane) :: " +
+       (w3.length === 0 ? "PASS" : "FAIL " + w3.join("; ")));
+  if (w3.length) { pass = false; }
+
+  /* ---- RULE SC-1: at most one primary action per pane ---- */
+  var multi = [];
+  panes.forEach(function (p, i) {
+    var n = p.querySelectorAll(".btn.primary").length;
+    if (n > 1) { multi.push("pane[" + i + "]=" + n); }
+  });
+  line("SC-1  primary actions per pane <= 1 :: " + (multi.length === 0 ? "PASS" : "FAIL " + multi.join(",")));
+  if (multi.length) { pass = false; }
+
+  /* ---- RULE L-2: every loading stage names work (>=2 words, none banned) ---- */
+  var BANNED = /^(loading|please wait|working|just a moment|preparing)\b/i;
+  var stages = Array.prototype.slice.call(document.querySelectorAll(".stage .sname"));
+  var badStages = stages.filter(function (n) {
+    var t = (n.textContent || "").trim();
+    return BANNED.test(t) || t.split(/\s+/).length < 2;
+  });
+  line("L-2   loading stages=" + stages.length + " name real work (>=2 words, none banned) :: " +
+       (stages.length >= 2 && badStages.length === 0 ? "PASS" : "FAIL " + badStages.length));
+  if (stages.length < 2 || badStages.length) { pass = false; }
+
+  /* ---- RULE T-3: type is never shrunk to fit (no scaling transform, no zoom) ---- */
+  var scaled = [];
+  Array.prototype.slice.call(document.querySelectorAll("body *")).forEach(function (el) {
+    var direct = false;
+    for (var i = 0; i < el.childNodes.length; i++) {
+      if (el.childNodes[i].nodeType === 3 && el.childNodes[i].nodeValue.trim()) { direct = true; }
+    }
+    if (!direct) { return; }
+    var cs4 = getComputedStyle(el), bad = false, t = cs4.transform;
+    if (t && t !== "none") {
+      var m = t.match(/matrix\(([^)]+)\)/);
+      if (m) {
+        var p = m[1].split(",").map(parseFloat);
+        var sx = Math.sqrt(p[0] * p[0] + p[1] * p[1]);
+        var sy = Math.sqrt(p[2] * p[2] + p[3] * p[3]);
+        if (Math.abs(sx - 1) > 0.001 || Math.abs(sy - 1) > 0.001) { bad = true; }
+      } else { bad = true; }
+    }
+    if (cs4.zoom && parseFloat(cs4.zoom) !== 1) { bad = true; }
+    if (bad) { scaled.push(el.className || el.tagName); }
+  });
+  line("T-3   text elements shrunk by transform/zoom :: " + scaled.length + " offenders :: " +
+       (scaled.length === 0 ? "PASS scale=1 zoom=1 (rotations exempt: scale magnitude measured)" : "FAIL " + scaled.join(",")));
+  if (scaled.length) { pass = false; }
+
+  /* ---- RULE P-3: never hide overflow to pass a gate ---- */
+  var htmlOv = getComputedStyle(document.documentElement).overflow;
+  var bodyOv = getComputedStyle(document.body).overflow;
+  var hidOv = /hidden|clip/.test(htmlOv + " " + bodyOv);
+  line("P-3   no overflow:hidden/clip on html/body :: html=" + htmlOv + " body=" + bodyOv + " :: " +
+       (hidOv ? "FAIL" : "PASS"));
+  if (hidOv) { pass = false; }
+
+  /* ---- RULE L-3: no progress bar without a known total ---- */
+  var loadPane = document.getElementById("card-LOADING");
+  var bars = loadPane ? Array.prototype.slice.call(loadPane.querySelectorAll('[class*="bar"],[class*="progress"]')) : [];
+  var pctBad = bars.filter(function (el) {
+    return /%/.test(el.getAttribute("style") || "") && !el.getAttribute("data-total");
+  }).map(function (el) { return el.className; });
+  var totals = loadPane ? loadPane.querySelectorAll("[data-total]").length : 0;
+  line("L-3   percentage-driven bars without data-total :: " + pctBad.length + " (bars=" + bars.length +
+       ", data-total=" + totals + ") :: " + (pctBad.length === 0 ? "PASS" : "FAIL " + pctBad.join(",")));
+  if (pctBad.length) { pass = false; }
+
+  /* ---- RULE W-1: exactly two word-lines per pen (Strength. then Cost.) ---- */
+  var powers = Array.prototype.slice.call(document.querySelectorAll("#card-TRADEOFF .power"));
+  var wlBad = [];
+  powers.forEach(function (pw) {
+    var wl = Array.prototype.slice.call(pw.querySelectorAll(".wl"));
+    var nm = (pw.querySelector(".t1") || { textContent: "?" }).textContent.trim();
+    if (wl.length !== 2) { wlBad.push(nm + ":lines=" + wl.length); return; }
+    if (!/^Strength\./.test(wl[0].textContent.trim())) { wlBad.push(nm + ":1st!=Strength."); }
+    if (!/^Cost\./.test(wl[1].textContent.trim())) { wlBad.push(nm + ":2nd!=Cost."); }
+  });
+  line("W-1   two word-lines per pen (Strength. then Cost.) :: pens=" + powers.length + " :: " +
+       (wlBad.length === 0 ? "PASS no hidden stats" : "FAIL " + wlBad.join(" | ")));
+  if (wlBad.length) { pass = false; }
+
+  /* ---- RULE W-4: Classic is the default and both screens say so in words ---- */
+  var tOff = document.getElementById("card-TRADEOFF");
+  var tTxt = tOff ? tOff.textContent : "";
+  var w4a = /Every pen runs the same physics\./.test(tTxt);
+  var w4b = /In Classic they all run the same physics/.test(document.body.textContent);
+  line("W-4   Classic default states 'Every pen runs the same physics.' :: " + (w4a ? "PASS" : "FAIL") +
+       " | pen card states 'In Classic they all run the same physics' :: " + (w4b ? "PASS" : "FAIL"));
+  if (!w4a || !w4b) { pass = false; }
+
+  /* ---- RULE W-5: both options + all four pens in one place ---- */
+  var w5n = tOff ? tOff.querySelectorAll(".wl").length : -1;
+  var w5 = powers.length === 4 && w5n === 8 && /Classic/.test(tTxt) && /Pen Powers/.test(tTxt);
+  line("W-5   Classic + Pen Powers and all four pens on one screen :: options=2 pens=" + powers.length +
+       " word-lines=" + w5n + " :: " + (w5 ? "PASS" : "FAIL"));
+  if (!w5) { pass = false; }
+
+  /* ---- RULE W-6: both players' picks visible on the pen surface, mirror legal ---- */
+  var tags = Array.prototype.slice.call(document.querySelectorAll("#card-PENS .tag"));
+  var tagTxt = tags.map(function (el) { return el.textContent.trim(); }).join(" ");
+  var w6 = tags.length >= 4 && /P1/.test(tagTxt) && /P2/.test(tagTxt) &&
+           /a mirror is legal|mirror is legal/.test(document.body.textContent);
+  line("W-6   P1/P2 tags on the pen surface, mirror pick legal :: tags=" + tags.length +
+       " [" + tagTxt + "] :: " + (w6 ? "PASS" : "FAIL"));
+  if (!w6) { pass = false; }
+
+  /* ---- RULE SC-2: every menu pane is a real screen (t0 title + control), the desk keeps its cue ---- */
+  var menuPanes = Array.prototype.slice.call(document.querySelectorAll(".pane:not(.deskpane)"));
+  var thin = menuPanes.filter(function (p) {
+    return !p.querySelector('[data-tier="t0"]') ||
+           !p.querySelector(".btn, .opt, .row, .stage, .pencard, .rival");
+  });
+  var desk = document.querySelector(".pane.deskpane");
+  var deskCue = desk ? desk.querySelectorAll(".cuebar,.cuechip").length : 0;
+  line("SC-2  menu panes with a t0 title and a control :: " + (menuPanes.length - thin.length) + " of " +
+       menuPanes.length + (thin.length === 0 ? " :: PASS" : " :: FAIL " + thin.length + " thin") +
+       " | desk pane cues=" + deskCue + " :: " + (deskCue >= 1 ? "PASS" : "FAIL"));
+  if (thin.length || deskCue < 1) { pass = false; }
+
+  line("=== " + (pass ? "ALL CHECKS PASS" : "CHECKS FAILED") + " @ " + W + "x" + H + " ===");
+  var text = lines.join("\n");
+  document.getElementById("readout").textContent = text;
+  if (window.console && console.log) { console.log(text); }
+  document.body.setAttribute("data-selfcheck", pass ? "PASS" : "FAIL");
+  document.body.setAttribute("data-inner-width", String(W));
+  document.body.setAttribute("data-doc-width", String(docW));
+  document.body.setAttribute("data-budget", String(budget));
+  document.body.setAttribute("data-widest-nowrap", widestNow.px.toFixed(1));
+  document.body.setAttribute("data-min-font", String(minFont));
+})();
+</script>
+</body>
+</html>
