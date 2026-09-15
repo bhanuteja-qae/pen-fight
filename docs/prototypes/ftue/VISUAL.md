@@ -634,7 +634,7 @@ PY
 
 ## 12. Assumptions and things this file does not decide
 
-1. **Rival names** on the sheet (`Nib`, `Blotter`, `Understudy`) are placeholders
+1. **Rival names** on the sheet (`CHALK`, `INK RED`, `VELLUM`) are placeholders
    for ticket #10's authored rivals, marked `data-placeholder="rival-name"`. The
    deliverable is the row format, not the names.
 2. **Rival unlock rules** are not decided here (RULE R-2: a callback).
