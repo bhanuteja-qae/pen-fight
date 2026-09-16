@@ -19,6 +19,16 @@ extends RefCounted
 ## other decided round — so those two constants were deleted rather than left as
 ## dead vocabulary a future reader would trust. Add them back only alongside the
 ## code that assigns them.
+##
+## Decided rounds record HOW they were decided (`decided_by()`, the DECIDED_BY_*
+## constants below): a knockout, the flicker's own pen leaving the table, a
+## stalemate, the idle forfeit, or the in-flight backstop. That attribution is
+## the loop's own measurement — the Phase-1 playtest question "did a collision
+## decide this round, or did the round end by itself?" is answered by counting
+## it (docs/design/core-loop.md §Minimal Loop Fix). `decided_by_oob()` is
+## DERIVED from it and never tracked as a second flag: a duplicated flag is how
+## the prototype harness metrics ended up mis-attributed (a single conflated
+## `_shot_oob`, game/prototypes/policy_bot/match_harness.gd:230-232).
 ## Decided rounds (OOB winner or forfeit) PARK in PHASE_ROUND_OVER — nothing
 ## auto-advances; Main shows the tap-to-continue gate and calls
 ## continue_to_next_round(), which starts the next round with the player who did
@@ -31,6 +41,15 @@ const PHASE_AIM: String = "AIM"
 const PHASE_IN_FLIGHT: String = "IN_FLIGHT"
 const PHASE_SETTLED: String = "SETTLED"
 const PHASE_ROUND_OVER: String = "ROUND_OVER"
+
+# How a decided round was decided (decided_by()). Vocabulary matches the
+# prototype harness attribution so shipped logs and prototype evidence are
+# comparable. "" means undecided.
+const DECIDED_BY_KNOCKOUT: String = "knockout"    # the flicker's pen knocked the other pen off
+const DECIDED_BY_SELF_OOB: String = "self_oob"    # the flicker's own pen left (incl. same-tick double-OOB)
+const DECIDED_BY_STALEMATE: String = "stalemate"  # both pens settled, neither moved
+const DECIDED_BY_IDLE: String = "idle"            # the active player never flicked inside forfeit_timeout
+const DECIDED_BY_BACKSTOP: String = "backstop"    # the 8 s in-flight clock forced the verdict
 
 var _pens: Array[String] = []
 var _forfeit_timeout: float = 5.0
@@ -66,10 +85,11 @@ var _resolve_elapsed: float = 0.0
 var _winner_uid: String = ""
 var _loser_uid: String = ""
 var _round_over: bool = false
-## True when the CURRENT parked round was decided by an OOB verdict (vs a
-## forfeit/backstop). Lets Main pick the impact ceremony strength after
-## resolution; cleared each turn.
-var _decided_by_oob: bool = false
+## HOW the current parked round was decided — one of the DECIDED_BY_* constants,
+## "" while the round is undecided. Single source of truth: `decided_by_oob()`
+## (which Main uses to pick the ceremony strength) is derived from this rather
+## than kept as a parallel bool. Cleared each turn by begin_turn().
+var _decided_by: String = ""
 
 ## pens: list of pen UIDs, e.g. ["red", "blue"]. Stored as String.
 ## forfeit_timeout: seconds the active player has to flick before the round is
@@ -106,7 +126,7 @@ func begin_turn() -> void:
 	_winner_uid = ""
 	_loser_uid = ""
 	_round_over = false
-	_decided_by_oob = false
+	_decided_by = ""
 
 ## Round-over gate (docs §3.5 #1): the ONLY way out of PHASE_ROUND_OVER.
 ## Caller (Main's tap-to-continue) invokes this after a decided round. The next
@@ -122,9 +142,18 @@ func continue_to_next_round() -> void:
 
 
 ## True when the current parked round was decided by an OOB verdict rather than
-## a forfeit/backstop (drives which ceremony strength Main plays).
+## a forfeit/backstop (drives which ceremony strength Main plays). Derived, so
+## it can never disagree with decided_by().
 func decided_by_oob() -> bool:
-	return _decided_by_oob
+	return _decided_by == DECIDED_BY_KNOCKOUT or _decided_by == DECIDED_BY_SELF_OOB
+
+## HOW the current parked round was decided — a DECIDED_BY_* constant, or "" while
+## the round is undecided. The loop's attribution record: Main records it once per
+## decided round and prints the session tally as one `[LOOP]` line at match over
+## (LoopStats), which is the number the human playtest needs to answer "does a
+## collision decide most rounds, or do rounds end by themselves?".
+func decided_by() -> String:
+	return _decided_by
 
 ## The active player flicked. Valid only during AIM -> transitions to
 ## IN_FLIGHT. Records the impulse and marks the flicked pen (the active
@@ -174,6 +203,7 @@ func on_settled(pen_uid: String) -> void:
 			# the round (same winner/loser shape as the timeout forfeit).
 			_phase = PHASE_ROUND_OVER
 			_round_over = true
+			_decided_by = DECIDED_BY_STALEMATE
 			_loser_uid = _flicked_pen
 			_winner_uid = _other_player(_flicked_pen)
 		else:
@@ -204,15 +234,17 @@ func resolve_pending_oob() -> void:
 		return
 	_phase = PHASE_ROUND_OVER
 	_round_over = true
-	_decided_by_oob = true
 	if _oob_pending.size() >= 2:
 		# Both pens left the table in the same tick: the flicker loses.
+		_decided_by = DECIDED_BY_SELF_OOB
 		_loser_uid = _flicked_pen
 		_winner_uid = _other_player(_flicked_pen)
 	elif _oob_pending.has(_flicked_pen):
+		_decided_by = DECIDED_BY_SELF_OOB
 		_loser_uid = _flicked_pen
 		_winner_uid = _other_player(_flicked_pen)
 	else:
+		_decided_by = DECIDED_BY_KNOCKOUT
 		_loser_uid = _oob_pending[0]
 		_winner_uid = _flicked_pen
 
@@ -235,6 +267,7 @@ func resolve_tick(delta: float) -> void:
 		# Stalemate under the backstop: the flight never meaningfully moved.
 		_phase = PHASE_ROUND_OVER
 		_round_over = true
+		_decided_by = DECIDED_BY_BACKSTOP
 		_loser_uid = _flicked_pen
 		_winner_uid = _other_player(_flicked_pen)
 	else:
@@ -251,6 +284,7 @@ func forfeit_tick(delta: float) -> void:
 	if _forfeit_elapsed >= _forfeit_timeout:
 		_phase = PHASE_ROUND_OVER
 		_round_over = true
+		_decided_by = DECIDED_BY_IDLE
 		_loser_uid = current_player()
 		_winner_uid = _other_player(current_player())
 
@@ -298,5 +332,6 @@ func state() -> Dictionary:
 		"loser": _loser_uid,
 		"round_winner": _winner_uid,
 		"round_over": _round_over,
+		"decided_by": _decided_by,
 		"table_rect": _table_rect,
 	}

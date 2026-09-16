@@ -55,6 +55,11 @@ var haptics: Haptics = null
 ## settings_store.rounds_to_win() and a tap starts a fresh match.
 var _round_wins: Dictionary = {"red": 0, "blue": 0}
 var _match_over: bool = false
+## HOW each round was decided, cumulative for the session (LoopStats). Printed as
+## one `[LOOP]` line at match over — the playtest's "did a collision decide this
+## round?" number (docs/design/core-loop.md §Minimal Loop Fix). Cumulative on
+## purpose: a best-of-3 match is too short to read on its own.
+var _loop_stats: LoopStats = LoopStats.new()
 ## Debug autoplay harness (AutoFlick), created only in debug builds with
 ## PENFIGHT_AUTOPLAY=1. Kept as a member so a re-armed round can schedule the
 ## next flick after the gate tap restarts the game.
@@ -444,6 +449,8 @@ func _submit_shot(cmd: ShotCommand) -> bool:
 
 	turn_state.on_flick(direction * power)
 	pen.apply_flick(direction, power, contact_offset)
+	# Counted only after BOTH writes committed: exactly one per accepted shot.
+	_loop_stats.record_flick()
 	return true
 
 
@@ -571,6 +578,11 @@ func _check_game_over() -> void:
 		return
 	var winner: String = str(st.get("winner", "unknown"))
 	var loser: String = str(st.get("loser", "unknown"))
+	# HOW this round was decided (knockout / self_oob / stalemate / idle /
+	# backstop), recorded under the same once-per-decided-round guard as the
+	# round count below. This is the loop's own measurement, not decoration.
+	var decided_by: String = str(st.get("decided_by", ""))
+	_loop_stats.record_round(decided_by)
 	# Count the round for the match (guarded by _game_over_printed above, so
 	# exactly one increment per decided round) and decide the match.
 	if _round_wins.has(winner):
@@ -582,11 +594,13 @@ func _check_game_over() -> void:
 		# one outcome that outlives the match, persisted immediately. Guarded by
 		# _game_over_printed above, so a decided match is recorded exactly once.
 		settings_store.record_match_win(winner)
-	print("[GAME OVER] %s wins the round %d-%d (loser: %s, phase: %s).%s" % [
+	print("[GAME OVER] %s wins the round %d-%d (loser: %s, phase: %s, decided_by: %s).%s" % [
 		_display_name(winner), int(_round_wins.get("red", 0)), int(_round_wins.get("blue", 0)),
-		_display_name(loser), phase, "  MATCH OVER" if _match_over else ""])
+		_display_name(loser), phase, decided_by, "  MATCH OVER" if _match_over else ""])
 	if _match_over:
 		print("[SERIES] %s" % _series_line())
+		# Session-cumulative loop tally: a playtest is read from THIS line.
+		print(_loop_stats.to_line())
 	_game_over_printed = true
 	if haptics != null:
 		haptics.knockout()
