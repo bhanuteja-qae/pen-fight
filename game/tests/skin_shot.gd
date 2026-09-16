@@ -16,10 +16,10 @@ class_name SkinShot
 ## Writes /tmp/skin_frames/<a>_<b>.png
 
 const PAIRINGS := [
-	["amber", "cobalt"],
-	["cobalt", "graphite"],
-	["graphite", "ivory"],
-	["ivory", "amber"],
+	["bic", "jotter"],
+	["jotter", "sharpie"],
+	["sharpie", "uniball"],
+	["uniball", "bic"],
 ]
 const OUT_DIR := "/tmp/skin_frames"
 

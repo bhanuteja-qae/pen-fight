@@ -31,8 +31,8 @@ var sound_on: bool = true
 var haptics_on: bool = true
 var screen_shake_on: bool = true
 var match_length: int = 5
-var pen_red: String = "amber"
-var pen_blue: String = "cobalt"
+var pen_red: String = "sharpie"
+var pen_blue: String = "bic"
 
 ## Matches won per player, across sessions. Counters, never a ranking: there is
 ## no ladder, no rating and no opponent to compare against beyond the person

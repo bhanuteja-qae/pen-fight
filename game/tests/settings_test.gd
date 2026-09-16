@@ -74,8 +74,8 @@ func _case_store_round_trip() -> void:
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(CFG_PATH))
 	var fresh := SettingsStore.new()
 	fresh.load_from_disk()
-	if fresh.pen_red != "amber" or fresh.pen_blue != "cobalt":
-		_fail("store_round_trip", "first-run pen defaults are %s/%s, expected amber/cobalt"
+	if fresh.pen_red != "sharpie" or fresh.pen_blue != "bic":
+		_fail("store_round_trip", "first-run pen defaults are %s/%s, expected sharpie/bic"
 			% [fresh.pen_red, fresh.pen_blue])
 	if fresh.match_length != 5 or fresh.rounds_to_win() != 3:
 		_fail("store_round_trip", "best-of-5 should need 3 wins, got %d/%d"
@@ -87,8 +87,8 @@ func _case_store_round_trip() -> void:
 	fresh.haptics_on = false
 	fresh.screen_shake_on = false
 	fresh.match_length = 7
-	fresh.pen_red = "graphite"
-	fresh.pen_blue = "ivory"
+	fresh.pen_red = "jotter"
+	fresh.pen_blue = "uniball"
 	fresh.save_to_disk()
 
 	var reloaded := SettingsStore.new()
@@ -98,7 +98,7 @@ func _case_store_round_trip() -> void:
 		mismatches.append("toggles")
 	if reloaded.match_length != 7:
 		mismatches.append("match_length=%d" % reloaded.match_length)
-	if reloaded.pen_red != "graphite" or reloaded.pen_blue != "ivory":
+	if reloaded.pen_red != "jotter" or reloaded.pen_blue != "uniball":
 		mismatches.append("pens=%s/%s" % [reloaded.pen_red, reloaded.pen_blue])
 	if not mismatches.is_empty():
 		_fail("store_round_trip", "reload mismatch: %s" % ", ".join(mismatches))
@@ -336,8 +336,8 @@ func _case_match_length_decides() -> void:
 func _case_pen_choice_persists() -> void:
 	_cases_run += 1
 	var store: SettingsStore = _main.get("settings_store")
-	store.set_pen("red", "ivory")
-	store.set_pen("blue", "graphite")
+	store.set_pen("red", "jotter")
+	store.set_pen("blue", "uniball")
 	_main.call("_apply_settings")
 	store.save_to_disk()
 	var text: String = ""
@@ -345,13 +345,13 @@ func _case_pen_choice_persists() -> void:
 	if f != null:
 		text = f.get_as_text()
 		f.close()
-	if not text.contains("ivory"):
-		_fail("pen_choice_persists", "pen_red=ivory was not written to %s" % CFG_PATH)
-	if not text.contains("graphite"):
-		_fail("pen_choice_persists", "pen_blue=graphite was not written to %s" % CFG_PATH)
+	if not text.contains("jotter"):
+		_fail("pen_choice_persists", "pen_red=jotter was not written to %s" % CFG_PATH)
+	if not text.contains("uniball"):
+		_fail("pen_choice_persists", "pen_blue=uniball was not written to %s" % CFG_PATH)
 	var reloaded := SettingsStore.new()
 	reloaded.load_from_disk()
-	if reloaded.pen_red != "ivory" or reloaded.pen_blue != "graphite":
+	if reloaded.pen_red != "jotter" or reloaded.pen_blue != "uniball":
 		_fail("pen_choice_persists", "reload gave %s/%s" % [reloaded.pen_red, reloaded.pen_blue])
 
 

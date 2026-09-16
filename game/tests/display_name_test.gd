@@ -10,13 +10,16 @@ class_name DisplayNameTest
 ## design.
 ##
 ## Covers, against the REAL scene:
-##   1. default_names          — red/blue resolve to Amber/Cobalt out of the box
+##   1. default_names          — red/blue resolve to Sharpie/Bic out of the box
 ##   2. every_skin_is_named    — all four designs carry a distinct, non-empty name
-##   3. name_follows_the_skin  — set_pen_skin("blue", "ivory") renames that slot
+##   3. name_follows_the_skin  — set_pen_skin("blue", "uniball") renames that slot
 ##   4. unknown_slot_falls_back— an unrecognised id is capitalised, never empty
 ##   5. gate_names_the_skin    — a decided match names the WINNER's design, not
 ##                               the default art, in the match-over prompt
 ##   6. sheet_label_follows    — the settings sheet's "X's pen" rows follow too
+##   7. legacy_skin_falls_back — a design saved before the rename (amber/cobalt)
+##                               falls back to the default, so the art on the
+##                               table and the name still agree
 ##
 ## HARNESS RULE: a Godot runtime error inside a case aborts it silently and the
 ## suite can still print ALL PASS, so every case takes a verdict (_fail or
@@ -61,6 +64,7 @@ func _bootstrap() -> void:
 	_case_unknown_slot_falls_back()
 	_case_sheet_label_follows()
 	await _case_gate_names_the_skin()
+	_case_legacy_skin_falls_back()   # last: it leaves both slots on defaults
 
 	_finish(_failures.is_empty(), _summary())
 
@@ -76,10 +80,10 @@ func _summary() -> String:
 
 func _case_default_names() -> void:
 	_enter("default_names")
-	if _name("red") != "Amber":
-		_fail("red resolves to %s, expected Amber" % _name("red"))
-	if _name("blue") != "Cobalt":
-		_fail("blue resolves to %s, expected Cobalt" % _name("blue"))
+	if _name("red") != "Sharpie":
+		_fail("red resolves to %s, expected Sharpie" % _name("red"))
+	if _name("blue") != "Bic":
+		_fail("blue resolves to %s, expected Bic" % _name("blue"))
 	_leave()
 
 
@@ -110,12 +114,12 @@ func _case_every_skin_is_named() -> void:
 
 func _case_name_follows_the_skin() -> void:
 	_enter("name_follows_the_skin")
-	if not bool(_main.call("set_pen_skin", "blue", "ivory")):
-		_fail("set_pen_skin('blue','ivory') returned false")
+	if not bool(_main.call("set_pen_skin", "blue", "uniball")):
+		_fail("set_pen_skin('blue','uniball') returned false")
 		return
-	if _name("blue") != "Ivory":
-		_fail("after choosing ivory, blue resolves to %s" % _name("blue"))
-	if _name("red") != "Amber":
+	if _name("blue") != "Signo":
+		_fail("after choosing uniball, blue resolves to %s" % _name("blue"))
+	if _name("red") != "Sharpie":
 		_fail("red changed to %s — the other slot must not move" % _name("red"))
 
 	# ...and the same through the store path Main actually uses at startup.
@@ -123,14 +127,42 @@ func _case_name_follows_the_skin() -> void:
 	if store == null:
 		_fail("Main has no settings_store")
 		return
-	store.set_pen("blue", "graphite")
+	store.set_pen("blue", "jotter")
 	_main.call("_apply_settings")
-	if _name("blue") != "Graphite":
-		_fail("after the store applied graphite, blue resolves to %s" % _name("blue"))
-	store.set_pen("blue", "ivory")
+	if _name("blue") != "Jotter":
+		_fail("after the store applied jotter, blue resolves to %s" % _name("blue"))
+	store.set_pen("blue", "uniball")
 	_main.call("_apply_settings")
-	if _name("blue") != "Ivory":
-		_fail("restoring ivory gave %s" % _name("blue"))
+	if _name("blue") != "Signo":
+		_fail("restoring uniball gave %s" % _name("blue"))
+	_leave()
+
+
+func _case_legacy_skin_falls_back() -> void:
+	_enter("legacy_skin_falls_back")
+	# A save written before the pen designs were renamed still holds
+	# amber/cobalt, which no longer exist. set_pen_skin() refuses them, so
+	# without a fallback the scene's built-in art stayed on the table while
+	# the gate named the default design — the art/name contradiction this
+	# suite exists to catch, reached through a path no other case covers.
+	var store: SettingsStore = _main.get("settings_store")
+	if store == null:
+		_fail("Main has no settings_store")
+		return
+	store.set_pen("red", "amber")
+	store.set_pen("blue", "cobalt")
+	_main.call("_apply_settings")
+	if _name("red") != "Sharpie":
+		_fail("a pre-rename design named the red slot '%s', expected Sharpie" % _name("red"))
+	if _name("blue") != "Bic":
+		_fail("a pre-rename design named the blue slot '%s', expected Bic" % _name("blue"))
+	var sprite: Sprite2D = _main.get_node("PenRed/Sprite2D")
+	if sprite == null or sprite.texture == null:
+		_fail("the red pen has no sprite to check")
+		return
+	if str(sprite.texture.resource_path) != "res://assets/pen_sharpie.png":
+		_fail("a pre-rename save left %s on the table while the gate says Sharpie"
+			% str(sprite.texture.resource_path))
 	_leave()
 
 
@@ -158,8 +190,8 @@ func _case_sheet_label_follows() -> void:
 		_fail("the sheet exposes no PEN_BLUE label")
 		return
 	var blue_label: Label = labels[SettingsScreen.Row.PEN_BLUE]
-	if not blue_label.text.contains("Ivory"):
-		_fail("PEN_BLUE row reads '%s' while that slot plays ivory" % blue_label.text)
+	if not blue_label.text.contains("Signo"):
+		_fail("PEN_BLUE row reads '%s' while that slot plays uniball" % blue_label.text)
 	_leave()
 
 
@@ -179,11 +211,11 @@ func _case_gate_names_the_skin() -> void:
 	var winner: String = "blue" if flicker == "red" else "red"
 
 	store.match_length = 1                      # first win decides the match
-	store.set_pen(winner, "ivory")
-	store.set_pen(flicker, "amber")
+	store.set_pen(winner, "uniball")
+	store.set_pen(flicker, "bic")
 	_main.call("_apply_settings")
-	if _name(winner) != "Ivory":
-		_fail("could not put ivory on the %s slot (it resolves to %s)" % [winner, _name(winner)])
+	if _name(winner) != "Signo":
+		_fail("could not put uniball on the %s slot (it resolves to %s)" % [winner, _name(winner)])
 
 	if await _flick_current_away(flicker) == "":
 		return
@@ -191,9 +223,9 @@ func _case_gate_names_the_skin() -> void:
 	if decided != winner:
 		_fail("expected %s to win, state says %s" % [winner, decided])
 	var gate_text: String = str(_main.get("turn_gate").get("_label").text)
-	if not gate_text.contains("Ivory"):
-		_fail("match-over gate names '%s' but ivory is on the table" % gate_text)
-	if gate_text.contains("Cobalt"):
+	if not gate_text.contains("Signo"):
+		_fail("match-over gate names '%s' but uniball is on the table" % gate_text)
+	if gate_text.contains("Sharpie"):
 		_fail("gate still names the default art: %s" % gate_text)
 	_leave()
 

@@ -91,12 +91,14 @@ const FORFEIT_TIMEOUT: float = 15.0
 ## QA-6: this constant and the scene MUST agree).
 const TABLE_RECT: Rect2 = Rect2(-590.0, -320.0, 1180.0, 640.0)
 
-## Every pen texture is authored at 540x30 and drawn at PEN_SPRITE_SCALE, which
-## lands it on exactly 180x10 px on screen — the physics capsule
-## (PenBody half_len 85 + radius 5). The skins are real pens scaled into the
-## game: a skin swap can never resize the pen, because the scale is applied by
-## set_pen_skin() rather than left to each skin's own sprite.
-## Regenerate the art with: game/assets/generate_pens_real.py
+## Every pen texture is authored at 540 px wide and drawn at PEN_SPRITE_SCALE,
+## which lands the slim pens on 180x11 px and the marker on 180x15 px on
+## screen — the physics capsule (PenBody half_len 85 + radius 5) is 180x10, so
+## the art can overhang it slightly; the capsule itself never changes. The
+## skins are real pens scaled into the game: a skin swap can never resize the
+## pen, because the scale is applied by set_pen_skin() rather than left to
+## each skin's own sprite.
+## Regenerate the art with: game/assets/generate_pens_nb2.py --set models
 const PEN_SPRITE_SCALE: float = 1.0 / 3.0
 
 ## Pen skin selection (Phase 1c): each player picks a pen DESIGN to play with.
@@ -104,37 +106,41 @@ const PEN_SPRITE_SCALE: float = 1.0 / 3.0
 ## options, not extra players. Each skin carries its own shadow so the
 ## silhouette can never drift from the pen, and its own display NAME so the
 ## gate and the verdict can only ever name the pen that is actually in the
-## scene (docs/design/core-loop.md finding 4). Names stay colour words that
-## match the art — never "Red"/"Blue", which would contradict the CVD-safe
-## naming the sprites were chosen for.
+## scene (docs/design/core-loop.md finding 4). Names stay words that match
+## the art — never "Red"/"Blue", which would contradict the CVD-safe naming
+## the sprites were chosen for.
 const PEN_SKINS: Dictionary = {
-	"amber": {
-		"name": "Amber",
-		"pen": "res://assets/pen_amber.png",
-		"shadow": "res://assets/pen_amber_shadow.png",
+	"bic": {
+		"name": "Bic",
+		"pen": "res://assets/pen_bic.png",
+		"shadow": "res://assets/pen_bic_shadow.png",
 	},
-	"cobalt": {
-		"name": "Cobalt",
-		"pen": "res://assets/pen_cobalt.png",
-		"shadow": "res://assets/pen_cobalt_shadow.png",
+	"jotter": {
+		"name": "Jotter",
+		"pen": "res://assets/pen_jotter.png",
+		"shadow": "res://assets/pen_jotter_shadow.png",
 	},
-	"graphite": {
-		"name": "Graphite",
-		"pen": "res://assets/pen_graphite.png",
-		"shadow": "res://assets/pen_graphite_shadow.png",
+	"sharpie": {
+		"name": "Sharpie",
+		"pen": "res://assets/pen_sharpie.png",
+		"shadow": "res://assets/pen_sharpie_shadow.png",
 	},
-	"ivory": {
-		"name": "Ivory",
-		"pen": "res://assets/pen_ivory.png",
-		"shadow": "res://assets/pen_ivory_shadow.png",
+	"uniball": {
+		"name": "Signo",
+		"pen": "res://assets/pen_uniball.png",
+		"shadow": "res://assets/pen_uniball_shadow.png",
 	},
 }
-var _player_skins: Dictionary = {"red": "amber", "blue": "cobalt"}
+## The design each slot plays when nothing is stored — and the fallback when a
+## stored design no longer exists (see _apply_settings).
+const DEFAULT_SKINS: Dictionary = {"red": "sharpie", "blue": "bic"}
+var _player_skins: Dictionary = DEFAULT_SKINS.duplicate()
 
 
-## Pick the pen design for a player (e.g. set_pen_skin("blue", "graphite")).
+## Pick the pen design for a player (e.g. set_pen_skin("blue", "jotter")).
 ## Applies immediately to that player's pen sprite AND its shadow, and forces
-## the shared footprint scale — so every design draws the same 180x10 pen.
+## the shared footprint scale — so every design draws at its authored
+## thickness (slim pens 180x11, the marker 180x15 px on screen).
 ## Returns false if the player or skin is unknown.
 func set_pen_skin(player: String, skin: String) -> bool:
 	if not _player_skins.has(player) or not PEN_SKINS.has(skin):
@@ -258,7 +264,7 @@ func _ready() -> void:
 
 	turn_state.begin_turn()
 	# Skin selection: apply env overrides AFTER the sprites exist but before
-	# the first frame renders, so PENFIGHT_SKIN_<PLAYER>=ivory shows from t=0.
+	# the first frame renders, so PENFIGHT_SKIN_<PLAYER>=sharpie shows from t=0.
 	_apply_default_skins()
 	# Applied after the env override so a saved preference is what a real player
 	# gets, while an explicit PENFIGHT_SKIN_* still wins for QA.
@@ -606,8 +612,13 @@ func _on_gate_tapped() -> void:
 func _apply_settings() -> void:
 	if settings_store == null:
 		return
-	set_pen_skin("red", settings_store.pen_red)
-	set_pen_skin("blue", settings_store.pen_blue)
+	for player: String in _player_skins.keys():
+		if not set_pen_skin(player, settings_store.pen_for(player)):
+			# A save written before the designs were renamed (amber/cobalt/
+			# graphite/ivory), or any id that is not a design: put the slot on a
+			# design that exists, so the art on the table and the name the gate
+			# prints can never disagree (see legacy_skin_falls_back below).
+			set_pen_skin(player, str(DEFAULT_SKINS[player]))
 	if audio_mgr != null:
 		audio_mgr.set_muted(not settings_store.sound_on)
 	if feel != null:
@@ -674,9 +685,9 @@ func settings_open() -> bool:
 ## the settings rows. Must match what the player SEES on screen (review, UX-3:
 ## gate text must not contradict the art — CVD-hostile confusion otherwise), so
 ## the name follows the pen DESIGN that slot is actually playing rather than a
-## fixed default: with graphite or ivory selectable, the old hardcoded map could
+## fixed default: with four designs selectable, the old hardcoded map could
 ## name a pen that is not in the scene (docs/design/core-loop.md finding 4).
-## Names stay colour words matching the art — never "Red"/"Blue". An unknown
+## Names stay words matching the art — never "Red"/"Blue". An unknown
 ## slot id falls back to its capitalised form.
 func _display_name(pen_id: String) -> String:
 	var skin: String = str(_player_skins.get(pen_id, ""))
