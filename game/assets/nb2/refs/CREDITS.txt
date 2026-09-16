@@ -1,0 +1,31 @@
+Reference photos for the pen-fight model skin set (game/assets/nb2/models/).
+Source: Wikimedia Commons. These photos are used ONLY as generation
+references; the game ships generated sprites, not these files.
+
+- ref_bic.jpg
+    file:    File:03-BICcristal2008-03-26.jpg
+    page:    https://commons.wikimedia.org/wiki/File%3A03-BICcristal2008-03-26.jpg
+    author:  Trounce
+    license: CC BY 3.0  (https://creativecommons.org/licenses/by/3.0)
+
+- ref_jotter.jpg
+    file:    File:Parker-jotter.jpg
+    page:    https://commons.wikimedia.org/wiki/File%3AParker-jotter.jpg
+    author:  Johanna83 at Dutch Wikipedia (Original text: Johanna83)
+    license: CC BY-SA 3.0  (http://creativecommons.org/licenses/by-sa/3.0/)
+
+- ref_sharpie.jpg
+    file:    File:Sharpie (48008151202).jpg
+    page:    https://commons.wikimedia.org/wiki/File%3ASharpie_%2848008151202%29.jpg
+    author:  Brett Jordan
+    license: CC BY 2.0  (https://creativecommons.org/licenses/by/2.0)
+
+- ref_uniball.jpg
+    file:    File:Uni-ball Signo DX 0.38.jpg
+    page:    https://commons.wikimedia.org/wiki/File%3AUni-ball_Signo_DX_0.38.jpg
+    author:  ThDag1453
+    license: CC BY-SA 4.0  (https://creativecommons.org/licenses/by-sa/4.0)
+- ref_jotter_flat.jpg
+    derived from ref_jotter.jpg: rotated to level (auto-detected
+    angle), beige surface faded to flat grey, retightened crop.
+    Same source/license as ref_jotter.jpg above.
