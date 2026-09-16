@@ -12,6 +12,14 @@ _Avoid_: App session, run
 One contest beginning with both pens placed on the table and ending with a single authoritative verdict. A Round may contain multiple alternating Flicks.
 _Avoid_: Turn, game
 
+**Round Verdict**:
+How a Round ended: Knockout (the Flick sent the opponent's pen off the table), Self-OOB (the flicking player's own pen left the table), Idle Forfeit (the active player did not Flick in time), Stalemate (both pens came to rest without moving), or Backstop (the in-flight clock forced the verdict). Recorded per Round; it is diagnostic, never a player-facing score.
+_Avoid_: Round result, win type, win quality
+
+**Loop Tally**:
+The session-cumulative count of Round Verdicts and Flicks, reported at every Match end as one `[LOOP]` line. Diagnostic instrumentation for the human playtest gate — not player-facing progression, and not a screen.
+_Avoid_: Stats screen, scoreboard, achievement
+
 **Match**:
 A best-of-N sequence of Rounds that produces one Match winner.
 _Avoid_: Series, session, game

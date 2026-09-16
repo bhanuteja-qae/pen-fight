@@ -22,14 +22,17 @@ claims always carry the full repo-relative path.
 ## Status — what has shipped against this ranking
 
 Updated as items land. Rank 2 (G1) and rank 4 (C2) are the user's own gates; everything else is code.
+A6 (rank 5b) was added after this ranking and is instrumentation, not a feature: it is what makes G1's
+answer numeric instead of a matter of opinion.
 
 | Rank | Item | Status |
 |---:|---|---|
 | 1 | A1 persistence | **DONE** — `59c44a1` (series record + `[SERIES]` log + gate line, `series_record_test.gd`, mutation-checked) |
-| 2 | G1 human 20-round playtest | **READY, BLOCKED ON THE USER** — APK rebuilt from the A1–A5 build; questions and the corrected streak explanation are in `docs/handoff-2026-09-14.md` §5 |
+| 2 | G1 human 20-round playtest | **READY, BLOCKED ON THE USER** — APK rebuilt from the A1–A5 build; questions and the corrected streak explanation are in `docs/handoff-2026-09-14.md` §5. The build now returns the loop's own numbers: read-out in `docs/design/core-loop.md` §Re-check (2026-09-16) |
 | 3 | A2+A3+A5 gate tells the truth | **DONE** — `535af4d` (skin-accurate names, alternation labels + knockout test case, documented prediction boundary) |
 | 4 | C2 Play Console + 12 testers | **BLOCKED ON THE USER** — zero engineering, 14-day calendar clock |
 | 5 | A4 dead phase vocabulary | **DONE** — `535af4d` (constants and dead test arms deleted, contract doc annotated) |
+| 5b | A6 round-decision attribution + `[LOOP]` tally | **DONE** — `0382e4c` (`TurnState.decided_by()`, `LoopStats`, `loop_attribution_test.gd`, plus the gate runner's missing import pass) |
 | 6 | B3 refresh `ART_AND_FEEL_SPEC.md` | next |
 | 7 | E2 written co-presence pillar | next |
 | 8 | E1 player initials | next (pairs with A1) |
@@ -80,6 +83,17 @@ The candidate set is the task's (a)-(d) plus four additions the evidence justifi
   velocity from the grab offset (`game/scripts/aim_overlay.gd:341-358`) while the launch cone is
   deliberately open-ended (`:290-306`). Pillar 2 permits "what your own grip is doing" and forbids
   "where the pen will end up" — write the line down before a later overlay change crosses it.
+
+- **A6 — Attribute how each round was decided, and report it as one line.** `docs/design/core-loop.md`
+  §Minimal Loop Fix (`:228-242`): the loop's biggest unknown was invisible in the build — how often a round
+  is decided by a collision versus ending by itself. Shipped: `TurnState.decided_by()`
+  (`game/scripts/turn_state.gd`) reports `knockout` / `self_oob` / `stalemate` / `idle` / `backstop`,
+  `LoopStats` (`game/scripts/loop_stats.gd`) tallies it session-cumulatively, `Main` prints one `[LOOP]`
+  line at every match end, and `loop_attribution_test.gd` pins all five verdict paths plus the same-tick
+  double-OOB rule. `decided_by_oob()` is now derived from that one field rather than kept as a second flag
+  — the prototype harness's mis-attributed `0.6667` came from exactly such a duplicate
+  (`game/prototypes/policy_bot/match_harness.gd:230-232`). First reading: 17 of 18 gate rounds were
+  self-OOB, 1 knockout, 100% contact, zero backstops.
 
 ### (b) The repo's own approved queue (`docs/handoff-2026-09-14.md:188-192`)
 
@@ -320,6 +334,7 @@ line is what makes "want a 21st?" a question about a series rather than about a 
 - **The three audit artifacts are untracked working-tree files** (`git status` shows `?? docs/design/`).
   They are not committed, so a fresh clone would not contain them. Not a ranked item; noted because the
   build order depends on them.
-- **`docs/adr/` and `CONTEXT.md` do not exist** in this repo (`AGENTS.md:15-17` references them, but the
-  `docs/agents/` files describe a convention, not files that are present), so no ADR vocabulary
-  constrained the terms used here.
+- **`docs/adr/` does not exist; `CONTEXT.md` now does.** When this artifact was written, `AGENTS.md:15-17`
+  referenced both and neither was present, so no vocabulary constrained the terms used here. `CONTEXT.md`
+  has since been added (with the #10/#11 decisions) and is authoritative for the product language; the
+  terms used in this document are compatible with it. `docs/adr/` is still absent.

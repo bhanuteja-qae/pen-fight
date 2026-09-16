@@ -267,3 +267,81 @@ round.
   code, not from that spec.
 - `CONTEXT.md` and `docs/adr/` do not exist in this repo, so no glossary or ADR
   vocabulary constrained the terms used here (`docs/agents/domain.md`).
+
+
+## Re-check (2026-09-16) — the five findings are closed; the loop has a second, unbuilt leg
+
+This pass was written before `CONTEXT.md` existed and before the Rival Circuit tickets. Everything in it
+has since been acted on, and one of its assumptions is now wrong. This section is the delta.
+
+### Status of the five findings and the minimal fix
+
+`docs/design/feature-priorities.md` §Status carries the commits. Finding 1 **closed** by `59c44a1` (series
+record, `[SERIES]` log, gate line, `series_record_test.gd`); findings 2 and 3 **closed** by `535af4d` (dead
+phase constants and dead test arms deleted, labels corrected to strict alternation with the missing
+knockout case pinned by a test); finding 4 **closed** in the same pass (`_display_name()` now names the pen
+actually being played); finding 5 **kept as intended** — the two taps per flick are what cap a match at
+best-of-3. The minimal loop fix shipped as finding 1's closure.
+
+### What this pass got wrong
+
+- It says `CONTEXT.md` and `docs/adr/` do not exist. `CONTEXT.md` now exists and is authoritative for the
+  product language (Round, Match, Hot-seat Series, Solo Progress, Rival Circuit, Mastery Stamp).
+- It treats the loop's re-entry leg as one problem with one fix. There are now **two** answers to "why does
+  the player come back", and only the weaker one is built: the hot-seat series count (shipped) and the Solo
+  Rival with its Mastery Stamp (`docs/design/solo-rival.md` — decided, **not implemented**;
+  `game/scripts/match_config.gd:5` declares `solo`, nothing in `game/` constructs it,
+  `game/scripts/main.gd:382-386` only ever builds two humans, and there is no mode screen).
+
+### The number this pass did not have
+
+The attributed prototype run resolved 10 of 24 shots: **14 ended by the 8 s in-flight backstop** and only
+4 were knockouts (`game/prototypes/policy_bot/results/rival_matrix.json`). The 20-round autoplay log said
+the same thing from the other side — self-OOB ends most rounds — and the instrumentation shipped below
+confirms it with attribution.
+
+### Shipped in response
+
+Rounds now report **how** they were decided. `TurnState.decided_by()` returns `knockout` / `self_oob` /
+`stalemate` / `idle` / `backstop`, `state()` carries it, and `Main` tallies rounds, verdicts and flicks in
+`LoopStats` (`game/scripts/loop_stats.gd`), printing one session-cumulative line at every match end.
+`decided_by_oob()` is now *derived* from that single field instead of being a second flag — the prototype
+harness produced its mis-attributed metric from exactly such a duplicate
+(`game/prototypes/policy_bot/match_harness.gd:230-232`).
+
+**First real reading** (headless 20-round gate, `0382e4c`, scripted flicks at 0.5–1.0 power):
+
+```
+[LOOP] rounds=18 flicks=49 shots/round=2.72 knockout=1 self_oob=17 stalemate=0 idle=0 backstop=0 contact=18 (100%)
+```
+
+18 of the gate's 20 rounds are in that line: the tally prints at match end and the last two gate rounds
+were mid-match. Per-round attribution is always present in the `[GAME OVER]` line.
+
+Read it with the right caveat — this is scripted play with no aim, so it overstates self-OOB against a
+human who deliberately aims at the opponent's pen. What it does establish is the *shape*: **every** decided
+round ended on a pen leaving the table (100% contact, zero stalemates, zero idle forfeits, zero backstops),
+and **17 of 18 were the shooter's own pen leaving**. The last three rounds were each decided by a single
+shot that sent the shooter's own pen off. That matches the earlier 20-round log and the prototype matrix,
+and it makes legibility — not reward — the thing to fix.
+
+### How to read a playtest with it
+
+Play the 20-round gate (`docs/handoff-2026-09-14.md` §5), then read the last `[LOOP]` line:
+
+- `contact` share is the health number: high means the physics decides rounds, low means rounds end by
+  themselves.
+- `shots/round` is the pacing number: 1.0 means every round is a one-flick self-OOB, 4+ means real
+  back-and-forth.
+- `knockout` vs `self_oob` splits "I got them" from "I lost it". `self_oob` should dominate early; if
+  `knockout` never grows with familiarity, the shove is not learnable.
+- `backstop` and `idle` should be rare with human aim. If they are not, the 8 s cap and the 15 s idle
+  timeout are cutting rounds short — a playtest finding, not a guess.
+
+### Still open on the loop
+
+1. Solo is unreachable: mode screen, production bot adapter, `solo` persistence.
+2. The series count is anonymous and unresettable — E1 initials and a reset row.
+3. The 3-cue turn system (B1) remains the legibility fix for the flick itself; test it on the playtest
+   above rather than in the abstract.
+4. `PHASE_SETTLED` is still assigned and overwritten inside one call, so no observer can read it.
