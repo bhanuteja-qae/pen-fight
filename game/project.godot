@@ -28,7 +28,15 @@ window/stretch/aspect="keep_height"
 
 [physics]
 
-common/physics_ticks_per_second=60
+; 240 Hz (raised from Godot's 60 default on 2026-09-16): at 60 Hz a full-power
+; flick advanced 26.7 px between collision samples — wider than the ~20 px
+; contact window of two 10 px-thick pen capsules — so hits on an adjacent pen
+; tunnelled or resolved as dead mush (user report, reproduced headlessly; see
+; game/tests/adjacent_pen_hit_test.gd). 240 Hz = 6.7 px per sample.
+common/physics_ticks_per_second=240
+; At 240 Hz a 30 fps device needs 8 steps per render frame (the old default);
+; 16 keeps headroom for slower frames so the simulation stays real-time.
+common/max_physics_steps_per_frame=16
 common/physics_interpolation=true
 2d/default_gravity=0
 

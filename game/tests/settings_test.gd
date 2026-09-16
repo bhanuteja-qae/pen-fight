@@ -291,7 +291,7 @@ func _case_match_length_decides() -> void:
 	var auto := AutoFlick.new()
 	root.add_child(auto)
 	auto.enabled = true
-	auto.auto_flick_requested.connect(_main.get("_on_auto_flick_requested"))
+	auto.auto_flick_requested.connect(_main.get("_submit_shot"))
 	var away: Vector2 = pen.global_position
 	if away.length_squared() < 1.0:
 		away = Vector2.RIGHT
@@ -300,7 +300,7 @@ func _case_match_length_decides() -> void:
 	var elapsed := 0.0
 	while elapsed < RESOLVE_TIMEOUT_SEC:
 		await physics_frame
-		elapsed += 1.0 / 60.0
+		elapsed += 1.0 / float(Engine.physics_ticks_per_second)
 		if str(_state().get("phase", "")) == "ROUND_OVER":
 			break
 	if str(_state().get("phase", "")) != "ROUND_OVER":

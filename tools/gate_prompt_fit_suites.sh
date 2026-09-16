@@ -2,7 +2,9 @@
 # Focused regression suites for the turn-gate prompt-fit change.
 # Runs the gate-facing suites (headless) and reports each one's verdict line.
 set -u
-cd /home/ubuntu/pen-fight/game
+# Run against the checkout this script lives in (works from any git worktree).
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR/../game"
 GODOT=/home/ubuntu/godot/Godot_v4.7.2-stable_linux.x86_64
 export DISPLAY=:99
 export LIBGL_ALWAYS_SOFTWARE=1
@@ -22,4 +24,7 @@ run turn_state_test 120
 run touch_input_test 180
 run settings_test 120
 run auto_flick_test 180
+run adjacent_pen_hit_test 300
+run match_contract_test 120
+run main_shot_submission_test 240
 run aim_overlay_smoke 120

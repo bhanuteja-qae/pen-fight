@@ -49,6 +49,19 @@ For Pen Fight this is a low risk: the scene has at most 2 dynamic bodies and a s
 - "Mushy" collision feel (interpenetration before push-out, soft-feeling impacts) is a solver/stiffness issue, not a tick-rate-alone issue — raising `solver_iterations` or the tick rate both help, but tick rate is the expensive fix; try solver iterations and contact bias tuning first.
 - Correct order of operations: profile whether tunnelling/mushiness is actually observed at 60 Hz before spending the CPU/battery budget on a higher tick rate. If tunnelling only affects the walls (not pen-vs-pen), enabling `continuous_cd = CCD_MODE_CAST_SHAPE` on the pens is far cheaper than doubling the global tick rate, because CCD only costs extra work for the specific fast body, not for every physics step of everything in the scene.
 
+> **Update 2026-09-16 — the recommendation above was reversed by measurement.**
+> A device report ("adjacent pens don't collide") reproduced headlessly on the
+> real scene: at 60 Hz, full-power flicks (1600 px/s = 26.7 px/tick) tunnelled
+> through or dead-mushed against the neighbouring pen across gaps 0–20 px
+> (transfer 0.0–3.5 px). The per-tick step exceeded the ~20 px contact window
+> of two 10 px-thick capsules. Ladder measured at 120/240/320 Hz: 120 still
+> failed the smallest gaps; **240 fixed every case** with correct power
+> scaling; 320 added nothing. `continuous_cd = CCD_MODE_CAST_RAY` made outcomes
+> power-independent (bad); `CCD_MODE_CAST_SHAPE` was a no-op in Godot 4.7.2
+> (byte-identical to disabled). Decision: `physics_ticks_per_second = 240`.
+> Regression: `game/tests/adjacent_pen_hit_test.gd`. See the settings table in
+> `ART_AND_FEEL_SPEC.md`.
+
 ---
 
 ## 2. Physics interpolation
@@ -85,7 +98,7 @@ This extends beyond direct RigidBody motion: tweens, `NavigationAgent2D` movemen
   - The turn setup that repositions a pen (if any "reset to start position" logic exists) must call `reset_physics_interpolation()`.
   - Camera nodes or aim-indicator nodes that follow the pen and are updated in `_process`/`_input` should either not be marked interpolated, or should be updated in `_physics_process`.
   - The stalemate/out-of-bounds check and any UI overlay reading `global_position` for display should read the *interpolated* visual transform only for rendering, and should keep using the raw physics-space transform for gameplay logic (win/OOB tests) — interpolation is a rendering-only smoothing layer, it doesn't change simulation truth.
-- Bottom line: enable `physics/common/physics_interpolation`, audit every direct `Node2D.position/rotation/transform` write in the codebase to make sure it's either in `_physics_process` or followed by `reset_physics_interpolation()`, and keep `physics_ticks_per_second` at 60.
+- Bottom line: enable `physics/common/physics_interpolation`, audit every direct `Node2D.position/rotation/transform` write in the codebase to make sure it's either in `_physics_process` or followed by `reset_physics_interpolation()`, and keep `physics_ticks_per_second` at 60. **(Superseded 2026-09-16 — raised to 240; see the §1 update note.)**
 
 ---
 
@@ -128,7 +141,7 @@ Source: [DisplayServer VSyncMode reference](https://godot-rust.github.io/docs/gd
 
 **[JUDGEMENT]** More robust and simpler for this specific game shape (long idle stretches between short bursts of physics activity):
 
-1. Keep `physics_ticks_per_second` at 60 always (cheap when idle since sleeping bodies cost ~nothing per §6).
+1. Keep `physics_ticks_per_second` at 240 always (raised from 60 on 2026-09-16 — see the §1 update note; cheap when idle since sleeping bodies cost ~nothing per §6).
 2. Set `Engine.max_fps` low (e.g. 30, or even 15) whenever both pens are `sleeping == true` (i.e., between turns, waiting for player input), and raise it back to display-refresh (unset/0, or match detected refresh) the instant a flick is released. This is directly analogous to how idle turn-based games (chess apps, board game apps) throttle render.
 3. Do **not** throttle `physics_ticks_per_second` itself for this purpose — dropping tick rate mid-game changes simulation feel (damping/impulse behavior tuned at 60 Hz will feel different at a different tick rate — see §5) and is unnecessary since idle bodies barely cost anything physics-wise; throttle *render* FPS instead, which is where the real idle power draw comes from (GPU compositing, unnecessary draw calls).
 4. Consider disabling `vsync` momentarily is unnecessary — simplest approach is `Engine.max_fps = 30` while idle, `Engine.max_fps = 0` (or device refresh) during the active turn animation.

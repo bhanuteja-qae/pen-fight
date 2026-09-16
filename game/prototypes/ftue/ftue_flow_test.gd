@@ -29,8 +29,8 @@ class_name FtueFlowTest
 
 const FtueFlowScript := preload("res://prototypes/ftue/ftue_flow.gd")
 
-## Frame step used wherever a test simulates real time (60 Hz, the project's
-## physics tick rate — project.godot `physics/common/physics_ticks_per_second`).
+## Frame step used wherever a test simulates real time. This is the test's own
+## simulation step, independent of the engine's physics tick rate.
 const FRAME := 1.0 / 60.0
 ## The interaction alphabet for the exhaustive walk.
 const TOKENS := ["drag", "skip", "ack", "commit", "tick"]

@@ -126,8 +126,8 @@ Set every one of these. Names are as reported by the research pass.
 | `display/window/handheld/orientation` | `landscape` | `[VERIFY]` — Godot has historically ignored this on some versions; confirm on a real device, the editor preview is not authoritative |
 | `rendering/renderer/rendering_method` | `mobile` | `[TUNE]` — or `gl_compatibility` for the widest device support; do not leave it on `forward_plus` |
 | `rendering/textures/vram_compression/import_etc2_astc` | `true` | `[FIXED]` — Android export fails without it. Set it **before** importing art; if you toggle it afterwards, delete `.godot/` to force a reimport, because the editor's "Fix Import" is buggy here |
-| `physics/common/physics_ticks_per_second` | `60` | `[DEFAULT]` — keep it. Raising it roughly doubles physics CPU and battery for no feel gain with two bodies |
-| `physics/common/max_physics_steps_per_frame` | `8` | `[DEFAULT]` |
+| `physics/common/physics_ticks_per_second` | `240` | `[TUNE]` — raised from the 60 default on 2026-09-16: at 60 Hz a full-power flick (1600 px/s) advanced 26.7 px per tick, wider than the ~20 px contact window of two 10 px capsules, so hits on an adjacent pen tunnelled or dead-mushed (user report; regression `game/tests/adjacent_pen_hit_test.gd`). 240 Hz = 6.7 px/tick. Physics CPU is trivial for two bodies |
+| `physics/common/max_physics_steps_per_frame` | `16` | `[TUNE]` — 240 Hz needs 8 steps/frame at 30 fps render; keep headroom for slower devices |
 | `physics/common/physics_interpolation` | `true` | `[TUNE]` — **turn this on.** It is the correct answer to 90/120 Hz Android panels, and Godot's own refresh-rate handling on Android is unreliable. See the trap in §11 |
 | `physics/2d/sleep_threshold_linear` | `2.0` px/s | `[DEFAULT]` |
 | `physics/2d/sleep_threshold_angular` | `deg_to_rad(8.0)` | `[DEFAULT]` |

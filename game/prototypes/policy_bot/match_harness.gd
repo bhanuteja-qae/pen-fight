@@ -167,8 +167,11 @@ func _schedule_active_player() -> void:
 	_route_flick(player, candidate.direction * candidate.impulse, candidate.contact_offset, candidate)
 
 
-func _on_auto_flick_requested(player: String, impulse: Vector2, contact_offset: float = 0.0) -> void:
-	_route_flick(player, impulse, contact_offset)
+## Compat shim for the migrated AutoFlick payload (#6): the harness rig still
+## applies directly to its own TurnState/PenBody (prototype, out of the
+## production call-site scope); the command is split the same way.
+func _on_auto_flick_requested(cmd: ShotCommand) -> void:
+	_route_flick(cmd.slot(), cmd.direction() * cmd.power(), cmd.contact_offset())
 
 
 func _route_flick(player: String, impulse: Vector2, contact_offset: float, candidate: Variant = null) -> void:

@@ -4,7 +4,7 @@ class_name Main
 ## skip, debug autoplay harness). Extended from the Phase 1a feel layer.
 ##
 ## Owns no physics. Per the build contract it only connects:
-##   AimInput.flick_ready(dir, power) -> TurnState.on_flick -> active PenBody.apply_flick
+##   AimInput.flick_ready(dir, power) -> Main._submit_shot(ShotCommand) -> TurnState + PenBody
 ##   PenBody.settled            -> TurnState.on_settled
 ##   PenBody.out_of_bounds      -> TurnState.on_out_of_bounds
 ## and prints a verdict line once a round is decided (ROUND_OVER).
@@ -15,7 +15,7 @@ class_name Main
 ## shows once per turn handoff ("<Player>'s turn — tap to continue") after a
 ## settle auto-advances to the next player, and once per decided round
 ## ("<Winner> wins — tap to restart"). While the gate is up, _input_locked
-## blocks _on_flick_ready so a player can never flick on the wrong turn. The
+## blocks _submit_shot so a player can never flick on the wrong turn. The
 ## ceremony stays post-decision and is skippable on tap (docs §3.5 #7). Debug
 ## builds with PENFIGHT_AUTOPLAY=1 arm Agent B's AutoFlick to drive rounds
 ## headlessly.
@@ -25,6 +25,11 @@ class_name Main
 
 var turn_state: TurnState = null
 var aim_input: AimInput = null
+## Immutable snapshot for the active game session. Runtime shot intake stays
+## closed until this has been built successfully.
+var active_match_config: MatchConfig = null
+
+const DIRECTION_EPSILON: float = 0.001
 
 ## Phase 1a feel layer + debug overlay (Agent B).
 var feel: Feel = null
@@ -54,7 +59,7 @@ var _match_over: bool = false
 ## PENFIGHT_AUTOPLAY=1. Kept as a member so a re-armed round can schedule the
 ## next flick after the gate tap restarts the game.
 var _auto_flick: AutoFlick = null
-## True while the gate is up: _on_flick_ready ignores all flicks, so a player
+## True while the gate is up: _submit_shot rejects all commands, so a player
 ## can never flick on the wrong turn or mid-handoff.
 var _input_locked: bool = false
 ## Guards the gate against double-showing (once per turn handoff / decided round).
@@ -243,11 +248,11 @@ func _ready() -> void:
 		# were pre-MAX_IMPULSE and double-scale today (3.2e7..1.9e8 -> instant
 		# off-table ejects every round).
 		_auto_flick.set_random_power(0.5, 1.0, randi())
-		# Contract wiring (phase1b-contract §Agent F): Main connects the signal
-		# and handles it exactly like _on_flick_ready minus the drag math. The
-		# harness only emits; without this connection autoplay flicks are inert
-		# (rounds would resolve by forfeit, never by knockout).
-		_auto_flick.auto_flick_requested.connect(_on_auto_flick_requested)
+		# Contract wiring (#6): AutoFlick emits a complete ShotCommand
+		# (source="harness") at fire time; it connects to the same _submit_shot
+		# boundary as human input. Without this connection autoplay flicks are
+		# inert (rounds would resolve by forfeit, never by knockout).
+		_auto_flick.auto_flick_requested.connect(_submit_shot)
 		_auto_flick.arm(1.2)
 
 	# Player settings: load, apply (skins/mute/shake), then build the sheet that
@@ -269,6 +274,7 @@ func _ready() -> void:
 	# Applied after the env override so a saved preference is what a real player
 	# gets, while an explicit PENFIGHT_SKIN_* still wins for QA.
 	_apply_settings()
+	_build_legacy_match_config()
 	# The very first turn is the game opening, not a settle handoff — the gate
 	# would be noise here, and the no-input forfeit acceptance path needs the
 	# first AIM turn to tick its timer (a gated first turn would pause forfeit
@@ -362,24 +368,115 @@ func _unhandled_input(event: InputEvent) -> void:
 			_on_gate_tapped()
 
 
+## Adapt the currently shipped hot-seat settings into the frozen match contract.
+## Model IDs deliberately pass through from _player_skins; the domain registry,
+## not Main, owns which IDs are valid.
+func _build_legacy_match_config(requested_seed: int = 0) -> bool:
+	if settings_store == null:
+		push_error("Main: cannot build MatchConfig without SettingsStore")
+		active_match_config = null
+		return false
+	var red_model: String = str(_player_skins.get("red", ""))
+	var blue_model: String = str(_player_skins.get("blue", ""))
+	var red: Participant = Participant.create(
+		"red", "local_player", _display_name("red"), "human",
+		red_model, "control", "")
+	var blue: Participant = Participant.create(
+		"blue", "local_player", _display_name("blue"), "human",
+		blue_model, "control", "")
+	if red == null or blue == null:
+		push_error("Main: cannot build MatchConfig from active pen model IDs")
+		active_match_config = null
+		return false
+	active_match_config = MatchConfig.create(
+		"hot_seat", "classic", settings_store.match_length, requested_seed,
+		[red, blue])
+	if active_match_config == null:
+		push_error("Main: active MatchConfig validation failed")
+		return false
+	return true
+
+
+## The sole runtime/session boundary that commits Flick intent to game state and
+## physics. Producers build ShotCommand values and stop here.
+func _submit_shot(cmd: ShotCommand) -> bool:
+	# Resolve and validate the complete operation before either downstream write.
+	if (active_match_config == null or turn_state == null
+			or not is_inside_tree() or is_queued_for_deletion()):
+		return _reject_shot("no active game session", cmd)
+	if cmd == null:
+		return _reject_shot("missing ShotCommand", cmd)
+
+	var slot: String = cmd.slot()
+	if not ShotCommand.SLOTS.has(slot):
+		return _reject_shot("unknown slot", cmd)
+	if active_match_config.participant_for_slot(slot) == null:
+		return _reject_shot("slot is not in the active match", cmd)
+	var pen: PenBody = _pen_for_slot(slot)
+	if pen == null:
+		return _reject_shot("active slot has no live PenBody", cmd)
+
+	if not ShotCommand.SOURCES.has(cmd.source()):
+		return _reject_shot("unknown source", cmd)
+	var direction: Vector2 = cmd.direction()
+	if (not is_finite(direction.x) or not is_finite(direction.y)
+			or direction == Vector2.ZERO):
+		return _reject_shot("direction is not finite and nonzero", cmd)
+	var direction_length: float = direction.length()
+	if not is_finite(direction_length) or absf(direction_length - 1.0) > DIRECTION_EPSILON:
+		return _reject_shot("direction is not unit length", cmd)
+	var power: float = cmd.power()
+	if not is_finite(power) or power < 0.0 or power > 1.0:
+		return _reject_shot("power is outside 0..1", cmd)
+	var contact_offset: float = cmd.contact_offset()
+	if not is_finite(contact_offset) or contact_offset < -1.0 or contact_offset > 1.0:
+		return _reject_shot("contact_offset is outside -1..1", cmd)
+
+	var state: Dictionary = turn_state.state()
+	if str(state.get("phase", "")) != TurnState.PHASE_AIM:
+		return _reject_shot("TurnState is not in AIM", cmd)
+	if str(state.get("current_player", "")) != slot:
+		return _reject_shot("slot is not the active participant", cmd)
+	if _input_locked or _gate_showing or settings_open() or _match_over:
+		return _reject_shot("shot intake is closed", cmd)
+	if _active_pen() != pen or not pen.is_inside_tree() or pen.is_queued_for_deletion():
+		return _reject_shot("active PenBody is not ready", cmd)
+
+	turn_state.on_flick(direction * power)
+	pen.apply_flick(direction, power, contact_offset)
+	return true
+
+
+func _reject_shot(reason: String, cmd: ShotCommand = null) -> bool:
+	var slot: String = cmd.slot() if cmd != null else "<missing>"
+	var source: String = cmd.source() if cmd != null else "<missing>"
+	push_warning("ShotCommand rejected: %s (slot=%s source=%s)" % [reason, slot, source])
+	return false
+
+
+func _pen_for_slot(slot: String) -> PenBody:
+	match slot:
+		"red":
+			return pen_red if pen_red != null and pen_red.pen_id == "red" else null
+		"blue":
+			return pen_blue if pen_blue != null and pen_blue.pen_id == "blue" else null
+		_:
+			return null
+
+
+## AimInput.flick_ready -> this. Thin human adapter (#6): build the contract
+## command and submit it through the single session boundary _submit_shot.
+## Phase/lock/pen checks and the state+physics commit live there; this holds
+## no second shot path. Feedback fires only after an accepted commit, never on
+## a rejection (MATCH-CONTRACT §"One atomic submission boundary").
 func _on_flick_ready(direction: Vector2, power: float, contact_offset: float) -> void:
-	# Gate: never apply a flick while the turn-transition gate is up, even if
-	# the phase is AIM (a settle handoff waits for the tap-to-continue).
-	if _input_locked:
-		return
 	if turn_state == null:
 		return
-	# AimInput is locked when not AIM, so this is defensive — but on_flick()
-	# no-ops while locked/ROUND_OVER and the pen must not get an impulse either.
-	if str(turn_state.state().get("phase", "")) != TurnState.PHASE_AIM:
+	var cmd: ShotCommand = ShotCommand.create(
+		str(turn_state.state().get("current_player", "")), direction, power,
+		contact_offset, "human")
+	if not _submit_shot(cmd):
 		return
-	# AimInput gives a slingshot pull vector (direction + power) plus the grab
-	# offset along the barrel. TurnState records the impulse; the active pen
-	# receives direction+power+contact for physics (off-centre grabs spin).
-	turn_state.on_flick(direction * power)
-	var pen := _active_pen()
-	if pen != null:
-		pen.apply_flick(direction, power, contact_offset)
 	if haptics != null:
 		haptics.flick(power)
 	# Whoosh tick on release (SFX). The sound layer never gates the game.
@@ -398,27 +495,6 @@ func _active_pen() -> PenBody:
 			return pen_blue
 		_:
 			return null
-
-
-## AutoFlick.auto_flick_requested -> this. Mirrors _on_flick_ready minus the
-## slingshot drag math: AutoFlick already emits a full direction*power impulse.
-## Duplicate-routing guard: the same AIM/current-player checks as the human
-## path, so even if another consumer also connected the signal, exactly one
-## application can land.
-func _on_auto_flick_requested(player: String, impulse: Vector2, contact_offset: float = 0.0) -> void:
-	if _input_locked:
-		return
-	if turn_state == null:
-		return
-	var st: Dictionary = turn_state.state()
-	if str(st.get("phase", "")) != TurnState.PHASE_AIM:
-		return
-	if str(st.get("current_player", "")) != player:
-		return
-	turn_state.on_flick(impulse)
-	var pen := _active_pen()
-	if pen != null:
-		pen.apply_flick(impulse.normalized(), impulse.length(), contact_offset)
 
 
 ## Keep AimInput's grab zone on the active pen's capsule each AIM frame.
