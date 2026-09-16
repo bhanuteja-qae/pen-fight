@@ -34,7 +34,7 @@ answer numeric instead of a matter of opinion.
 | 5 | A4 dead phase vocabulary | **DONE** — `535af4d` (constants and dead test arms deleted, contract doc annotated) |
 | 5b | A6 round-decision attribution + `[LOOP]` tally | **DONE** — `0382e4c` (`TurnState.decided_by()`, `LoopStats`, `loop_attribution_test.gd`, plus the gate runner's missing import pass) |
 | 6 | B3 refresh `ART_AND_FEEL_SPEC.md` | **DONE** — `d62678f` (§0.5 "Shipped reality" + 17 inline corrections; §6's centre-of-mass rule marked as losing to the shipped capsule-extents rule) |
-| 7 | E2 written co-presence pillar | **DONE** — `d62678f`+ (Pillar 6 "Co-presence Is the Content" with *progression* as the stated sacrifice, its precedence rule, and the labelling defects A1–A5 had already closed) |
+| 7 | E2 written co-presence pillar | **DONE** — `d4d6763` (Pillar 6 "Co-presence Is the Content" with *progression* as the stated sacrifice, its precedence rule, and the labelling defects A1–A5 had already closed) |
 | 8 | E1 player initials | next (pairs with A1) |
 | 9-10 | B1 3-cue turn system, B2 friction/mass lever | next — test on the G1 playtest first |
 | 11+ | C1 friend-challenge, E3 CI, E4 secrets | later |
