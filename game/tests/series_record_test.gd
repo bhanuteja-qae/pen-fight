@@ -257,7 +257,7 @@ func _decide_one_round() -> String:
 	var elapsed := 0.0
 	while elapsed < RESOLVE_TIMEOUT_SEC:
 		await physics_frame
-		elapsed += 1.0 / 60.0
+		elapsed += 1.0 / float(Engine.physics_ticks_per_second)
 		if str(_state().get("phase", "")) == "ROUND_OVER":
 			break
 	if str(_state().get("phase", "")) != "ROUND_OVER":

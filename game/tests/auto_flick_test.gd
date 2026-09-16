@@ -23,13 +23,14 @@ class_name AutoFlickTest
 ## Entry convention mirrors turn_state_test.gd: `extends SceneTree` with _init()
 ## driving the run and quit(0|1) at the end. This test needs LIVE physics
 ## frames, so it cannot be a static pure-logic test — the poll is driven by the
-## SceneTree.physics_frame signal (60 Hz) and setup is deferred from _init() to
-## the first process frame so the tree (root window + physics server) is fully
-## live before the scene is instantiated.
+## SceneTree.physics_frame signal (fixed timestep; the tick rate lives in
+## project.godot) and setup is deferred from _init() to the first process
+## frame so the tree (root window + physics server) is fully live before the
+## scene is instantiated.
 
 const STRONG_IMPULSE: float = 1000000.0  # direction * magnitude impulse toward the table edge
 const FLICK_DELAY_SEC: float = 0.4       # seconds after the active player's AIM begins
-const MAX_TEST_SECONDS: float = 12.0     # budget (720 physics frames @ 60 Hz)
+const MAX_TEST_SECONDS: float = 12.0     # simulated-seconds budget (frames = 12 x tick rate)
 
 var _main: Node = null
 var _auto_flick: AutoFlick = null
@@ -162,4 +163,4 @@ func _finish(passed: bool, detail: String) -> void:
 
 
 func _elapsed_seconds() -> float:
-	return float(_physics_frames) / 60.0
+	return float(_physics_frames) / float(Engine.physics_ticks_per_second)

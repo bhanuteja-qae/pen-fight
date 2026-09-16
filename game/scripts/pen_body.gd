@@ -55,13 +55,15 @@ const OOB_TOLERANCE_PX := 8.0
 
 ## Impact signal thresholds: a hit is reportable when the body reports a
 ## contact AND its linear speed exceeds IMPACT_MIN_SPEED; emit at most once
-## per IMPACT_TICK_INTERVAL physics ticks. [TUNE]
+## per IMPACT_TICK_INTERVAL physics ticks — 12 ticks ~= 50 ms at the 240 Hz
+## rate, matching the old 3-ticks-at-60-Hz cadence. [TUNE]
 const IMPACT_MIN_SPEED := 60.0
-const IMPACT_TICK_INTERVAL := 3
+const IMPACT_TICK_INTERVAL := 12
 
-## Give the table-resolution retry a ~2 s window at 60 Hz, then safely disable
-## OOB detection (a missing table should never false-trigger an instant loss).
-const TABLE_RESOLVE_MAX_ATTEMPTS := 120
+## Give the table-resolution retry a ~2 s window at 240 Hz (480 ticks), then
+## safely disable OOB detection (a missing table should never false-trigger an
+## instant loss).
+const TABLE_RESOLVE_MAX_ATTEMPTS := 480
 
 # --- Internal state --------------------------------------------------------------
 var _in_flight := false

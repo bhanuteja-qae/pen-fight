@@ -246,4 +246,4 @@ func _finish(passed: bool, detail: String) -> void:
 
 
 func _elapsed_seconds() -> float:
-	return float(_physics_frames) / 60.0
+	return float(_physics_frames) / float(Engine.physics_ticks_per_second)
