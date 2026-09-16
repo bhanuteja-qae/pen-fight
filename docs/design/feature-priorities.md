@@ -8,7 +8,7 @@ Inputs, all read in full and treated as verified evidence:
 - `docs/design/core-loop.md` — the loop, its dead steps, the missing re-entry leg, the persistence fix.
 - `docs/design/multiplayer-audit.md` — co-presence is the product; async friend-challenge is the only
   evidence-backed differentiator and must be trajectory-relay, not lockstep.
-- `docs/design/design-pillars.md` — the five pillars, used here as the FIT / tiebreaker dimension.
+- `docs/design/design-pillars.md` — the six pillars, used here as the FIT / tiebreaker dimension.
 
 Every claim below about the repo was checked against a file I opened. Absence claims are grep-backed.
 Anything I could not verify is in *Assumptions and evidence limits*.
@@ -34,7 +34,7 @@ answer numeric instead of a matter of opinion.
 | 5 | A4 dead phase vocabulary | **DONE** — `535af4d` (constants and dead test arms deleted, contract doc annotated) |
 | 5b | A6 round-decision attribution + `[LOOP]` tally | **DONE** — `0382e4c` (`TurnState.decided_by()`, `LoopStats`, `loop_attribution_test.gd`, plus the gate runner's missing import pass) |
 | 6 | B3 refresh `ART_AND_FEEL_SPEC.md` | **DONE** — `d62678f` (§0.5 "Shipped reality" + 17 inline corrections; §6's centre-of-mass rule marked as losing to the shipped capsule-extents rule) |
-| 7 | E2 written co-presence pillar | next |
+| 7 | E2 written co-presence pillar | **DONE** — `d62678f`+ (Pillar 6 "Co-presence Is the Content" with *progression* as the stated sacrifice, its precedence rule, and the labelling defects A1–A5 had already closed) |
 | 8 | E1 player initials | next (pairs with A1) |
 | 9-10 | B1 3-cue turn system, B2 friction/mass lever | next — test on the G1 playtest first |
 | 11+ | C1 friend-challenge, E3 CI, E4 secrets | later |
@@ -138,6 +138,7 @@ The candidate set is the task's (a)-(d) plus four additions the evidence justifi
 - **E2 — Promote Co-presence to a written sixth pillar.** `docs/design/design-pillars.md` §Minimal Fix
   item 3 (`:228-230`). Added because it is a cheap governance decision that stops durability being
   sacrificed "by omission rather than decision", which is exactly how A1 went unbuilt.
+  **Landed 2026-09-16** — see §Status rank 7 and `docs/design/design-pillars.md` §6.
 - **E3 — GitHub Actions release pipeline.** Added with a verified absence: there is **no `.github/`
   directory and no workflow YAML anywhere in the repo** (see Evidence limits). The handoff's workflow is
   the manual local gate set (`docs/handoff-2026-09-14.md:76-87`); CI is planned for Phase 4
@@ -249,7 +250,7 @@ B1, B2 and C1 are not, which is exactly why G1 outranks them.
 | 4 | **C2** Play Console registration + recruit 12 testers | 4 | 2 | 2 | Release path; no pillar conflict | now |
 | 5 | **A4** Delete dead phase constants + dead test clauses; stop calling the stalemate an anti-stall defence | 1 | 1 | 1 | Pillar 4 hygiene (labels vs behaviour) | now |
 | 6 | **B3** Refresh `docs/ART_AND_FEEL_SPEC.md` to shipped geometry | 2 | 1 | 1 | Prevents future violations of Pillars 1-3 from stale numbers | next |
-| 7 | **E2** Promote Co-presence to a written sixth pillar (stated sacrifice: progression) | 3 | 1 | 1 | Governance for Pillars 1-5 | next |
+| 7 | **E2** Promote Co-presence to a written sixth pillar (stated sacrifice: progression) | 3 | 1 | 1 | Governance for Pillars 1-5 | **done** |
 | 8 | **E1** Player initials in the settings sheet and on the score line | 3 | 2 | 1 | Serves co-presence; makes A1 a series between people | next |
 | 9 | **B1** Full 3-cue turn system (mockup parity) | 2 | 3 | 3 | Pillar 5 (legibility) at its stated pace cost | next (test first) |
 | 10 | **B2** Coulomb friction behind a flag + per-skin mass lever | 3 | 3 | 3 | Pillar 3 adjudicates: out if it flattens the grip axis | next (test first) |

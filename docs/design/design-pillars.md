@@ -5,7 +5,15 @@
 the design *actually* lives by — from the loop, the reward/punishment structure, the pacing, the
 agency model and the anti-features the code refuses to have — then state what the design gives up
 to hold each of them. Every pillar ends in a rule that can kill a feature. Geometry comes from
-code, never from `docs/ART_AND_FEEL_SPEC.md`, which is three phases stale (see *Assumptions*).
+code, never from `docs/ART_AND_FEEL_SPEC.md` — that document is pre-implementation design intent, and
+since `d62678f` it says so itself: §0.5 carries a cited table of every value the build contradicts, so it
+may be read for intent but never cited for a number (see *Assumptions*).
+
+> **Refreshed 2026-09-16.** The extraction was written at HEAD `666b94e`. A1–A5 have landed since
+> (`docs/design/feature-priorities.md` §Status), which closes the labelling defects this document flagged
+> in *Conflicts* 4–5 and in *Missing or Weak Pillars*, and **promotes Co-presence to a written sixth
+> pillar** (§6). Every cite this refresh touches, and every cite A1–A5 invalidated, was re-verified against
+> HEAD; cites inside pillars 1–5 that this change does not touch are as verified at `666b94e`.
 
 ## Extraction Target
 
@@ -134,6 +142,36 @@ code, never from `docs/ART_AND_FEEL_SPEC.md`, which is three phases stale (see *
 - **Tiebreaker:** if a change trades turn-ownership legibility for pace, it is out; a harder lock
   needs a real wrong-turn failure to justify it.
 
+### 6. Co-presence Is the Content — the second human is the feature
+
+- **Meaning:** the game is built around a person sitting beside you, and everything that would compete
+  with that is refused. Two pens and no more (`main.gd:23-24`; `PenRed`/`PenBlue` in `main.tscn`); a
+  settings sheet that gives **each player their own pen row** (`settings_screen.gd:34`
+  `enum Row { SOUND, HAPTICS, SHAKE, MATCH_LENGTH, PEN_RED, PEN_BLUE }`, labelled `"%s's pen"` at
+  `:344-345`); a full-screen gate whose only job is making whose-turn-it-is unmissable (`turn_gate.gd`,
+  Pillar 5); and no network code of any kind (the absence grep in *Assumptions* returns nothing for
+  `ENetMultiplayer|MultiplayerAPI|MultiplayerPeer|WebSocket|HTTPRequest|…|rpc|matchmak|leaderboard|
+  profile|account|guild|club|friend`). Co-presence was always the substrate; until A1 the *durable* half
+  of it existed only inside the session.
+- **Prioritizes:** the room over the account — a series between two people who are physically present
+  (`settings_store.gd:40-41` `matches_won_red/blue`, persisted at `:109-110`, surfaced at the match-over
+  gate and in the `[SERIES]` line, `main.gd:601`, `:638`, `:645`) — and the refusal to manufacture
+  retention out of progression.
+- **Sacrifices:** progression. No unlocks, currencies, ranks, badges or grind — **on purpose, not by
+  omission** — and durability capped at the minimum record of who has been playing whom: a series count
+  per pen slot, plus (when built) two booleans per Rival for solo practice (`docs/design/solo-rival.md`).
+  It rules out leaderboards, matchmaking, friends lists, daily streaks, reward loops whose only purpose is
+  to bring a solo player back, and any feature whose value does not change when a second human is in the
+  room.
+- **Supporting systems:** `settings_store.gd` as the single durable store (the series record plus six
+  settings keys); the solo leg is legitimate under this pillar **only** as practice for the seated match
+  (`docs/design/solo-rival.md` — one Rival, one persona, V1 frozen; justified *against* this pillar, not
+  added for it); the social options in `docs/design/multiplayer-audit.md` are the substrate this pillar
+  exists for, not features it approves.
+- **Tiebreaker:** if a feature is worth the same whether or not a second human is present, it is not a
+  co-presence feature — justify it as practice for the seated match, or drop it. If it adds durable state
+  the seated match never reads, it is out.
+
 ## Conflicts and Contradictions
 
 1. **Pillars 1 and 2 make the first minutes hostile, and that is the price of both.** Self-risk on
@@ -147,37 +185,38 @@ code, never from `docs/ART_AND_FEEL_SPEC.md`, which is three phases stale (see *
 3. **Pillar 2's stated line vs the shipped spin arc** (`aim_overlay.gd:341-358` vs `:290-306`) is
    defensible as written above but dangerous while unstated: a later "helpful" overlay change can
    cross it without anyone noticing there was a line.
-4. **Pillar 4 is clean; its labels are not.** `begin_turn()` is strict alternation
-   (`turn_state.gd:88-91`) while five label sites say "winner starts / winner first"
-   (`turn_state.gd:19`, `:107-108`, `main.gd:516`, `:537`, `game/docs/turn_gate.md:29`). The
-   behaviour is the deliberate hot-seat convention; the shorthand is true in only one of two
-   outcomes (when the flicker wins, the loser starts). Nothing in the pillar set depends on the
-   label — do not let a pillar inherit it.
-5. **The stalemate rule is scaffolding, not an anti-stall pillar.** It cannot fire through human
-   input (`turn_state.gd:42-48`; the weakest legal flick clears `MOVED_LINEAR_VEL 25` —
-   `aim_input.gd:46`, `pen_body.gd:36`). What fires is the 15 s idle forfeit (`main.gd:81-87`,
-   `turn_state.gd:239-247`). Keep the rule (it guards scripted flights); stop calling it an
-   anti-stall defence.
-6. **All five pillars describe a two-person, one-sitting product.** The re-entry leg is external to
-   the game (`docs/design/core-loop.md:86-105`) and an AI opponent is architecturally blocked by
-   Godot 2D non-determinism (`docs/RESEARCH.md:241-259`). A solo feature must be justified *against*
-   these pillars, not added for them.
+4. **Pillar 4 is clean; its labels are now clean too — closed `535af4d` (A3).** `begin_turn()` is
+   strict alternation (`turn_state.gd:88-91`) and every former "winner starts / winner first" site now
+   says so (`turn_state.gd:35`, `:134`; `main.gd:664`; `game/docs/turn_gate.md:30`). The flicker-wins
+   case is pinned by `tests/turn_state_test.gd`. Nothing in the pillar set inherits the shorthand.
+5. **The stalemate rule is scaffolding, not an anti-stall pillar — framing closed `535af4d` (A4).**
+   It cannot fire through human input (`turn_state.gd:42-48`; the weakest legal flick clears
+   `MOVED_LINEAR_VEL 25` — `aim_input.gd:46`, `pen_body.gd:36`). What fires is the 15 s idle forfeit
+   (`main.gd:97`, `turn_state.gd:239-247`). The rule is kept (it guards scripted flights) and is no
+   longer called an anti-stall defence anywhere. It now also reports itself: `decided_by()` distinguishes
+   `stalemate` from `idle` from `backstop` (`docs/design/core-loop.md` §Re-check).
+6. **Six pillars, five of which describe a two-person, one-sitting product.** Pillar 6 is the frame
+   around the other five, not a sixth mechanic. The re-entry leg used to be external to the game
+   (`docs/design/core-loop.md:86-105`) and an AI opponent is architecturally awkward in Godot 2D
+   (`docs/RESEARCH.md:241-259`); both are now answered by decision rather than by omission — A1 gives the
+   seated match a durable record, and the solo Rival (`docs/design/solo-rival.md`) is justified as
+   practice for the seated match. A solo feature must still be justified *against* these pillars, not
+   added for them.
 
 ## Missing or Weak Pillars
 
-- **Co-presence — load-bearing, never written down.** The strongest priority in the build is that
-  the second human *is* the content: the codebase is built around it (the gate; per-player pen rows,
-  `game/scripts/settings_screen.gd:21-23`; exactly two pens, `main.gd:179`), yet no system carries it
-  past the session. Durability was given up by omission rather than decision — the core loop's #1
-  break (`docs/design/core-loop.md:86-105`) and the substrate every social option needs
-  (`docs/design/multiplayer-audit.md:183-189`; that audit is unverified by me). Recommend promoting
-  it to a written sixth priority whose stated sacrifice is *progression*: cut unlocks, currencies
-  and rank on purpose, and keep exactly the minimum durable record.
-- **Legible identity — present but self-contradicting.** Four selectable skins exist and persist
-  (`main.gd:106-123`, `settings_store.gd:79-80`), yet the one feedback that names a player hardcodes
-  Amber/Cobalt (`main.gd:643-650`) while graphite/ivory are selectable. As a pillar candidate — *the
-  game names the pen that is on the table* — it is testable in one line. Labelling defect, not
-  behaviour defect: the pen in the slot is the right player's pen (`docs/design/core-loop.md:159-174`).
+- **Co-presence — promoted 2026-09-16; now Pillar 6.** It was the strongest priority in the build and
+  the only unwritten one; §6 writes it, with *progression* as the stated sacrifice. The omission it
+  described is closed by A1 (`matches_won_red/blue`, the `[SERIES]` line, the series line on the
+  match-over gate). What is still thin is the record's *reach*, not the pillar: the series count is
+  anonymous and unresettable (E1, `docs/design/feature-priorities.md` rank 8) and the solo leg is decided
+  but unbuilt (`docs/design/solo-rival.md`).
+- **Legible identity — closed `535af4d` (A3); the identity *is* the pen.** Four selectable skins exist
+  and persist (`main.gd:106-123`, `settings_store.gd:79-80`), and the verdict name is now derived from the
+  skin actually in play (`main.gd:782` `_display_name(pen_id)`; no Amber/Cobalt literal survives in
+  `main.gd`). The candidate rule — *the game names the pen that is on the table* — holds as behaviour.
+  What is still missing is a **person** rather than a pen: the series count says "Sharpie 2, Bic 1", not
+  "Sam 2, Alex 1" (E1, rank 8).
 - **Haptic promise — not verifiable yet.** These pillars lean on "the world reacted" and haptics are
   part of that, but `Input.vibrate_handheld()`'s amplitude parameter is unconfirmed and the OS-level
   setting cannot be queried (`docs/RESEARCH.md:208-210`; `docs/ART_AND_FEEL_SPEC.md:499-508`). No
@@ -204,17 +243,20 @@ Ordered, so a tie is decided rather than debated.
    against a real risk; the input lock is the guard.
 5. **Pillar 3 is the one to protect while tuning.** Damping, mass and friction may be A/B'd;
    grip-position sensitivity may not be normalised away.
-6. **Cut test for any new feature.** Reject if it (a) adds a way to win without risking your own pen;
+6. **Pillar 6 outranks nothing by force and everything by framing.** It never beats Pillars 1–5 on a
+   mechanic; it decides *what may be added at all* — nothing whose value does not depend on the second
+   human, and no progression layer. Where it collides with Pillar 5 (a gate costs pace, which is
+   co-presence's own resource), Pillar 5 wins the mechanic and Pillar 6 wins the scope.
+7. **Cut test for any new feature.** Reject if it (a) adds a way to win without risking your own pen;
    (b) tells the player where the pen will go; (c) makes grip position stop mattering; (d) changes
-   who won after resolution; (e) adds durable state the seated match does not read — defer (e) until
-   the durable record exists, then re-ask; (f) requires a purchased asset, dynamic lighting, or a 3D
-   physics rewrite.
-7. **Challenge these artifacts** — none is supported by the pillar set: `PHASE_FORFEIT` and
-   `PHASE_GAME_OVER`, declared at `turn_state.gd:25-26` and assigned nowhere (referenced only in
-   test conditions, `tests/auto_flick_test.gd:82`, `tests/rounds_gate_test.gd:88`); `PHASE_SETTLED`,
-   assigned at `turn_state.gd:163` and overwritten inside the same function; the `ExitZone` `Area2D`
-   (`main.tscn:93-96`, read by no script); and the "anti-stall stalemate rule" framing
-   (`turn_state.gd:42-48`).
+   who won after resolution; (e) adds durable state the seated match does not read — the record now
+   exists (A1), so re-ask instead of defer, and weigh it against Pillar 6's cap; (f) requires a
+   purchased asset, dynamic lighting, or a 3D physics rewrite; (g) is worth the same with or without a
+   second human present.
+8. **Challenge these artifacts** — none is supported by the pillar set: `PHASE_SETTLED`, declared at
+   `turn_state.gd:42` and assigned at `:200`, overwritten inside the same function so no observer can
+   read it; the `ExitZone` `Area2D` (`main.tscn:93-96`, read by no script). **Deleted** by A4
+   (`535af4d`): `PHASE_FORFEIT` / `PHASE_GAME_OVER` and the "anti-stall stalemate rule" framing.
 
 ## Minimal Fix
 
@@ -225,15 +267,18 @@ Ordered, so a tie is decided rather than debated.
    `tests/turn_state_test.gd` so the convention is pinned by a test that can fail.
 2. Derive the verdict name from `settings_store.pen_for(player)` (`settings_store.gd:48-49`) instead
    of the hardcoded map at `main.gd:643-650`.
-3. Decide explicitly whether **Co-presence** is promoted to a written sixth priority — and if it is,
-   pair it with the one durable-record change the loop and the social audit both converge on
-   (`docs/design/core-loop.md:226-242`). A sacrifice made by omission is not a pillar, it is a bug.
+3. **Decided 2026-09-16: yes — Co-presence is Pillar 6** (§6), paired with the durable record the loop
+   and the social audit both converge on. That record shipped as A1 (`settings_store.gd:40-41`,
+   `:109-110`). A sacrifice made by omission is not a pillar, it is a bug — this one is now made out
+   loud.
 
 ## Assumptions and evidence limits
 
 - **Docs are not all current; where they disagree with code, the code wins.** `README.md:6-9` still
   says the skeleton is not committed while HEAD `666b94e` has many commits of game code.
-  `docs/ART_AND_FEEL_SPEC.md` is stale on geometry, physics and settings, verified: table
+  `docs/ART_AND_FEEL_SPEC.md` was stale on geometry, physics and settings — **since `d62678f` it is
+  marked as design intent and carries §0.5, a cited shipped-value table, plus an inline correction at each
+  number below**, so the divergences are documented rather than silent. Verified at `666b94e`: table
   `Rect2(80,60,1120,600)` (`:43`) vs `Rect2(-590,-320,1180,640)` (`main.gd:92`); pen `360 x 20`
   (`:44-45`) vs capsule radius 5 / height 180 (`main.tscn:12-14`) drawn at 180x10 (`main.gd:94-100`);
   centre-of-mass OOB (`:270-293`) vs geometric any-part OOB (`pen_body.gd:269-282`); `MAX_DRAG 220` /
@@ -253,9 +298,11 @@ Ordered, so a tie is decided rather than debated.
   over `game/scripts`, `game/scenes`, `game/tests`, `game/project.godot` returns nothing; no
   `StaticBody2D` in `game/scenes`; no progression/durability construct
   (`unlock|streak|xp|level_up|coins|currency|badge|reward|matches_won`) in `game/scripts` or
-  `game/tests` — the only persisted state is six settings keys (`settings_store.gd:73-80`) plus
+  `game/tests` — the only persisted state was six settings keys (`settings_store.gd:73-80`) plus
   `_round_wins` zeroed on the match-over tap (`main.gd:556-559`); no script reads `ExitZone` /
-  `Area2D` / `body_exited`.
+  `Area2D` / `body_exited`. **Updated 2026-09-16:** A1 added the durable series record
+  (`matches_won_red` / `matches_won_blue`, `settings_store.gd:40-41`, persisted at `:109-110`), so the
+  store now holds eight keys and the seated match *does* read them (Pillar 6's minimum record).
 - **Behaviour fact vs labelling fact, kept separate.** Behaviour: strict alternation
   (`turn_state.gd:88-91`), the two dead phase constants, the unreachable-by-hand stalemate rule, no
   durable outcome. Labelling only: the five "winner starts/first" sites, the Amber/Cobalt verdict
