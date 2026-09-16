@@ -1,0 +1,360 @@
+{
+	"format": "rival-matrix-v1",
+	"shots_per_series": 4,
+	"matches": [
+		{
+			"seed": 91001,
+			"red": "hitter",
+			"blue": "auto",
+			"shots": [
+				{
+					"index": 0,
+					"shooter": "red",
+					"impulse": 0.89,
+					"contact_offset": -0.22,
+					"oob_pen": "",
+					"oob_was_self": false,
+					"round_winner": "",
+					"decided_by": "backstop"
+				},
+				{
+					"index": 1,
+					"shooter": "blue",
+					"impulse": 0.9692,
+					"contact_offset": -0.6245,
+					"oob_pen": "",
+					"oob_was_self": false,
+					"round_winner": "",
+					"decided_by": "backstop"
+				},
+				{
+					"index": 2,
+					"shooter": "red",
+					"impulse": 0.89,
+					"contact_offset": 0.22,
+					"oob_pen": "blue",
+					"oob_was_self": false,
+					"round_winner": "red",
+					"decided_by": "knockout"
+				},
+				{
+					"index": 3,
+					"shooter": "blue",
+					"impulse": 0.6751,
+					"contact_offset": -0.3605,
+					"oob_pen": "blue",
+					"oob_was_self": true,
+					"round_winner": "red",
+					"decided_by": "oob"
+				}
+			],
+			"totals": {
+				"rounds_won_red": 2,
+				"rounds_won_blue": 0,
+				"self_oob_shots": 1,
+				"opponent_oob_shots": 1,
+				"knockouts": 1,
+				"forfeits": 0,
+				"mean_impulse": 0.8561,
+				"mean_abs_contact_offset": 0.3562,
+				"spin_usage": 0.25,
+				"settle_time_s": 6.3958
+			}
+		},
+		{
+			"seed": 91002,
+			"red": "spin",
+			"blue": "auto",
+			"shots": [
+				{
+					"index": 0,
+					"shooter": "red",
+					"impulse": 0.64,
+					"contact_offset": -0.88,
+					"oob_pen": "",
+					"oob_was_self": false,
+					"round_winner": "",
+					"decided_by": "backstop"
+				},
+				{
+					"index": 1,
+					"shooter": "blue",
+					"impulse": 0.5439,
+					"contact_offset": 0.4075,
+					"oob_pen": "",
+					"oob_was_self": false,
+					"round_winner": "",
+					"decided_by": "backstop"
+				},
+				{
+					"index": 2,
+					"shooter": "red",
+					"impulse": 0.68,
+					"contact_offset": 0.88,
+					"oob_pen": "",
+					"oob_was_self": false,
+					"round_winner": "",
+					"decided_by": "backstop"
+				},
+				{
+					"index": 3,
+					"shooter": "blue",
+					"impulse": 0.8594,
+					"contact_offset": -0.3093,
+					"oob_pen": "",
+					"oob_was_self": false,
+					"round_winner": "",
+					"decided_by": "backstop"
+				}
+			],
+			"totals": {
+				"rounds_won_red": 0,
+				"rounds_won_blue": 0,
+				"self_oob_shots": 0,
+				"opponent_oob_shots": 0,
+				"knockouts": 0,
+				"forfeits": 0,
+				"mean_impulse": 0.6808,
+				"mean_abs_contact_offset": 0.6192,
+				"spin_usage": 0.5,
+				"settle_time_s": 8.0167
+			}
+		},
+		{
+			"seed": 91003,
+			"red": "edge",
+			"blue": "auto",
+			"shots": [
+				{
+					"index": 0,
+					"shooter": "red",
+					"impulse": 0.94,
+					"contact_offset": 0.0,
+					"oob_pen": "",
+					"oob_was_self": false,
+					"round_winner": "",
+					"decided_by": "backstop"
+				},
+				{
+					"index": 1,
+					"shooter": "blue",
+					"impulse": 0.7637,
+					"contact_offset": -0.3642,
+					"oob_pen": "blue",
+					"oob_was_self": true,
+					"round_winner": "red",
+					"decided_by": "oob"
+				},
+				{
+					"index": 2,
+					"shooter": "red",
+					"impulse": 0.94,
+					"contact_offset": 0.0,
+					"oob_pen": "",
+					"oob_was_self": false,
+					"round_winner": "",
+					"decided_by": "backstop"
+				},
+				{
+					"index": 3,
+					"shooter": "blue",
+					"impulse": 0.9364,
+					"contact_offset": -0.3657,
+					"oob_pen": "blue",
+					"oob_was_self": true,
+					"round_winner": "red",
+					"decided_by": "oob"
+				}
+			],
+			"totals": {
+				"rounds_won_red": 2,
+				"rounds_won_blue": 0,
+				"self_oob_shots": 2,
+				"opponent_oob_shots": 0,
+				"knockouts": 0,
+				"forfeits": 0,
+				"mean_impulse": 0.895,
+				"mean_abs_contact_offset": 0.1825,
+				"spin_usage": 0.0,
+				"settle_time_s": 4.5833
+			}
+		},
+		{
+			"seed": 91004,
+			"red": "hitter",
+			"blue": "spin",
+			"shots": [
+				{
+					"index": 0,
+					"shooter": "red",
+					"impulse": 0.89,
+					"contact_offset": 0.22,
+					"oob_pen": "",
+					"oob_was_self": false,
+					"round_winner": "",
+					"decided_by": "backstop"
+				},
+				{
+					"index": 1,
+					"shooter": "blue",
+					"impulse": 0.68,
+					"contact_offset": 0.88,
+					"oob_pen": "red",
+					"oob_was_self": false,
+					"round_winner": "blue",
+					"decided_by": "knockout"
+				},
+				{
+					"index": 2,
+					"shooter": "red",
+					"impulse": 0.82,
+					"contact_offset": -0.12,
+					"oob_pen": "",
+					"oob_was_self": false,
+					"round_winner": "",
+					"decided_by": "backstop"
+				},
+				{
+					"index": 3,
+					"shooter": "blue",
+					"impulse": 0.68,
+					"contact_offset": 0.88,
+					"oob_pen": "blue",
+					"oob_was_self": true,
+					"round_winner": "red",
+					"decided_by": "oob"
+				}
+			],
+			"totals": {
+				"rounds_won_red": 1,
+				"rounds_won_blue": 1,
+				"self_oob_shots": 1,
+				"opponent_oob_shots": 1,
+				"knockouts": 1,
+				"forfeits": 0,
+				"mean_impulse": 0.7675,
+				"mean_abs_contact_offset": 0.525,
+				"spin_usage": 0.5,
+				"settle_time_s": 4.8458
+			}
+		},
+		{
+			"seed": 91005,
+			"red": "hitter",
+			"blue": "edge",
+			"shots": [
+				{
+					"index": 0,
+					"shooter": "red",
+					"impulse": 0.89,
+					"contact_offset": -0.22,
+					"oob_pen": "",
+					"oob_was_self": false,
+					"round_winner": "",
+					"decided_by": "backstop"
+				},
+				{
+					"index": 1,
+					"shooter": "blue",
+					"impulse": 0.94,
+					"contact_offset": 0.0,
+					"oob_pen": "",
+					"oob_was_self": false,
+					"round_winner": "",
+					"decided_by": "backstop"
+				},
+				{
+					"index": 2,
+					"shooter": "red",
+					"impulse": 0.82,
+					"contact_offset": 0.12,
+					"oob_pen": "",
+					"oob_was_self": false,
+					"round_winner": "",
+					"decided_by": "backstop"
+				},
+				{
+					"index": 3,
+					"shooter": "blue",
+					"impulse": 0.88,
+					"contact_offset": 0.35,
+					"oob_pen": "",
+					"oob_was_self": false,
+					"round_winner": "",
+					"decided_by": "backstop"
+				}
+			],
+			"totals": {
+				"rounds_won_red": 0,
+				"rounds_won_blue": 0,
+				"self_oob_shots": 0,
+				"opponent_oob_shots": 0,
+				"knockouts": 0,
+				"forfeits": 0,
+				"mean_impulse": 0.8825,
+				"mean_abs_contact_offset": 0.1725,
+				"spin_usage": 0.0,
+				"settle_time_s": 8.0167
+			}
+		},
+		{
+			"seed": 91006,
+			"red": "spin",
+			"blue": "edge",
+			"shots": [
+				{
+					"index": 0,
+					"shooter": "red",
+					"impulse": 0.64,
+					"contact_offset": -0.88,
+					"oob_pen": "",
+					"oob_was_self": false,
+					"round_winner": "",
+					"decided_by": "backstop"
+				},
+				{
+					"index": 1,
+					"shooter": "blue",
+					"impulse": 0.94,
+					"contact_offset": 0.0,
+					"oob_pen": "red",
+					"oob_was_self": false,
+					"round_winner": "blue",
+					"decided_by": "knockout"
+				},
+				{
+					"index": 2,
+					"shooter": "red",
+					"impulse": 0.68,
+					"contact_offset": 0.88,
+					"oob_pen": "",
+					"oob_was_self": false,
+					"round_winner": "",
+					"decided_by": "backstop"
+				},
+				{
+					"index": 3,
+					"shooter": "blue",
+					"impulse": 0.88,
+					"contact_offset": -0.35,
+					"oob_pen": "red",
+					"oob_was_self": false,
+					"round_winner": "blue",
+					"decided_by": "knockout"
+				}
+			],
+			"totals": {
+				"rounds_won_red": 0,
+				"rounds_won_blue": 2,
+				"self_oob_shots": 0,
+				"opponent_oob_shots": 2,
+				"knockouts": 2,
+				"forfeits": 0,
+				"mean_impulse": 0.785,
+				"mean_abs_contact_offset": 0.5275,
+				"spin_usage": 0.5,
+				"settle_time_s": 5.3792
+			}
+		}
+	]
+}

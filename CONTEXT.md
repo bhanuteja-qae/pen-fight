@@ -83,7 +83,7 @@ The decision style and bounded judgment noise that make a Rival behave distinctl
 _Avoid_: Bot stats, difficulty multiplier, Pen Profile
 
 **Rival Circuit**:
-The ordered three-Rival solo path. Completing it unlocks free Rival selection and rematches without introducing an economy.
+The solo path against authored Rivals. V1 ships a single Rival; beating it completes the Circuit and leaves it freely selectable, without introducing an economy.
 _Avoid_: Campaign, ladder, season
 
 **Mastery Stamp**:
