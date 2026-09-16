@@ -4,10 +4,10 @@ extends Node
 ##
 ## Lets a headless test / CI script drive the game to a REAL knockout (a pen
 ## leaving the table) instead of only the forfeit path. Scripted flicks route
-## through the SAME path a human flick takes — TurnState records the impulse,
-## and the active PenBody + Feel fire identically — by emitting
-## `auto_flick_requested`; Main connects that signal and handles it exactly
-## like `_on_flick_ready` minus the slingshot drag math.
+## through the SAME submission boundary a human flick takes — the harness
+## builds a complete ShotCommand (source = "harness") at fire time and emits
+## `auto_flick_requested`; Main connects that signal straight to
+## `_submit_shot`, so TurnState and the active PenBody fire identically.
 ##
 ## `enabled` defaults to false so normal play runs are completely untouched:
 ## nothing is scheduled or emitted until a test (or Main's debug autoplay hook)
@@ -19,7 +19,8 @@ extends Node
 ## driver. (The old polling multi-round driver from the Phase 1a draft was
 ## replaced by this signal-based scheduler per the Phase 1b contract.)
 
-signal auto_flick_requested(player: String, impulse: Vector2, contact_offset: float)
+## Emitted at fire time with a complete contract command (source = "harness").
+signal auto_flick_requested(cmd: ShotCommand)
 
 ## Master switch. Normal runs leave this false and AutoFlick is inert.
 var enabled: bool = false
@@ -76,10 +77,11 @@ func schedule_flick(player: String, impulse: Vector2, delay_sec: float) -> void:
 	var timer: SceneTreeTimer = get_tree().create_timer(delay_sec)
 	timer.timeout.connect(_on_scheduled_flick.bind(player, impulse))
 
-## Fire a scripted flick right now for `player`. Validates that the pen exists
-## in the scene tree (defensive: a missing pen logs a warning and no-ops), then
-## emits `auto_flick_requested` so the connected consumer (Main, or a test)
-## routes it through the human-flick path.
+## Fire a scripted flick right now for `player`. The legacy full-vector payload
+## is split per contract: direction = impulse.normalized(), power =
+## impulse.length(). An out-of-range or zero-direction intent is rejected by
+## the same ShotCommand validation every producer gets — no harness shortcut.
+## A missing pen logs a warning and no-ops (defensive).
 func fire_now(player: String, impulse: Vector2, contact_offset: float = 0.0) -> void:
 	if not enabled:
 		return
@@ -89,12 +91,17 @@ func fire_now(player: String, impulse: Vector2, contact_offset: float = 0.0) -> 
 	if _find_pen(player) == null:
 		push_warning("AutoFlick.fire_now: no PenBody found for player '%s' — flick not fired" % player)
 		return
+	var cmd: ShotCommand = ShotCommand.create(
+		player, impulse.normalized(), impulse.length(), contact_offset, "harness")
+	if cmd == null:
+		push_warning("AutoFlick.fire_now: intent outside the shot contract (player=%s impulse=%s) — rejected" % [player, impulse])
+		return
 	if auto_flick_requested.get_connections().is_empty():
 		push_warning(
 			"AutoFlick.fire_now: auto_flick_requested has no connected consumer — "
-			+ "Main must connect it (handle it like _on_flick_ready minus drag math)"
+			+ "Main must connect it to _submit_shot"
 		)
-	auto_flick_requested.emit(player, impulse, contact_offset)
+	auto_flick_requested.emit(cmd)
 
 func _on_scheduled_flick(player: String, impulse: Vector2) -> void:
 	if enabled:

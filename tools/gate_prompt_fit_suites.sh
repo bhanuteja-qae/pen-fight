@@ -25,4 +25,6 @@ run touch_input_test 180
 run settings_test 120
 run auto_flick_test 180
 run adjacent_pen_hit_test 300
+run match_contract_test 120
+run main_shot_submission_test 240
 run aim_overlay_smoke 120

@@ -5,10 +5,11 @@ class_name RoundsGateTest
 ## Headless mechanical proxy for the playtest gate. Drives the REAL scene
 ## (res://scenes/main.tscn) through TARGET_ROUNDS played rounds, each reaching a
 ## verdict — OOB knockout or forfeit — exactly like a human could, but with a
-## scripted strong flick fired at each AIM turn (mirroring AutoFlick's
-## signal path, which routes through TurnState + PenBody like Main._on_flick_ready).
-## Between rounds it mimics Main._on_gate_tapped: reset both pens, then
-## TurnState.continue_to_next_round() (winner starts next round, hot-seat).
+## scripted flick fired at each AIM turn as a ShotCommand submitted through
+## Main._submit_shot — the same one runtime shot path a human flick uses.
+## Between rounds it taps through Main's real gate (Main._on_gate_tapped), so
+## pen resets, match score and continue-to-next-round all follow the shipped
+## flow instead of a parallel imitation.
 ##
 ## What this does NOT assert (honestly): "want a 21st" is a human-fun signal that
 ## no headless harness can measure. What it DOES assert mechanically: 20 rounds
@@ -53,6 +54,9 @@ var _wins: Dictionary = {}
 var _losers: Dictionary = {}
 var _scheduled_player: String = ""
 var _round_over_pens: Array = []
+## True once the CURRENT parked round was recorded (guards the frame loop
+## against double-counting while the round-over gate waits to be tapped).
+var _round_counted: bool = false
 var _done: bool = false
 var _rng := RandomNumberGenerator.new()
 
@@ -85,18 +89,41 @@ func _on_physics_frame() -> void:
 		return
 	var snapshot: Dictionary = _turn_state.state()
 	var phase: String = str(snapshot.get("phase", ""))
-	if phase == TurnState.PHASE_ROUND_OVER:
+	if phase == TurnState.PHASE_ROUND_OVER and not _round_counted:
 		_on_round_over(snapshot)
-		return
-	_schedule_for_active_player(snapshot)
+		_round_counted = true
+		if _done:
+			return
+	# Budget check runs every frame before any action so a stuck gate still
+	# fails loudly instead of hanging until the outer timeout.
 	if _elapsed_seconds() >= MAX_TEST_SECONDS:
 		_finish(false, "budget elapsed at %d/%d resolved rounds (phase=%s, shots=%d)" % [
-			_rounds_resolved, TARGET_ROUNDS, phase, _shots_fired])
+			_rounds_resolved, TARGET_ROUNDS, str(_turn_state.state().get("phase", "")), _shots_fired])
+		return
+	# Mimic a human at the table: tap through any gate Main is showing — the
+	# decided-round restart gate AND a settle handoff. The shared submission
+	# boundary rejects commands while a gate is up, so an untapped handoff
+	# would reject every following flick. Main._on_gate_tapped runs the real
+	# pen resets + continue_to_next_round and keeps the match bookkeeping
+	# straight, exactly like the shipped tap.
+	if bool(_main.get("_gate_showing")):
+		var tapped_phase: String = str(_turn_state.state().get("phase", ""))
+		_main.call("_on_gate_tapped")
+		if tapped_phase == TurnState.PHASE_ROUND_OVER:
+			var st_after: String = str(_turn_state.state().get("phase", ""))
+			if st_after != TurnState.PHASE_AIM:
+				_finish(false, "gate tap from ROUND_OVER left phase=%s (expected AIM)" % st_after)
+				return
+		_round_counted = false
+		_scheduled_player = ""
+		return
+	_schedule_for_active_player(snapshot)
 
 
-## A decided round parked in ROUND_OVER (OOB or forfeit). Record the outcome,
-## then mimic Main._on_gate_tapped to start the next round: reset both pens and
-## continue_to_next_round() (winner starts next round, hot-seat cycling).
+## A decided round parked in ROUND_OVER (OOB or forfeit). Record the outcome
+## exactly once; the restart itself runs through Main's real gate tap in
+## _on_physics_frame, so pen resets / match score / continue_to_next_round all
+## follow the shipped flow.
 func _on_round_over(snapshot: Dictionary) -> void:
 	var winner: String = str(snapshot.get("winner", ""))
 	var loser: String = str(snapshot.get("loser", ""))
@@ -112,23 +139,6 @@ func _on_round_over(snapshot: Dictionary) -> void:
 	_rounds_resolved += 1
 	if _rounds_resolved >= TARGET_ROUNDS:
 		_finish(true, "")
-		return
-	# Tap-to-restart (docs §3.5 #7 / Main._on_gate_tapped): reset both pens and
-	# continue to the next round so the winner starts it.
-	var pen_red: PenBody = _find_pen("red")
-	var pen_blue: PenBody = _find_pen("blue")
-	if pen_red != null:
-		pen_red.reset()
-	if pen_blue != null:
-		pen_blue.reset()
-	var st_before: String = str(_turn_state.state().get("phase", ""))
-	_turn_state.continue_to_next_round()
-	_scheduled_player = ""
-	# Guards re-armed in Main; the test mirrors them so a fresh round can't
-	# accidentally reuse a stale winner.
-	var st_after: String = str(_turn_state.state().get("phase", ""))
-	if st_after != TurnState.PHASE_AIM:
-		_finish(false, "continue_to_next_round from %s left phase=%s (expected AIM)" % [st_before, st_after])
 
 
 func _schedule_for_active_player(snapshot: Dictionary) -> void:
@@ -155,7 +165,7 @@ func _schedule_for_active_player(snapshot: Dictionary) -> void:
 	# CI, but the natural miss/hit spread exercises real physics (no-decision
 	# settles, overshoot self-losses) instead of a perfect kill shot every turn.
 	var power: float = _rng.randf_range(SHOT_POWER_MIN, SHOT_POWER_MAX)
-	_launch(player, pen, shot, power)
+	_launch(player, shot, power)
 
 
 ## The real game move: fire the ACTIVE pen at the OPPONENT pen (collision
@@ -176,19 +186,16 @@ func _shot_impulse(shooter: PenBody, target: PenBody) -> Vector2:
 	return toward.normalized()
 
 
-## Mirror Main._on_flick_ready minus the slingshot drag math: record the
-## impulse in TurnState and apply the human (direction, power) shape to the pen.
-func _launch(player: String, pen: PenBody, direction: Vector2, power: float) -> void:
-	if _turn_state == null:
+## Route the scripted flick through the shared submission boundary — the same
+## Main._submit_shot a human flick or an AutoFlick command goes through — so
+## the soak proves the one runtime shot path, never a parallel one.
+func _launch(player: String, direction: Vector2, power: float) -> void:
+	var cmd: ShotCommand = ShotCommand.create(player, direction, power, 0.0, "harness")
+	if cmd == null:
+		_finish(false, "constructed an out-of-contract harness shot (player=%s power=%.2f)" % [player, power])
 		return
-	var snapshot: Dictionary = _turn_state.state()
-	if str(snapshot.get("phase", "")) != TurnState.PHASE_AIM:
-		return
-	if str(snapshot.get("current_player", "")) != player:
-		return
-	_shots_fired += 1
-	_turn_state.on_flick(direction * power)
-	pen.apply_flick(direction, power)
+	if bool(_main.call("_submit_shot", cmd)):
+		_shots_fired += 1
 
 
 func _other_player(player: String) -> String:

@@ -4,11 +4,10 @@ class_name AutoFlickTest
 ##
 ## Instantiates the REAL game scene (res://scenes/main.tscn), adds an AutoFlick
 ## emitter (enabled), and drives rounds headlessly to a REAL knockout — a pen
-## leaving the table — through the human-flick routing path: TurnState.on_flick
-## + PenBody.apply_flick, exactly what Main._on_flick_ready does minus the drag
-## math. The turn-transition gate (Agent G's TurnGate) is inert here: the test
-## never delivers input events, and the auto-flick routing is wired directly to
-## the auto_flick_requested signal, so Main's _input_locked can never block it.
+## leaving the table — through the project's single submission boundary: the
+## harness emits a ShotCommand and this test submits it via Main._submit_shot,
+## the same boundary the human adapter calls. Settle-handoff gates are tapped
+## through like a human at the table (the boundary rejects while a gate is up).
 ##
 ## Physics is non-deterministic run-to-run (docs/RESEARCH.md §4.1), so this test
 ## is TOLERANT: it asserts that a ROUND ENDS with a winner — OOB knockout or the
@@ -28,7 +27,7 @@ class_name AutoFlickTest
 ## frame so the tree (root window + physics server) is fully live before the
 ## scene is instantiated.
 
-const STRONG_IMPULSE: float = 1000000.0  # direction * magnitude impulse toward the table edge
+const EDGE_POWER: float = 1.0            # full-power edge shot: direction * power, power in 0..1
 const FLICK_DELAY_SEC: float = 0.4       # seconds after the active player's AIM begins
 const MAX_TEST_SECONDS: float = 12.0     # simulated-seconds budget (frames = 12 x tick rate)
 
@@ -57,10 +56,10 @@ func _bootstrap() -> void:
 	_auto_flick = AutoFlick.new()
 	root.add_child(_auto_flick)
 	_auto_flick.enabled = true
-	# Route the auto-flick through the human-flick path. If Main (Agent G) also
-	# connects auto_flick_requested, the AIM guard in _on_auto_flick_requested
-	# keeps exactly one application — never a double impulse.
-	_auto_flick.auto_flick_requested.connect(_on_auto_flick_requested)
+	# Route the harness command through the shared submission boundary — the
+	# same Main._submit_shot the human adapter calls. _submit_shot is atomic:
+	# a duplicate routing could never double-apply.
+	_auto_flick.auto_flick_requested.connect(_on_harness_command)
 	_turn_state = _main.get("turn_state")
 
 	physics_frame.connect(_on_physics_frame)
@@ -90,10 +89,17 @@ func _on_physics_frame() -> void:
 				snapshot.get("winner", "?"), snapshot.get("loser", "?"), phase,
 				_shots_fired - _round_start_shots, _shots_fired])
 		return
-	_schedule_for_active_player(snapshot)
 	if _elapsed_seconds() >= MAX_TEST_SECONDS:
 		_finish(false, "no round resolved within %.0fs of simulated time (phase=%s, shots=%d)" % [
 			MAX_TEST_SECONDS, phase, _shots_fired])
+		return
+	# Tap through any gate Main is showing (e.g. a settle handoff): the shared
+	# submission boundary rejects commands while a gate is up.
+	if bool(_main.get("_gate_showing")):
+		_main.call("_on_gate_tapped")
+		_scheduled_player = ""
+		return
+	_schedule_for_active_player(snapshot)
 
 
 func _schedule_for_active_player(snapshot: Dictionary) -> void:
@@ -112,30 +118,24 @@ func _schedule_for_active_player(snapshot: Dictionary) -> void:
 
 
 ## Push the pen radially away from the table center (the origin) so it leaves
-## the nearest table edge no matter where it settled this round.
+## the nearest table edge no matter where it settled this round. Full power —
+## the emitted ShotCommand carries direction * power with power in the 0..1
+## contract range.
 func _edge_impulse(pen: PenBody) -> Vector2:
 	var away: Vector2 = pen.global_position
 	if away.length_squared() < 1.0:
 		away = Vector2.RIGHT
-	return away.normalized() * STRONG_IMPULSE
+	return away.normalized() * EDGE_POWER
 
 
-## Mirror Main._on_flick_ready minus the slingshot drag math: record the
-## impulse in TurnState and apply it to the pen. Guarded on AIM so a duplicate
-## routing (if Main also connected the signal) can never double-fire.
-func _on_auto_flick_requested(player: String, impulse: Vector2, contact_offset: float = 0.0) -> void:
-	if _turn_state == null:
+## Submit the harness command through the one session boundary (Main's
+## _submit_shot) — no parallel TurnState/PenBody application here. Counts only
+## accepted commits so the report shows real shots.
+func _on_harness_command(cmd: ShotCommand) -> void:
+	if _main == null:
 		return
-	var snapshot: Dictionary = _turn_state.state()
-	if str(snapshot.get("phase", "")) != TurnState.PHASE_AIM:
-		return
-	if str(snapshot.get("current_player", "")) != player:
-		return
-	_shots_fired += 1
-	_turn_state.on_flick(impulse)
-	var pen := _find_pen(player)
-	if pen != null:
-		pen.apply_flick(impulse.normalized(), impulse.length(), contact_offset)
+	if bool(_main.call("_submit_shot", cmd)):
+		_shots_fired += 1
 
 
 func _find_pen(player: String) -> PenBody:
