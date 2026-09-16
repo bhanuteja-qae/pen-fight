@@ -59,6 +59,14 @@ func _case_participant_factory() -> void:
 	_check(rival != null, "valid rival bot participant is accepted")
 	if rival != null:
 		_check(rival.bot_profile() == "edge", "bot profile accessor preserves edge")
+	var renamed_model: Variant = participant_script.create(
+		"red", "local_player", "Model Test", "human", "sharpie", "anchor", "")
+	_check(renamed_model != null,
+		"pen model IDs are opaque contract data, not frozen to the old art set")
+	var future_bot: Variant = participant_script.create(
+		"blue", "rival", "Future Rival", "bot", "bic", "control", "chalk_beginner")
+	_check(future_bot != null,
+		"bot profile IDs are opaque until issue #10 supplies the production registry")
 
 	var rejected: Array = [
 		participant_script.create("green", "local_player", "Alice", "human", "amber", "spin", ""),
@@ -66,13 +74,13 @@ func _case_participant_factory() -> void:
 		participant_script.create("red", "local_player", "", "human", "amber", "spin", ""),
 		participant_script.create("red", "local_player", "   ", "human", "amber", "spin", ""),
 		participant_script.create("red", "local_player", "Alice", "remote", "amber", "spin", ""),
-		participant_script.create("red", "local_player", "Alice", "human", "plastic", "spin", ""),
+		participant_script.create("red", "local_player", "Alice", "human", "   ", "spin", ""),
 		participant_script.create("red", "local_player", "Alice", "human", "amber", "power", ""),
 		participant_script.create("red", "rival", "Rival", "human", "amber", "spin", ""),
 		participant_script.create("red", "local_player", "Alice", "bot", "amber", "spin", "hitter"),
 		participant_script.create("red", "local_player", "Alice", "human", "amber", "spin", "hitter"),
 		participant_script.create("red", "rival", "Rival", "bot", "amber", "spin", ""),
-		participant_script.create("red", "rival", "Rival", "bot", "amber", "spin", "camper"),
+		participant_script.create("red", "rival", "Rival", "bot", "amber", "spin", "   "),
 	]
 	for i in range(rejected.size()):
 		_check(rejected[i] == null, "invalid participant matrix row %d is rejected" % i)
@@ -139,26 +147,26 @@ func _case_match_config_factory() -> void:
 	_check(classic.participant_for_slot("blue") != null,
 		"mutating a lookup result cannot alter MatchConfig")
 
-	# Pen Powers maps each model to its effective profile and does not trust the
-	# profile supplied on the Participant.
+	# Pen Powers locks the explicitly composed profile without owning the pen-art
+	# registry. Model-to-profile tradeoffs are selected by the composition root.
 	var powers_ab: Variant = config_script.create("hot_seat", "pen_powers", 1, 11, [
-		participant_script.create("red", "local_player", "A", "human", "amber", "control", ""),
-		participant_script.create("blue", "local_player", "B", "human", "cobalt", "glide", ""),
+		participant_script.create("red", "local_player", "A", "human", "sharpie", "anchor", ""),
+		participant_script.create("blue", "local_player", "B", "human", "bic", "control", ""),
 	])
 	var powers_gi: Variant = config_script.create("hot_seat", "pen_powers", 7, 12, [
-		participant_script.create("red", "local_player", "G", "human", "graphite", "spin", ""),
-		participant_script.create("blue", "local_player", "I", "human", "ivory", "anchor", ""),
+		participant_script.create("red", "local_player", "G", "human", "jotter", "glide", ""),
+		participant_script.create("blue", "local_player", "I", "human", "uniball", "spin", ""),
 	])
 	_check(powers_ab != null and powers_gi != null, "valid Pen Powers configs are accepted")
 	if powers_ab != null and powers_gi != null:
-		_check(powers_ab.participant_for_slot("red").pen_profile() == "spin",
-			"amber maps to spin")
+		_check(powers_ab.participant_for_slot("red").pen_profile() == "anchor",
+			"sharpie keeps its composed anchor profile")
 		_check(powers_ab.participant_for_slot("blue").pen_profile() == "control",
-			"cobalt maps to control")
-		_check(powers_gi.participant_for_slot("red").pen_profile() == "anchor",
-			"graphite maps to anchor")
-		_check(powers_gi.participant_for_slot("blue").pen_profile() == "glide",
-			"ivory maps to glide")
+			"bic keeps its composed control profile")
+		_check(powers_gi.participant_for_slot("red").pen_profile() == "glide",
+			"jotter keeps its composed glide profile")
+		_check(powers_gi.participant_for_slot("blue").pen_profile() == "spin",
+			"uniball keeps its composed spin profile")
 
 	var solo: Variant = config_script.create("solo", "classic", 3, 44, [
 		participant_script.create("red", "local_player", "Alice", "human", "amber", "spin", ""),

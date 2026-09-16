@@ -9,9 +9,7 @@ extends RefCounted
 const SLOTS: Array[String] = ["red", "blue"]
 const KINDS: Array[String] = ["local_player", "rival"]
 const CONTROLLERS: Array[String] = ["human", "bot"]
-const PEN_MODELS: Array[String] = ["amber", "cobalt", "graphite", "ivory"]
 const PEN_PROFILES: Array[String] = ["control", "spin", "anchor", "glide"]
-const BOT_PROFILES: Array[String] = ["hitter", "spin", "edge"]
 
 var _slot: String
 var _kind: String
@@ -46,7 +44,11 @@ static func create(slot_value: String, kind_value: String, display_name_value: S
 		return null
 	if not CONTROLLERS.has(controller_value):
 		return null
-	if not PEN_MODELS.has(pen_model_value):
+	# Model and bot-profile values are opaque registry IDs. This contract owns
+	# their shape; the composition roots for pen art and issue #10 own which IDs
+	# are registered. Freezing either registry here would couple match data to a
+	# particular content revision.
+	if not _is_registry_id(pen_model_value):
 		return null
 	if not PEN_PROFILES.has(pen_profile_value):
 		return null
@@ -58,11 +60,15 @@ static func create(slot_value: String, kind_value: String, display_name_value: S
 		return null
 	if controller_value == "human" and not bot_profile_value.is_empty():
 		return null
-	if controller_value == "bot" and not BOT_PROFILES.has(bot_profile_value):
+	if controller_value == "bot" and not _is_registry_id(bot_profile_value):
 		return null
 
 	return Participant.new(slot_value, kind_value, display_name_value,
 		controller_value, pen_model_value, pen_profile_value, bot_profile_value)
+
+
+static func _is_registry_id(value: String) -> bool:
+	return value == value.to_lower() and value.is_valid_identifier()
 
 
 func slot() -> String:

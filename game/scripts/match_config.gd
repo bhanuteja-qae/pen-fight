@@ -5,12 +5,6 @@ extends RefCounted
 const MODES: Array[String] = ["hot_seat", "solo"]
 const RULESETS: Array[String] = ["classic", "pen_powers"]
 const BEST_OF_VALUES: Array[int] = [1, 3, 5, 7]
-const PEN_POWER_PROFILES: Dictionary = {
-	"amber": "spin",
-	"cobalt": "control",
-	"graphite": "anchor",
-	"ivory": "glide",
-}
 
 var _mode: String
 var _ruleset: String
@@ -29,8 +23,9 @@ func _init(mode_value: String, ruleset_value: String, best_of_value: int,
 
 
 ## Returns null unless the complete match composition is valid. Participant
-## effective profiles are rebuilt here from the ruleset and pen model; a caller's
-## supplied Participant.pen_profile is deliberately ignored.
+## effective profiles are locked here. Classic always resolves to control;
+## Pen Powers preserves the profile selected by the composition root, which
+## owns model-to-profile mapping independently of this plain-data contract.
 static func create(mode_value: String, ruleset_value: String, best_of_value: int,
 		seed_value: int, participants_value: Array) -> MatchConfig:
 	if not MODES.has(mode_value):
@@ -53,7 +48,7 @@ static func create(mode_value: String, ruleset_value: String, best_of_value: int
 
 	var resolved: Array[Participant] = []
 	for participant: Participant in [red, blue]:
-		var profile: String = _profile_for(ruleset_value, participant.pen_model())
+		var profile: String = _profile_for(ruleset_value, participant)
 		var copy: Participant = Participant.create(
 			participant.slot(), participant.kind(), participant.display_name(),
 			participant.controller(), participant.pen_model(), profile,
@@ -89,10 +84,10 @@ static func _composition_is_valid(mode_value: String, red: Participant,
 	return local_humans == 1 and rival_bots == 1
 
 
-static func _profile_for(ruleset_value: String, pen_model_value: String) -> String:
+static func _profile_for(ruleset_value: String, participant: Participant) -> String:
 	if ruleset_value == "classic":
 		return "control"
-	return str(PEN_POWER_PROFILES.get(pen_model_value, ""))
+	return participant.pen_profile()
 
 
 func mode() -> String:
