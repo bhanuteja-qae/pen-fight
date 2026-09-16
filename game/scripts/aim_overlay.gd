@@ -160,7 +160,8 @@ func clear() -> void:
 ## active pen so whose-turn is legible at a glance (the mockup's "YOUR FLICK"
 ## banner + pen highlight; full 3-cue system — edge glow + opponent chip — is
 ## roadmap UI, this is the minimal in-code slice). `label` is glyph-safe plain
-## text (e.g. "Amber" / "Cobalt"). Drawn only when no drag is active; a
+## text (e.g. "Sharpie" / "Bic" — the design on the table). Drawn only when
+## no drag is active; a
 ## show_drag() call overrides it until clear().
 func show_turn(label: String) -> void:
 	if _pen == null:

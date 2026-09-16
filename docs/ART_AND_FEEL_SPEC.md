@@ -75,6 +75,16 @@ assets/sprites/
   export.sh                 regenerates every PNG from src/
 ```
 
+> **Pen designs (current, 2026-09):** the four selectable designs are `bic`,
+> `jotter`, `sharpie` and `uniball` (`Main.PEN_SKINS`), drawn from
+> `game/assets/pen_<design>{,_shadow}.png` — 540 px wide, authored by
+> `game/assets/generate_pens_nb2.py` from the photo references and CREDITS in
+> `game/assets/nb2/refs/`. The `assets/sprites/` set above is the earlier
+> vector-sourced amber/cobalt pair: `main.tscn` still carries amber/cobalt as
+> its built-in textures, and `Main._apply_settings()` replaces them at startup
+> with the design on each slot — falling back to `Main.DEFAULT_SKINS` when a
+> stored save names a design that no longer exists.
+
 ### Sprite geometry `[FIXED]`
 
 All four pen/shadow textures share one canvas so that offsets are trivial:

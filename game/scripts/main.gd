@@ -627,7 +627,7 @@ func _update_gate(st: Dictionary, phase: String) -> void:
 
 
 ## The durable series record, formatted for the match-over gate:
-## "series: Amber 2, Cobalt 1". Reads the store; presentation only, no writes.
+## "series: Sharpie 2, Bic 1". Reads the store; presentation only, no writes.
 func _series_line() -> String:
 	if settings_store == null:
 		return "series unavailable"

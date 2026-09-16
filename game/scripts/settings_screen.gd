@@ -77,8 +77,12 @@ const SCRIM := Color(0, 0, 0, 0.42)
 const ENTRY_SIZE := Vector2(46, 46)
 
 var _store: SettingsStore = null
-var _p1_name: String = "Amber"
-var _p2_name: String = "Cobalt"
+## Placeholders only: Main pushes the real names with set_player_names() — the
+## design on the table, never the red/blue slot id. Kept in step with
+## Main.DEFAULT_SKINS so a sheet that has not been pushed yet still agrees
+## with the art.
+var _p1_name: String = "Sharpie"
+var _p2_name: String = "Bic"
 var _scrim: ColorRect = null
 var _sheet: Control = null
 var _labels: Array[Label] = []
